@@ -869,7 +869,7 @@ class _VehicleListItemState extends State<VehicleListItem> {
                                                           .locationInfo
                                                           .tracker!
                                                           .position!
-                                                          .ignition,
+                                                          .ignition ?? "OFF",
                                                       style: AppStyle.cardfooter
                                                           .copyWith(
                                                               fontSize: 10)),

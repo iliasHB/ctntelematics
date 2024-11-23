@@ -21,6 +21,15 @@ class DashboardDone extends DashboardState {
   List<Object?> get props => [resp];
 }
 
+class VehicleTripDone extends DashboardState {
+  final List<GetTripRespEntity> resp;
+  // List<GetTripRespModel> resp;
+  const VehicleTripDone(this.resp);
+
+  @override
+  List<Object?> get props => [resp];
+}
+
 class DashboardFailure extends DashboardState {
   final String message;
 

@@ -67,7 +67,8 @@ class VehicleRepositoryImpl implements VehicleRepository {
             routeHistoryReqModel.time_from,
             routeHistoryReqModel.time_to,
             routeHistoryReqModel.token,
-          ));
+          )
+    );
     }
     on ApiErrorException catch (e) {
       throw ApiErrorException(e.message); // Propagate the error with the API message

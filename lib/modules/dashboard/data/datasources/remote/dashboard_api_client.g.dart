@@ -52,7 +52,50 @@ class _DashboardApiClient implements DashboardApiClient {
         )));
     final _result = await _dio.fetch<Map<String, dynamic>>(_options);
     late DashVehicleRespModel _value;
-    _value = DashVehicleRespModel.fromJson(_result.data!);
+      _value = DashVehicleRespModel.fromJson(_result.data!);
+    return _value;
+  }
+
+  @override
+  Future<List<GetTripRespModel>> getAllTrips(
+    String token,
+    String contentType,
+  ) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{};
+    final _headers = <String, dynamic>{
+      r'Authorization': token,
+      r'Content-Type': contentType,
+    };
+    _headers.removeWhere((k, v) => v == null);
+    const Map<String, dynamic>? _data = null;
+    final _options = _setStreamType<List<GetTripRespModel>>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+      contentType: contentType,
+    )
+        .compose(
+          _dio.options,
+          '/trips',
+          queryParameters: queryParameters,
+          data: _data,
+        )
+        .copyWith(
+            baseUrl: _combineBaseUrls(
+          _dio.options.baseUrl,
+          baseUrl,
+        )));
+    final _result = await _dio.fetch<List<dynamic>>(_options);
+    late List<GetTripRespModel> _value;
+    _value = _result.data!
+        .map((dynamic i) =>
+        GetTripRespModel.fromJson(i as Map<String, dynamic>))
+        .toList();
+
+    // final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    // late GetTripRespModel _value;
+    //   _value = GetTripRespModel.fromJson(_result.data!);
     return _value;
   }
 

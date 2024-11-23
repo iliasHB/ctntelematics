@@ -152,44 +152,44 @@ class TermOfUse extends StatelessWidget {
                       'consent to the collection, use, and storage of these data in '
                       'accordance with our privacy policy'
               ),
-
-              const SizedBox(height: 20,),
-              const TermUseContainer(
-                  title: 'Location Accuracy',
-                  subtitle: ''
-              ),
-              const SizedBox(height: 20,),
-              const TermUseContainer(
-                  title: 'Changes to the App',
-                  subtitle: ''
-              ),
-              const SizedBox(height: 20,),
-              const TermUseContainer(
-                  title: 'Termination',
-                  subtitle: ''
-              ),
-              const SizedBox(height: 20,),
-              const TermUseContainer(
-                  title: 'Limitation of Liability',
-                  subtitle: ''
-              ),
-
-              const SizedBox(height: 20,),
-              const TermUseContainer(
-                  title: 'Third-party Service',
-                  subtitle: ''
-              ),
-
-              const SizedBox(height: 20,),
-              const TermUseContainer(
-                  title: 'Changes of these terms',
-                  subtitle: ''
-              ),
-              const SizedBox(height: 20,),
-              const TermUseContainer(
-                  title: 'Contact Us',
-                  subtitle: ''
-              ),
+              //
+              // const SizedBox(height: 20,),
+              // const TermUseContainer(
+              //     title: 'Location Accuracy',
+              //     subtitle: ''
+              // ),
+              // const SizedBox(height: 20,),
+              // const TermUseContainer(
+              //     title: 'Changes to the App',
+              //     subtitle: ''
+              // ),
+              // const SizedBox(height: 20,),
+              // const TermUseContainer(
+              //     title: 'Termination',
+              //     subtitle: ''
+              // ),
+              // const SizedBox(height: 20,),
+              // const TermUseContainer(
+              //     title: 'Limitation of Liability',
+              //     subtitle: ''
+              // ),
+              //
+              // const SizedBox(height: 20,),
+              // const TermUseContainer(
+              //     title: 'Third-party Service',
+              //     subtitle: ''
+              // ),
+              //
+              // const SizedBox(height: 20,),
+              // const TermUseContainer(
+              //     title: 'Changes of these terms',
+              //     subtitle: ''
+              // ),
+              // const SizedBox(height: 20,),
+              // const TermUseContainer(
+              //     title: 'Contact Us',
+              //     subtitle: ''
+              // ),
 
             ],
           ),

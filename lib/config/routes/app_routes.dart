@@ -36,5 +36,5 @@ final routes = {
   '/paymentMethod': (BuildContext context) =>  const PaymentMethod(),
   '/paymentSuccess': (BuildContext context) =>  const PaymentSuccess(),
   '/setting': (BuildContext context) =>  const Setting(),
-  // '/vehicleRouteLastLocation': (BuildContext context) =>  const VehicleRouteLastLocation(),
+  // '/vehicleRoeLastLocation': (BuildContext context) =>  const VehicleRouteLastLocation(),
 };

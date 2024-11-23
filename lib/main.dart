@@ -1,4 +1,5 @@
 import 'package:ctntelematics/modules/authentication/presentation/bloc/auth_bloc.dart';
+import 'package:ctntelematics/modules/eshop/presentation/bloc/eshop_bloc.dart';
 import 'package:ctntelematics/modules/vehincle/presentation/bloc/vehicle_bloc.dart';
 import 'package:ctntelematics/service_locator.dart';
 import 'package:flutter/material.dart';
@@ -53,6 +54,10 @@ class MyApp extends StatelessWidget {
         Provider<CreateScheduleBloc>(create: (_) => sl<CreateScheduleBloc>()),
         Provider<ProfileVehiclesBloc>(create: (_) => sl<ProfileVehiclesBloc>()),
         Provider<SendLocationBloc>(create: (_) => sl<SendLocationBloc>()),
+        Provider<EshopGetAllProductBloc>(create: (_) => sl<EshopGetAllProductBloc>()),
+        Provider<EshopGetCategoryBloc>(create: (_) => sl<EshopGetCategoryBloc>()),
+        Provider<EshopGetProductBloc>(create: (_) => sl<EshopGetProductBloc>()),
+        Provider<VehicleTripBloc>(create: (_) => sl<VehicleTripBloc>()),
       ],
       child: MaterialApp(
         title: 'CTN Telematics',

@@ -132,13 +132,13 @@ import 'package:http/http.dart' as http;
 
 class PusherService {
   final String token;
-  final String userId;
+  final String userId, user_type;
   late WebSocket _socket;
   final _vehicleUpdatesController =
   StreamController<Map<String, dynamic>>.broadcast();
   bool _isConnected = false;
 
-  PusherService(this.token, this.userId) {
+  PusherService(this.token, this.userId, this.user_type) {
     initializePusher();
   }
 
@@ -241,7 +241,11 @@ class PusherService {
         print('Socket ID: $socketId');
 
         // After establishing a connection, subscribe to channels
-        await _subscribeToChannel('private-admin.vehicle-location', socketId);
+        if(user_type == "admin") {
+          await _subscribeToChannel('private-admin.vehicle-location', socketId);
+        } else {
+          await _subscribeToChannel('private-vehicle-owner.$userId', socketId);
+        }
         // await _subscribeToChannel('private-vehicle-owner.$userId', socketId);
       } else {
         print('Unexpected data format: $data'); // Handle unexpected format

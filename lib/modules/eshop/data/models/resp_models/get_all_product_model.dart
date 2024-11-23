@@ -1,115 +1,88 @@
 
 import '../../../domain/entitties/resp_entities/get_all_product_entity.dart';
 
-class GetAllProductModel {
-  Products products;
-  Products similarGoods;
-
+class GetAllProductModel extends GetAllProductEntity{
   GetAllProductModel({
-    required this.products,
-    required this.similarGoods,
+    required super.products,
+    required super.similar_goods,
   });
 
   factory GetAllProductModel.fromJson(Map<String, dynamic> json) => GetAllProductModel(
     products: Products.fromJson(json["products"]),
-    similarGoods: Products.fromJson(json["similar_goods"]),
+    similar_goods: Products.fromJson(json["similar_goods"]),
   );
 
   Map<String, dynamic> toJson() => {
-    "products": products.toJson(),
-    "similar_goods": similarGoods.toJson(),
+    "products": products,
+    "similar_goods": similar_goods
   };
 }
 
-class Products {
-  int currentPage;
-  List<Datum> data;
-  String firstPageUrl;
-  int from;
-  int lastPage;
-  String lastPageUrl;
-  List<Link> links;
-  dynamic nextPageUrl;
-  String path;
-  int perPage;
-  dynamic prevPageUrl;
-  int to;
-  int total;
+class Products extends ProductsEntity{
 
   Products({
-    required this.currentPage,
-    required this.data,
-    required this.firstPageUrl,
-    required this.from,
-    required this.lastPage,
-    required this.lastPageUrl,
-    required this.links,
-    required this.nextPageUrl,
-    required this.path,
-    required this.perPage,
-    required this.prevPageUrl,
-    required this.to,
-    required this.total,
+    required super.current_page,
+    required super.data,
+    required super.first_page_url,
+    required super.from,
+    required super.last_page,
+    required super.last_page_url,
+    required super.links,
+    required super.next_page_url,
+    required super.path,
+    required super.per_page,
+    required super.prev_page_url,
+    required super.to,
+    required super.total,
   });
 
   factory Products.fromJson(Map<String, dynamic> json) => Products(
-    currentPage: json["current_page"],
+    current_page: json["current_page"],
     data: List<Datum>.from(json["data"].map((x) => Datum.fromJson(x))),
-    firstPageUrl: json["first_page_url"],
+    first_page_url: json["first_page_url"],
     from: json["from"],
-    lastPage: json["last_page"],
-    lastPageUrl: json["last_page_url"],
+    last_page: json["last_page"],
+    last_page_url: json["last_page_url"],
     links: List<Link>.from(json["links"].map((x) => Link.fromJson(x))),
-    nextPageUrl: json["next_page_url"],
+    next_page_url: json["next_page_url"],
     path: json["path"],
-    perPage: json["per_page"],
-    prevPageUrl: json["prev_page_url"],
+    per_page: json["per_page"],
+    prev_page_url: json["prev_page_url"],
     to: json["to"],
     total: json["total"],
   );
 
   Map<String, dynamic> toJson() => {
-    "current_page": currentPage,
-    "data": List<dynamic>.from(data.map((x) => x.toJson())),
-    "first_page_url": firstPageUrl,
+    "current_page": current_page,
+    "data": data,
+    "first_page_url": first_page_url,
     "from": from,
-    "last_page": lastPage,
-    "last_page_url": lastPageUrl,
-    "links": List<dynamic>.from(links.map((x) => x.toJson())),
-    "next_page_url": nextPageUrl,
+    "last_page": last_page,
+    "last_page_url": last_page_url,
+    "links": links,
+    "next_page_url": next_page_url,
     "path": path,
-    "per_page": perPage,
-    "prev_page_url": prevPageUrl,
+    "per_page": per_page,
+    "prev_page_url": prev_page_url,
     "to": to,
     "total": total,
   };
 }
 
-class Datum {
-  int id;
-  String name;
-  String description;
-  String price;
-  int stockQuantity;
-  String sku;
-  String image;
-  int categoryId;
-  int isActive;
-  DateTime createdAt;
-  DateTime updatedAt;
+class Datum extends EShopDatumEntity{
 
   Datum({
-    required this.id,
-    required this.name,
-    required this.description,
-    required this.price,
-    required this.stockQuantity,
-    required this.sku,
-    required this.image,
-    required this.categoryId,
-    required this.isActive,
-    required this.createdAt,
-    required this.updatedAt,
+    required super.id,
+    required super.name,
+    required super.description,
+    required super.price,
+    required super.stock_quantity,
+    required super.sku,
+    required super.image,
+    required super.category_id,
+    required super.is_active,
+    required super.created_at,
+    required super.updated_at,
   });
 
   factory Datum.fromJson(Map<String, dynamic> json) => Datum(
@@ -117,13 +90,13 @@ class Datum {
     name: json["name"],
     description: json["description"],
     price: json["price"],
-    stockQuantity: json["stock_quantity"],
+    stock_quantity: json["stock_quantity"],
     sku: json["sku"],
     image: json["image"],
-    categoryId: json["category_id"],
-    isActive: json["is_active"],
-    createdAt: DateTime.parse(json["created_at"]),
-    updatedAt: DateTime.parse(json["updated_at"]),
+    category_id: json["category_id"],
+    is_active: json["is_active"],
+    created_at: json["created_at"],
+  updated_at: json["updated_at"],
   );
 
   Map<String, dynamic> toJson() => {
@@ -131,25 +104,21 @@ class Datum {
     "name": name,
     "description": description,
     "price": price,
-    "stock_quantity": stockQuantity,
+    "stock_quantity": stock_quantity,
     "sku": sku,
     "image": image,
-    "category_id": categoryId,
-    "is_active": isActive,
-    "created_at": createdAt.toIso8601String(),
-    "updated_at": updatedAt.toIso8601String(),
+    "category_id": category_id,
+    "is_active": is_active,
+    "created_at": created_at,
+    "updated_at": updated_at,
   };
 }
 
-class Link {
-  String? url;
-  String label;
-  bool active;
-
+class Link extends EshopLinkEntity{
   Link({
-    required this.url,
-    required this.label,
-    required this.active,
+    required super.url,
+    required super.label,
+    required super.active,
   });
 
   factory Link.fromJson(Map<String, dynamic> json) => Link(
