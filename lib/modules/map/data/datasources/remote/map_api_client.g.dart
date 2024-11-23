@@ -56,6 +56,7 @@ class _MapApiClient implements MapApiClient {
         .map((dynamic i) =>
             LastLocationRespModel.fromJson(i as Map<String, dynamic>))
         .toList();
+
     return _value;
   }
 
@@ -93,7 +94,8 @@ class _MapApiClient implements MapApiClient {
         )));
     final _result = await _dio.fetch<Map<String, dynamic>>(_options);
     late RouteHistoryRespModel _value;
-      _value = RouteHistoryRespModel.fromJson(_result.data!);
+    _value = RouteHistoryRespModel.fromJson(_result.data!);
+
     return _value;
   }
 
@@ -134,7 +136,7 @@ class _MapApiClient implements MapApiClient {
         )));
     final _result = await _dio.fetch<Map<String, dynamic>>(_options);
     late RespModel _value;
-      _value = RespModel.fromJson(_result.data!);
+    _value = RespModel.fromJson(_result.data!);
     return _value;
   }
 

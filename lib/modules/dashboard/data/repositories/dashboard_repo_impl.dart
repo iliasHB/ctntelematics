@@ -6,6 +6,7 @@ import '../datasources/remote/dashboard_api_client.dart';
 import '../models/req_models/dash_vehicle_req_model.dart';
 import '../models/resp_models/dash_vehicle_resp_model.dart';
 import '../../domain/entitties/req_entities/dash_vehicle_req_entity.dart';
+import '../models/resp_models/get_trip_resp_model.dart';
 
 class DashboardRepositoryImpl implements DashboardRepository {
 
@@ -29,7 +30,28 @@ class DashboardRepositoryImpl implements DashboardRepository {
     } on NetworkException catch (e) {
       throw NetworkException(); // Propagate network-specific errors
     } catch (e) {
-      throw Exception("An error occurred while logging in.");
+      throw Exception("An error occurred while fetching vehicle.");
+    }
+  }
+
+
+  @override
+  Future<List<GetTripRespModel>> onGetTrips(DashVehicleReqEntity dashVehicleReqEntity) async {
+
+    DashVehicleReqModel vehicleReqModel = DashVehicleReqModel(
+        token: dashVehicleReqEntity.token,
+        contentType: dashVehicleReqEntity.contentType);
+
+    try {
+    //   return await handleDashVehicleErrorHandling(
+          return apiClient.getAllTrips(vehicleReqModel.token, vehicleReqModel.contentType);
+      // )
+    } on ApiErrorException catch (e) {
+      throw ApiErrorException(e.message); // Propagate the error with the API message
+    } on NetworkException catch (e) {
+      throw NetworkException(); // Propagate network-specific errors
+    } catch (e) {
+      throw Exception("An error occurred while fetching vehicle trip.");
     }
   }
 

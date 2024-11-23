@@ -5,8 +5,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/network/network_exception.dart';
 import '../../../../core/resources/dash_data_state.dart';
+import '../../data/models/resp_models/get_trip_resp_model.dart';
 import '../../domain/entitties/req_entities/dash_vehicle_req_entity.dart';
 import '../../domain/entitties/resp_entities/dash_vehicle_resp_entity.dart';
+import '../../domain/entitties/resp_entities/get_trip_resp_entity.dart';
 import '../../domain/usecases/dashboard_usecase.dart';
 
 part 'dashboard_event.dart';
@@ -37,6 +39,47 @@ class DashVehiclesBloc extends Bloc<DashboardEvent, DashboardState> {
 
 
     } catch (error) {
+      if (error is ApiErrorException) {
+        yield DashboardFailure(error.message); // Emit API error message
+      } else if (error is NetworkException) {
+        yield DashboardFailure(error.message); // Emit network failure message
+      }
+      else {
+        yield const DashboardFailure(
+            "An unexpected error occurred. Please try again."); // Emit generic error message
+      }
+    }
+  }
+}
+
+
+class VehicleTripBloc extends Bloc<DashboardEvent, DashboardState> {
+  final TripsUseCase tripsUseCase;
+
+  VehicleTripBloc(this.tripsUseCase) : super(DashboardInitial()) {
+    on<DashVehicleEvent>((event, emit) => emit.forEach<DashboardState>(
+      mapEventToState(event),
+      onData: (state) => state,
+      onError: (error, stackTrace) =>
+          DashboardFailure(error.toString()), // Handle error cases
+    ));
+  }
+
+
+  Stream<DashboardState> mapEventToState(DashVehicleEvent event) async* {
+    yield DashboardLoading(); // Emit loading state
+    try {
+
+      // Use yield* to delegate stream handling to vehicleUseCase
+      final resp = await tripsUseCase(DashVehicleReqEntity(
+        token: event.dashVehicleReqEntity.token,
+        contentType: event.dashVehicleReqEntity.contentType,
+      ));
+
+      yield VehicleTripDone(resp); // Emit success state after getting the user
+
+    } catch (error) {
+      print('errorr::::: $error');
       if (error is ApiErrorException) {
         yield DashboardFailure(error.message); // Emit API error message
       } else if (error is NetworkException) {

@@ -3,7 +3,7 @@ import 'package:equatable/equatable.dart';
 class VehicleRouteHistoryRespEntity extends Equatable {
 
   final List<DatumEntity> data;
-  final double total_distance_km;
+  final double? total_distance_km;
 
   const VehicleRouteHistoryRespEntity({
     required this.data,
@@ -16,36 +16,36 @@ class VehicleRouteHistoryRespEntity extends Equatable {
 }
 
 class DatumEntity extends Equatable{
-  int? id;
-  int? vehicle_id;
-  int? tracker_id;
-  String? latitude;
-  String? longitude;
-  String? speed;
-  String? speed_unit;
-  int? course;
-  String? fix_time;
-  int? satellite_count;
-  int? active_satellite_count;
-  int? real_time_gps;
-  int? gps_positioned;
-  int? east_longitude;
-  int? north_latitude;
-  int? mcc;
-  int? mnc;
-  int? lac;
-  int? cell_id;
-  String? serial_number;
-  int? error_check;
+  dynamic id;
+  dynamic vehicle_id;
+  dynamic tracker_id;
+  dynamic latitude;
+  dynamic longitude;
+  dynamic speed;
+  dynamic speed_unit;
+  dynamic course;
+  dynamic fix_time;
+  dynamic satellite_count;
+  dynamic active_satellite_count;
+  dynamic real_time_gps;
+  dynamic gps_positioned;
+  dynamic east_longitude;
+  dynamic north_latitude;
+  dynamic mcc;
+  dynamic mnc;
+  dynamic lac;
+  dynamic cell_id;
+  dynamic serial_number;
+  dynamic error_check;
   List<dynamic> event;
-  int? parse_time;
-  String? terminal_info;
-  String? voltage_level;
-  String? gsm_signal_strength;
+  dynamic parse_time;
+  dynamic terminal_info;
+  dynamic voltage_level;
+  dynamic gsm_signal_strength;
   dynamic response_msg;
-  String? status;
-  String? created_at;
-  String? updated_at;
+  dynamic status;
+  dynamic created_at;
+  dynamic updated_at;
 
   DatumEntity({
     required this.id,

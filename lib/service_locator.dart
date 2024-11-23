@@ -1,4 +1,5 @@
 
+import 'package:ctntelematics/modules/eshop/presentation/bloc/eshop_bloc.dart';
 import 'package:ctntelematics/modules/map/data/datasources/remote/map_api_client.dart';
 import 'package:ctntelematics/modules/map/data/repositories/map_repo_impl.dart';
 import 'package:ctntelematics/modules/map/domain/repositories/map_repository.dart';
@@ -18,6 +19,10 @@ import 'modules/dashboard/data/repositories/dashboard_repo_impl.dart';
 import 'modules/dashboard/domain/repositories/dash_vehicle_repo.dart';
 import 'modules/dashboard/domain/usecases/dashboard_usecase.dart';
 import 'modules/dashboard/presentation/bloc/dashboard_bloc.dart';
+import 'modules/eshop/data/datasources/remote/eshop_api_client.dart';
+import 'modules/eshop/data/repositories/eshop_repo_impl.dart';
+import 'modules/eshop/domain/repositories/eshop_repository.dart';
+import 'modules/eshop/domain/usecases/eshop_usecase.dart';
 import 'modules/map/presentation/bloc/map_bloc.dart';
 import 'modules/profile/data/datasources/remote/profile_api_client.dart';
 import 'modules/profile/data/repositories/profile_repo_impl.dart';
@@ -43,6 +48,7 @@ Future<void> initializeDependencies() async {
   sl.registerSingleton<VehicleApiClient>(VehicleApiClient(sl()));
   sl.registerSingleton<ProfileApiClient>(ProfileApiClient(sl()));
   sl.registerSingleton<MapApiClient>(MapApiClient(sl()));
+  sl.registerSingleton<EshopApiClient>(EshopApiClient(sl()));
   // sl.registerSingleton<PusherService>(PusherService(token, userId));
 
   // Register Repository
@@ -52,6 +58,7 @@ Future<void> initializeDependencies() async {
   sl.registerSingleton<ProfileRepository>(ProfileRepositoryImpl(sl()));
   sl.registerSingleton<MapRepository>(MapRepositoryImpl(sl()));
   sl.registerFactory<PusherRepository>(() => PusherRepositoryImpl(sl<PusherService>()));
+  sl.registerSingleton<EshopRepository>(EshopRepositoryImpl(sl()));
   // sl.registerSingleton<PusherRepository>(PusherRepositoryImpl(sl<PusherService>()));
 
   // Register UseCase
@@ -74,6 +81,10 @@ Future<void> initializeDependencies() async {
   sl.registerFactory<CreateScheduleUseCase>(() => CreateScheduleUseCase(sl()));
   sl.registerFactory<ProfileVehicleUseCase>(() => ProfileVehicleUseCase(sl()));
   sl.registerFactory<SendLocationUseCase>(() => SendLocationUseCase(sl()));
+  sl.registerFactory<GetProductsUseCase>(() => GetProductsUseCase(sl()));
+  sl.registerFactory<GetCategoryUseCase>(() => GetCategoryUseCase(sl()));
+  sl.registerFactory<GetProductUseCase>(() => GetProductUseCase(sl()));
+  sl.registerFactory<TripsUseCase>(() => TripsUseCase(sl()));
 
 
 
@@ -97,6 +108,10 @@ Future<void> initializeDependencies() async {
   sl.registerFactory(() => CreateScheduleBloc(sl()));
   sl.registerFactory(() => ProfileVehiclesBloc(sl()));
   sl.registerFactory(() => SendLocationBloc(sl()));
+  sl.registerFactory(() => EshopGetAllProductBloc(sl()));
+  sl.registerFactory(() => EshopGetCategoryBloc(sl()));
+  sl.registerFactory(() => EshopGetProductBloc(sl()));
+  sl.registerFactory(() => VehicleTripBloc(sl()));
 
 
 }

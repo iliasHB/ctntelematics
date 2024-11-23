@@ -2,8 +2,12 @@ import 'package:ctntelematics/core/utils/app_export_util.dart';
 import 'package:ctntelematics/core/widgets/advert.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/widgets/appBar.dart';
+import '../../../../service_locator.dart';
+import '../../domain/entitties/req_entities/token_req_entity.dart';
+import '../bloc/eshop_bloc.dart';
 
 class EshopPage extends StatefulWidget {
   const EshopPage({super.key});
@@ -89,61 +93,59 @@ class _EshopPageState extends State<EshopPage> {
             ),
             viewAdvert == false
                 ? Card(
-              child: Padding(
-                padding: const EdgeInsets.all(10.0),
-                child: Row(
-                  mainAxisAlignment:
-                  MainAxisAlignment.spaceBetween,
-                  //crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Padding(
-                          padding:
-                          const EdgeInsets.only(top: 5.0),
-                          child: Row(
-                            mainAxisAlignment:
-                            MainAxisAlignment.spaceBetween,
+                    child: Padding(
+                      padding: const EdgeInsets.all(10.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        //crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
                             children: [
-                              Text('Check Latest Stock',
-                                  style: AppStyle.cardfooter
-                                      .copyWith(fontSize: 14)),
+                              Padding(
+                                padding: const EdgeInsets.only(top: 5.0),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text('Check Latest Stock',
+                                        style: AppStyle.cardfooter
+                                            .copyWith(fontSize: 14)),
+                                  ],
+                                ),
+                              ),
                             ],
                           ),
-                        ),
-                      ],
+                          IconButton(
+                              onPressed: () {
+                                setState(() {
+                                  viewAdvert = true;
+                                });
+                              },
+                              icon: const Icon(
+                                CupertinoIcons.chevron_down,
+                                size: 15,
+                              ))
+                        ],
+                      ),
                     ),
-                    IconButton(
-                        onPressed: () {
-                          setState(() {
-                            viewAdvert = true;
-                          });
-                        },
-                        icon: const Icon(
-                          CupertinoIcons.chevron_down,
-                          size: 15,
-                        ))
-                  ],
-                ),
-              ),
-            )
+                  )
                 : Stack(children: [
-              const Advert(),
-              Positioned(
-                right: 10,
-                top: 0,
-                child: IconButton(
-                    onPressed: () {
-                      setState(() {
-                        viewAdvert = false;
-                      });
-                    },
-                    icon: const Icon(
-                      Icons.cancel_outlined,
-                      color: Colors.white,
-                    )),
-              )
-            ]),
+                    const Advert(),
+                    Positioned(
+                      right: 10,
+                      top: 0,
+                      child: IconButton(
+                          onPressed: () {
+                            setState(() {
+                              viewAdvert = false;
+                            });
+                          },
+                          icon: const Icon(
+                            Icons.cancel_outlined,
+                            color: Colors.white,
+                          )),
+                    )
+                  ]),
             SizedBox(
               height: 50.0,
               child: ListView.builder(
@@ -176,16 +178,17 @@ class _EshopPageState extends State<EshopPage> {
               ),
             ),
             const SizedBox(height: 10),
-            _selectedTabIndex == 0 ? Column(
-              children: [
-                _buildListSection("Engine Oil"),
-                const SizedBox(height: 10),
-                _buildListSection("Oil Filter"),
-                const SizedBox(height: 10),
-                _buildListSection("Air Filter"),
-              ],
-            ) : _buildGridSection(),
-
+            _selectedTabIndex == 0
+                ? Column(
+                    children: [
+                      _buildListSection("Engine Oil"),
+                      const SizedBox(height: 10),
+                      // _buildListSection("Oil Filter"),
+                      // const SizedBox(height: 10),
+                      // _buildListSection("Air Filter"),
+                    ],
+                  )
+                : _buildGridSection(),
           ],
         ),
       ),
@@ -194,66 +197,164 @@ class _EshopPageState extends State<EshopPage> {
 
   Widget _buildListSection(String title) {
     return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style:
-                    const TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
-              ),
-              const SizedBox(height: 5),
-              Row(
-                children: [
-                  Expanded(
-                    child: SizedBox(
-                      height: 200,
-                      child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: 4,
-                        itemBuilder: (BuildContext context, int index) {
-                          return AllCategory(
-                            productName: 'Mobile 10W - 20 Fully Synthetic',
-                            productImage: 'assets/images/keg.png',
-                            price: 500.0,
-                            onAddToCart: () {},
-                            onFavorite: () {},
-                          );
-                        },
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+        ),
+        const SizedBox(height: 5),
+        BlocProvider(
+          create: (_) => sl<EshopGetAllProductBloc>()
+            ..add(
+                EshopGetProductsEvent(EshopTokenReqEntity(token: token ?? ""))),
+          child: BlocConsumer<EshopGetAllProductBloc, EshopState>(
+            builder: (context, state) {
+              if (state is EshopLoading) {
+                return const Center(
+                  child: Padding(
+                    padding: EdgeInsets.only(top: 10.0),
+                    child: CircularProgressIndicator(strokeWidth: 2.0),
+                  ),
+                );
+              } else if (state is EshopGetProductsDone) {
+                // Check if the schedule data is empty
+                if (state.resp.products.data == null ||
+                    state.resp.products.data.isEmpty) {
+                  return Center(
+                    child: Text(
+                      'No available product',
+                      style: AppStyle.cardfooter,
+                    ),
+                  );
+                }
+
+                return Row(
+                  children: [
+                    Expanded(
+                      child: SizedBox(
+                        height: 200,
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: state.resp.products.data.length,
+                          itemBuilder: (BuildContext context, int index) {
+                            return AllCategory(
+                                productName:
+                                    state.resp.products.data[index].name,
+                                productImage:
+                                    state.resp.products.data[index].image,
+                                price: state.resp.products.data[index].price
+                                    .toString(),
+                                onAddToCart: () {},
+                                onFavorite: () {},
+                                categoryId: state
+                                    .resp.products.data[index].category_id
+                                    .toString(),
+                                description:
+                                    state.resp.products.data[index].description,
+                                token: token);
+                          },
+                        ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-            ],
-          );
+                  ],
+                );
+              } else {
+                return Center(
+                    child: Text(
+                  'No records found',
+                  style: AppStyle.cardfooter,
+                ));
+              }
+            },
+            listener: (context, state) {
+              if (state is EshopFailure) {
+                if (state.message.contains("401")) {
+                  Navigator.pushNamed(context, "/login");
+                }
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(state.message)),
+                );
+              }
+            },
+          ),
+        ),
+      ],
+    );
   }
 
   Widget _buildGridSection() {
-    return Column(
-      children: [
-        SizedBox(
-            height: 400,
-            child: GridView.builder(
-              padding: EdgeInsets.zero,
-              itemCount: 6,
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2, // Adjust crossAxisCount as needed
-                childAspectRatio: 0.995,
-                mainAxisSpacing: 0,
-                crossAxisSpacing: 0,
+    return BlocProvider(
+      create: (_) => sl<EshopGetAllProductBloc>()
+        ..add(EshopGetProductsEvent(EshopTokenReqEntity(token: token ?? ""))),
+      child: BlocConsumer<EshopGetAllProductBloc, EshopState>(
+        builder: (context, state) {
+          if (state is EshopLoading) {
+            return const Center(
+              child: Padding(
+                padding: EdgeInsets.only(top: 10.0),
+                child: CircularProgressIndicator(strokeWidth: 2.0),
               ),
-              itemBuilder: (BuildContext context, int index) {
-                return AllProduct(
-                  productName: 'Mobile 10W - 20 Fully Synthetic',
-                  productImage: 'assets/images/keg.png',
-                  price: 500.0,
-                  onAddToCart: () {},
-                  onFavorite: () {},
-                );
-              },
-            )
-        )
-      ],
+            );
+          } else if (state is EshopGetProductsDone) {
+            // Check if the schedule data is empty
+            if (state.resp.products.data == null ||
+                state.resp.products.data.isEmpty) {
+              return Center(
+                child: Text(
+                  'No available product',
+                  style: AppStyle.cardfooter,
+                ),
+              );
+            }
+
+            return Column(
+              children: [
+                GridView.builder(
+                  shrinkWrap: true,
+                  padding: EdgeInsets.zero,
+                  itemCount: state.resp.products.data.length,
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2, // Number of columns
+                    childAspectRatio: 0.9, // Adjust for width-to-height ratio
+                    mainAxisSpacing: 0, // Removes vertical spacing
+                    crossAxisSpacing: 0, // Removes horizontal spacing
+                  ),
+                  itemBuilder: (BuildContext context, int index) {
+                    return AllProduct(
+                        productName: state.resp.products.data[index].name,
+                        productImage: state.resp.products.data[index].image,
+                        price: state.resp.products.data[index].price.toString(),
+                        onAddToCart: () {},
+                        onFavorite: () {},
+                        categoryId: state.resp.products.data[index].category_id
+                            .toString(),
+                        description:
+                            state.resp.products.data[index].description,
+                        token: token!);
+                  },
+                )
+              ],
+            );
+          } else {
+            return Center(
+                child: Text(
+              'No records found',
+              style: AppStyle.cardfooter,
+            ));
+          }
+        },
+        listener: (context, state) {
+          if (state is EshopFailure) {
+            if (state.message.contains("401")) {
+              Navigator.pushNamed(context, "/login");
+            }
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(state.message)),
+            );
+          }
+        },
+      ),
     );
   }
 }
@@ -261,9 +362,12 @@ class _EshopPageState extends State<EshopPage> {
 class AllCategory extends StatelessWidget {
   final String productName;
   final String productImage;
-  final double price;
+  final String price;
   final VoidCallback onAddToCart;
   final VoidCallback onFavorite;
+  final String categoryId;
+  final String description;
+  final String? token;
 
   const AllCategory({
     super.key,
@@ -272,6 +376,9 @@ class AllCategory extends StatelessWidget {
     required this.price,
     required this.onAddToCart,
     required this.onFavorite,
+    required this.categoryId,
+    required this.description,
+    required this.token,
   });
 
   @override
@@ -284,7 +391,14 @@ class AllCategory extends StatelessWidget {
             children: [
               InkWell(
                 onTap: () {
-                  Navigator.pushNamed(context, "/productReview");
+                  Navigator.pushNamed(context, "/productReview", arguments: {
+                    'productName': productName,
+                    'productImage': productImage,
+                    'price': price,
+                    'categoryId': categoryId,
+                    'description': description,
+                    'token': token
+                  });
                 },
                 child: Container(
                   margin:
@@ -299,27 +413,55 @@ class AllCategory extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.start,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Image.asset(
-                          productImage,
-                          height: 100,
-                          width: 100,
+                        Center(
+                          child: Image.network(
+                            'https://ecom.verifycentre.com$productImage',
+                            loadingBuilder: (BuildContext context, Widget child,
+                                ImageChunkEvent? loadingProgress) {
+                              if (loadingProgress == null) {
+                                return child;
+                              }
+                              return Center(
+                                child: CircularProgressIndicator(
+                                  value: loadingProgress.expectedTotalBytes !=
+                                          null
+                                      ? loadingProgress.cumulativeBytesLoaded /
+                                          (loadingProgress.expectedTotalBytes ??
+                                              1)
+                                      : null,
+                                ),
+                              );
+                            },
+                            errorBuilder: (BuildContext context, Object error,
+                                StackTrace? stackTrace) {
+                              return const Icon(
+                                Icons.error,
+                                size: 50,
+                                color: Colors.red,
+                              );
+                            },
+                          ),
                         ),
+                        // Image.asset(
+                        //   productImage,
+                        //   height: 100,
+                        //   width: 100,
+                        // ),
                         Center(
                           child: Text(
                             productName,
+                            style: AppStyle.cardfooter
+                                .copyWith(fontWeight: FontWeight.bold),
                             textAlign: TextAlign.center,
                             softWrap: true,
                             overflow: TextOverflow.ellipsis,
                             maxLines: 3,
                           ),
                         ),
-                        Text(
-                          "\$ $price",
-                          style: TextStyle(
-                              color: Colors.green.shade900,
-                              fontSize: 18,
-                              fontWeight: FontWeight.w500),
-                        )
+                        Text(price,
+                            style: AppStyle.cardSubtitle.copyWith(
+                                fontWeight: FontWeight.w500,
+                                color: Colors.green[800]))
                       ],
                     ),
                   ),
@@ -372,9 +514,10 @@ class AllCategory extends StatelessWidget {
 class AllProduct extends StatelessWidget {
   final String productName;
   final String productImage;
-  final double price;
+  final String price;
   final VoidCallback onAddToCart;
   final VoidCallback onFavorite;
+  final String categoryId, description, token;
 
   const AllProduct({
     super.key,
@@ -383,6 +526,9 @@ class AllProduct extends StatelessWidget {
     required this.price,
     required this.onAddToCart,
     required this.onFavorite,
+    required this.categoryId,
+    required this.description,
+    required this.token,
   });
 
   @override
@@ -395,11 +541,18 @@ class AllProduct extends StatelessWidget {
             children: [
               InkWell(
                 onTap: () {
-                  Navigator.pushNamed(context, "/productReview");
+                  Navigator.pushNamed(context, "/productReview", arguments: {
+                    'productName': productName,
+                    'productImage': productImage,
+                    'price': price,
+                    'categoryId': categoryId,
+                    'description': description,
+                    'token': token
+                  });
                 },
                 child: Container(
                   margin:
-                  const EdgeInsets.symmetric(horizontal: 5.0, vertical: 10),
+                      const EdgeInsets.symmetric(horizontal: 5.0, vertical: 10),
                   decoration: BoxDecoration(
                       color: Colors.green.shade50,
                       borderRadius: BorderRadius.circular(10)),
@@ -410,27 +563,56 @@ class AllProduct extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.start,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Image.asset(
-                          productImage,
-                          height: 100,
-                          width: 100,
+                        Center(
+                          child: Image.network(
+                            'https://ecom.verifycentre.com$productImage',
+                            headers: {'Authorization': token},
+                            loadingBuilder: (BuildContext context, Widget child,
+                                ImageChunkEvent? loadingProgress) {
+                              if (loadingProgress == null) {
+                                return child;
+                              }
+                              return Center(
+                                child: CircularProgressIndicator(
+                                  value: loadingProgress.expectedTotalBytes !=
+                                          null
+                                      ? loadingProgress.cumulativeBytesLoaded /
+                                          (loadingProgress.expectedTotalBytes ??
+                                              1)
+                                      : null,
+                                ),
+                              );
+                            },
+                            errorBuilder: (BuildContext context, Object error,
+                                StackTrace? stackTrace) {
+                              return const Icon(
+                                Icons.error,
+                                size: 50,
+                                color: Colors.red,
+                              );
+                            },
+                          ),
                         ),
+                        // Image.asset(
+                        //   productImage,
+                        //   height: 100,
+                        //   width: 100,
+                        // ),
                         Center(
                           child: Text(
                             productName,
+                            style: AppStyle.cardfooter
+                                .copyWith(fontWeight: FontWeight.bold),
                             textAlign: TextAlign.center,
                             softWrap: true,
                             overflow: TextOverflow.ellipsis,
                             maxLines: 3,
                           ),
                         ),
-                        Text(
-                          "\$ $price",
-                          style: TextStyle(
-                              color: Colors.green.shade900,
-                              fontSize: 18,
-                              fontWeight: FontWeight.w500),
-                        )
+                        Text(price,
+                            style: AppStyle.cardSubtitle.copyWith(
+                                fontWeight: FontWeight.w500,
+                                color: Colors.green[800]))
                       ],
                     ),
                   ),

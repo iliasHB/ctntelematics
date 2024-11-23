@@ -1,5 +1,6 @@
 
 const String baseUri = "https://cti.maypaseducation.com/api";
+const String eShopBaseUri = 'https://ecom.verifycentre.com/api';
 
 const String whatsAppNum = "08037459093";
 const String hotline = "08039422997";

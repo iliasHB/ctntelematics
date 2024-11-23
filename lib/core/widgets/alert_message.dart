@@ -29,7 +29,7 @@ class AlertMessage {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Icon(Icons.check_circle_outlined, size: 80, color: Colors.green,),
+                  const Icon(Icons.check_circle_outlined, size: 80, color: Colors.green,),
                   SizedBox(height: 10,),
                   Text(message, style: AppStyle.cardSubtitle,),
                   TextButton(

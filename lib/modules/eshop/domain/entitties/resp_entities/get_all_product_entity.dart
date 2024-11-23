@@ -3,11 +3,11 @@ import 'package:equatable/equatable.dart';
 
 class GetAllProductEntity extends Equatable{
   ProductsEntity products;
-  ProductsEntity similarGoods;
+  ProductsEntity similar_goods;
 
   GetAllProductEntity({
     required this.products,
-    required this.similarGoods,
+    required this.similar_goods,
   });
 
 
@@ -15,37 +15,37 @@ class GetAllProductEntity extends Equatable{
   // TODO: implement props
   List<Object?> get props => [
     products,
-    similarGoods
+    similar_goods
   ];
 }
 
 class ProductsEntity extends Equatable{
-  int currentPage;
+  int current_page;
   List<EShopDatumEntity> data;
-  String firstPageUrl;
+  String first_page_url;
   int from;
-  int lastPage;
-  String lastPageUrl;
+  int last_page;
+  String last_page_url;
   List<EshopLinkEntity> links;
-  dynamic nextPageUrl;
+  dynamic next_page_url;
   String path;
-  int perPage;
-  dynamic prevPageUrl;
+  int per_page;
+  dynamic prev_page_url;
   int to;
   int total;
 
   ProductsEntity({
-    required this.currentPage,
+    required this.current_page,
     required this.data,
-    required this.firstPageUrl,
+    required this.first_page_url,
     required this.from,
-    required this.lastPage,
-    required this.lastPageUrl,
+    required this.last_page,
+    required this.last_page_url,
     required this.links,
-    required this.nextPageUrl,
+    required this.next_page_url,
     required this.path,
-    required this.perPage,
-    required this.prevPageUrl,
+    required this.per_page,
+    required this.prev_page_url,
     required this.to,
     required this.total,
   });
@@ -53,17 +53,17 @@ class ProductsEntity extends Equatable{
   @override
   // TODO: implement props
   List<Object?> get props => [
-    currentPage,
+    current_page,
     data,
-    firstPageUrl,
+    first_page_url,
     from,
-    lastPage,
-    lastPageUrl,
+    last_page,
+    last_page_url,
     links,
-    nextPageUrl,
+    next_page_url,
     path,
-    perPage,
-    prevPageUrl,
+    per_page,
+    prev_page_url,
     to,
     total
   ];
@@ -74,26 +74,26 @@ class EShopDatumEntity extends Equatable{
   String name;
   String description;
   String price;
-  int stockQuantity;
+  int stock_quantity;
   String sku;
   String image;
-  int categoryId;
-  int isActive;
-  DateTime createdAt;
-  DateTime updatedAt;
+  int category_id;
+  int is_active;
+  String created_at;
+  String updated_at;
 
   EShopDatumEntity({
     required this.id,
     required this.name,
     required this.description,
     required this.price,
-    required this.stockQuantity,
+    required this.stock_quantity,
     required this.sku,
     required this.image,
-    required this.categoryId,
-    required this.isActive,
-    required this.createdAt,
-    required this.updatedAt,
+    required this.category_id,
+    required this.is_active,
+    required this.created_at,
+    required this.updated_at,
   });
 
   @override
@@ -103,13 +103,13 @@ class EShopDatumEntity extends Equatable{
   name,
   description,
   price,
-  stockQuantity,
+  stock_quantity,
   sku,
   image,
-  categoryId,
-  isActive,
-  createdAt,
-  updatedAt,
+  category_id,
+  is_active,
+  created_at,
+  updated_at,
   ];
 
 }

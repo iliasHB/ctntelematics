@@ -150,7 +150,7 @@ class _SettingState extends State<Setting> {
                           Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => const Report()));
+                                  builder: (context) => Report(token: token)));
                         },
                         child: Container(
                           padding: const EdgeInsets.symmetric(vertical: 10),

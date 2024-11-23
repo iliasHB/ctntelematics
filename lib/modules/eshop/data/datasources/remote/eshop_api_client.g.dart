@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'auth_api_client.dart';
+part of 'eshop_api_client.dart';
 
 // **************************************************************************
 // RetrofitGenerator
@@ -8,12 +8,12 @@ part of 'auth_api_client.dart';
 
 // ignore_for_file: unnecessary_brace_in_string_interps,no_leading_underscores_for_local_identifiers,unused_element,unnecessary_string_interpolations
 
-class _AuthApiClient implements AuthApiClient {
-  _AuthApiClient(
+class _EshopApiClient implements EshopApiClient {
+  _EshopApiClient(
     this._dio, {
     this.baseUrl,
   }) {
-    baseUrl ??= 'https://cti.maypaseducation.com/api';
+    baseUrl ??= 'https://ecom.verifycentre.com/api';
   }
 
   final Dio _dio;
@@ -21,28 +21,26 @@ class _AuthApiClient implements AuthApiClient {
   String? baseUrl;
 
   @override
-  Future<LoginRespModel> getUserLogin(
-    String email,
-    String password,
+  Future<GetAllProductModel> getProducts(
+    String token,
     String sourceCode,
   ) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
-    final _headers = <String, dynamic>{r'source_code': sourceCode};
-    _headers.removeWhere((k, v) => v == null);
-    final _data = {
-      'email': email,
-      'password': password,
+    final _headers = <String, dynamic>{
+      r'Authorization': token,
+      r'source_code': sourceCode,
     };
-    final _options = _setStreamType<LoginRespModel>(Options(
-      method: 'POST',
+    _headers.removeWhere((k, v) => v == null);
+    const Map<String, dynamic>? _data = null;
+    final _options = _setStreamType<GetAllProductModel>(Options(
+      method: 'GET',
       headers: _headers,
       extra: _extra,
-      contentType: 'application/x-www-form-urlencoded',
     )
         .compose(
           _dio.options,
-          '/user/login',
+          '/products',
           queryParameters: queryParameters,
           data: _data,
         )
@@ -52,30 +50,28 @@ class _AuthApiClient implements AuthApiClient {
           baseUrl,
         )));
     final _result = await _dio.fetch<Map<String, dynamic>>(_options);
-    late LoginRespModel _value;
-      _value = LoginRespModel.fromJson(_result.data!);
+    late GetAllProductModel _value;
+
+      _value = GetAllProductModel.fromJson(_result.data!);
+
     return _value;
   }
 
   @override
-  Future<AuthRespModel> generateOtp(
-    String email,
-    String sourceCode,
-  ) async {
+  Future<GetCategoryModel> getCategory(String token) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
-    final _headers = <String, dynamic>{r'source_code': sourceCode};
+    final _headers = <String, dynamic>{r'Authorization': token};
     _headers.removeWhere((k, v) => v == null);
-    final _data = {'email': email};
-    final _options = _setStreamType<AuthRespModel>(Options(
-      method: 'POST',
+    const Map<String, dynamic>? _data = null;
+    final _options = _setStreamType<GetCategoryModel>(Options(
+      method: 'GET',
       headers: _headers,
       extra: _extra,
-      contentType: 'application/x-www-form-urlencoded',
     )
         .compose(
           _dio.options,
-          '/user/regenerate/otp',
+          '/categories',
           queryParameters: queryParameters,
           data: _data,
         )
@@ -85,34 +81,33 @@ class _AuthApiClient implements AuthApiClient {
           baseUrl,
         )));
     final _result = await _dio.fetch<Map<String, dynamic>>(_options);
-    late AuthRespModel _value;
-      _value = AuthRespModel.fromJson(_result.data!);
+    late GetCategoryModel _value;
+      _value = GetCategoryModel.fromJson(_result.data!);
     return _value;
   }
 
   @override
-  Future<AuthRespModel> verifyEmail(
-    String email,
-    String otp,
+  Future<GetProductModel> getProduct(
+    int id,
+    String token,
     String sourceCode,
   ) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
-    final _headers = <String, dynamic>{r'source_code': sourceCode};
-    _headers.removeWhere((k, v) => v == null);
-    final _data = {
-      'email': email,
-      'otp': otp,
+    final _headers = <String, dynamic>{
+      r'Authorization': token,
+      r'source_code': sourceCode,
     };
-    final _options = _setStreamType<AuthRespModel>(Options(
-      method: 'POST',
+    _headers.removeWhere((k, v) => v == null);
+    const Map<String, dynamic>? _data = null;
+    final _options = _setStreamType<GetProductModel>(Options(
+      method: 'GET',
       headers: _headers,
       extra: _extra,
-      contentType: 'application/x-www-form-urlencoded',
     )
         .compose(
           _dio.options,
-          '/user/verify/email',
+          '/products/${id}',
           queryParameters: queryParameters,
           data: _data,
         )
@@ -122,50 +117,8 @@ class _AuthApiClient implements AuthApiClient {
           baseUrl,
         )));
     final _result = await _dio.fetch<Map<String, dynamic>>(_options);
-    late AuthRespModel _value;
-      _value = AuthRespModel.fromJson(_result.data!);
-    return _value;
-  }
-
-  @override
-  Future<AuthRespModel> changePassword(
-    String email,
-    String otp,
-    String password,
-    String passwordConfirmation,
-    String sourceCode,
-  ) async {
-    final _extra = <String, dynamic>{};
-    final queryParameters = <String, dynamic>{};
-    final _headers = <String, dynamic>{r'source_code': sourceCode};
-    _headers.removeWhere((k, v) => v == null);
-    final _data = {
-      'email': email,
-      'otp': otp,
-      'password': password,
-      'password_confirmation': passwordConfirmation,
-    };
-    final _options = _setStreamType<AuthRespModel>(Options(
-      method: 'POST',
-      headers: _headers,
-      extra: _extra,
-      contentType: 'application/x-www-form-urlencoded',
-    )
-        .compose(
-          _dio.options,
-          '/user/change/password',
-          queryParameters: queryParameters,
-          data: _data,
-        )
-        .copyWith(
-            baseUrl: _combineBaseUrls(
-          _dio.options.baseUrl,
-          baseUrl,
-        )));
-    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
-    late AuthRespModel _value;
-      _value = AuthRespModel.fromJson(_result.data!);
-
+    late GetProductModel _value;
+      _value = GetProductModel.fromJson(_result.data!);
     return _value;
   }
 

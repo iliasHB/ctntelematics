@@ -128,6 +128,7 @@ class _ProfileApiClient implements ProfileApiClient {
     final _result = await _dio.fetch<Map<String, dynamic>>(_options);
     late ProfileRespModel _value;
       _value = ProfileRespModel.fromJson(_result.data!);
+
     return _value;
   }
 
@@ -244,6 +245,41 @@ class _ProfileApiClient implements ProfileApiClient {
     return _value;
   }
 
+  @override
+  Future<ProfileVehicleRespModel> getAllVehicles(
+    String token,
+    String contentType,
+  ) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{};
+    final _headers = <String, dynamic>{
+      r'Authorization': token,
+      r'Accept': contentType,
+    };
+    _headers.removeWhere((k, v) => v == null);
+    const Map<String, dynamic>? _data = null;
+    final _options = _setStreamType<ProfileVehicleRespModel>(Options(
+      method: 'POST',
+      headers: _headers,
+      extra: _extra,
+    )
+        .compose(
+          _dio.options,
+          '/view/vehicle',
+          queryParameters: queryParameters,
+          data: _data,
+        )
+        .copyWith(
+            baseUrl: _combineBaseUrls(
+          _dio.options.baseUrl,
+          baseUrl,
+        )));
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late ProfileVehicleRespModel _value;
+      _value = ProfileVehicleRespModel.fromJson(_result.data!);
+    return _value;
+  }
+
   RequestOptions _setStreamType<T>(RequestOptions requestOptions) {
     if (T != dynamic &&
         !(requestOptions.responseType == ResponseType.bytes ||
@@ -272,40 +308,5 @@ class _ProfileApiClient implements ProfileApiClient {
     }
 
     return Uri.parse(dioBaseUrl).resolveUri(url).toString();
-  }
-
-  @override
-  Future<ProfileVehicleRespModel> getAllVehicles(
-      String token,
-      String contentType,
-      ) async {
-    final _extra = <String, dynamic>{};
-    final queryParameters = <String, dynamic>{};
-    final _headers = <String, dynamic>{
-      r'Authorization': token,
-      r'Accept': contentType,
-    };
-    _headers.removeWhere((k, v) => v == null);
-    const Map<String, dynamic>? _data = null;
-    final _options = _setStreamType<ProfileVehicleRespModel>(Options(
-      method: 'POST',
-      headers: _headers,
-      extra: _extra,
-    )
-        .compose(
-      _dio.options,
-      '/view/vehicle',
-      queryParameters: queryParameters,
-      data: _data,
-    )
-        .copyWith(
-        baseUrl: _combineBaseUrls(
-          _dio.options.baseUrl,
-          baseUrl,
-        )));
-    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
-    late ProfileVehicleRespModel _value;
-    _value = ProfileVehicleRespModel.fromJson(_result.data!);
-    return _value;
   }
 }

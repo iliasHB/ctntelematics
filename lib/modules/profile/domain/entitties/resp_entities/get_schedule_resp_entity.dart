@@ -3,19 +3,19 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/cupertino.dart';
 
 class GetScheduleRespEntity extends Equatable{
-final int current_page;
+final dynamic current_page;
 final List<DatumEntity> data;
-final String? first_page_url;
-final int from;
-final int last_page;
-final String last_page_url;
+final dynamic? first_page_url;
+final dynamic from;
+final dynamic last_page;
+final dynamic last_page_url;
 final List<LinkEntity> links;
 final dynamic next_page_url;
-final String path;
-final int per_page;
+final dynamic path;
+final dynamic per_page;
 final dynamic prev_page_url;
-final int to;
-final int total;
+final dynamic to;
+final dynamic total;
 
 const GetScheduleRespEntity({
   required this.current_page,
@@ -54,17 +54,17 @@ const GetScheduleRespEntity({
 }
 
 class DatumEntity extends Equatable{
-final int id;
-final String brand;
-final String model;
-final String year;
-final String type;
-final String vin;
-final String number_plate;
-final int user_id;
-final int vehicle_owner_id;
-final String created_at;
-final String updated_at;
+final dynamic id;
+final dynamic brand;
+final dynamic model;
+final dynamic year;
+final dynamic type;
+final dynamic vin;
+final dynamic number_plate;
+final dynamic user_id;
+final dynamic vehicle_owner_id;
+final dynamic created_at;
+final dynamic updated_at;
 final DriverEntity driver;
 final List<MaintenanceEntity> maintenance;
 final OwnerEntity owner;
@@ -114,25 +114,25 @@ required this.last_location,
 }
 
 class DriverEntity extends Equatable{
-final int id;
-final String name;
-final String email;
-final String phone;
-final String vehicle_vin;
-final int vehicle_id;
-final String pin;
-final String country;
-final String licence_number;
-final String licence_issue_date;
-final String licence_expiry_date;
-final String guarantor_name;
-final String guarantor_phone;
-final String profile_picture_path;
-final String driving_licence_path;
-final String pin_path;
+final dynamic id;
+final dynamic name;
+final dynamic email;
+final dynamic phone;
+final dynamic vehicle_vin;
+final dynamic vehicle_id;
+final dynamic pin;
+final dynamic country;
+final dynamic licence_number;
+final dynamic licence_issue_date;
+final dynamic licence_expiry_date;
+final dynamic guarantor_name;
+final dynamic guarantor_phone;
+final dynamic profile_picture_path;
+final dynamic driving_licence_path;
+final dynamic pin_path;
 final dynamic miscellaneous_path;
-final String created_at;
-final String updated_at;
+final dynamic created_at;
+final dynamic updated_at;
 
 DriverEntity({
 required this.id,
@@ -183,35 +183,35 @@ required this.updated_at,
 }
 
 class LastLocationEntity extends Equatable{
-final int vehicle_id;
-final int tracker_id;
-final String latitude;
-final String longitude;
-final String speed;
+final dynamic vehicle_id;
+final dynamic tracker_id;
+final dynamic latitude;
+final dynamic longitude;
+final dynamic speed;
 final dynamic speed_unit;
-final int course;
-final DateTime fix_time;
-final int satellite_count;
-final int active_satellite_count;
+final dynamic course;
+final dynamic fix_time;
+final dynamic satellite_count;
+final dynamic active_satellite_count;
 final bool real_time_gps;
 final bool gps_positioned;
 final bool east_longitude;
 final bool north_latitude;
-final int mcc;
-final int mnc;
-final int lac;
-final int cell_id;
-final String serial_number;
-final int error_check;
-final String event;
-final int parse_time;
-final String terminal_info;
-final String voltage_level;
-final String gsm_signal_strength;
+final dynamic mcc;
+final dynamic mnc;
+final dynamic lac;
+final dynamic cell_id;
+final dynamic serial_number;
+final dynamic error_check;
+final dynamic event;
+final dynamic parse_time;
+final dynamic terminal_info;
+final dynamic voltage_level;
+final dynamic gsm_signal_strength;
 final dynamic response_msg;
-final String status;
-final String created_at;
-final String updated_at;
+final dynamic status;
+final dynamic created_at;
+final dynamic updated_at;
 
 LastLocationEntity({
 required this.vehicle_id,
@@ -282,7 +282,7 @@ required this.updated_at,
 }
 
 class MaintenanceEntity extends Equatable{
-final int id;
+final dynamic id;
 final dynamic description;
 final dynamic vehicle_vin;
 final dynamic schedule_type;
@@ -293,9 +293,9 @@ final dynamic category_time;
 final dynamic reminder_advance_days;
 final dynamic reminder_advance_km;
 final dynamic reminder_advance_hr;
-final String start_date;
-final String created_at;
-final String updated_at;
+final dynamic start_date;
+final dynamic created_at;
+final dynamic updated_at;
 
 MaintenanceEntity({
 required this.id,
@@ -336,14 +336,14 @@ required this.updated_at,
 }
 
 class OwnerEntity extends Equatable{
-final int id;
-final String first_name;
-final String last_name;
-final String email;
-final String phone;
-final int user_id;
-final String created_at;
-final String updated_at;
+final dynamic id;
+final dynamic first_name;
+final dynamic last_name;
+final dynamic email;
+final dynamic phone;
+final dynamic user_id;
+final dynamic created_at;
+final dynamic updated_at;
 
 OwnerEntity({
 required this.id,
@@ -372,14 +372,14 @@ required this.updated_at,
 }
 
 class TrackerEntity extends Equatable {
-final String device_id;
-final String protocol;
-final String ip;
-final String sim_no;
-final String params;
-final String port;
-final String network_protocol;
-final int vehicle_id;
+final dynamic device_id;
+final dynamic protocol;
+final dynamic ip;
+final dynamic sim_no;
+final dynamic params;
+final dynamic port;
+final dynamic network_protocol;
+final dynamic vehicle_id;
 
 TrackerEntity({
 required this.device_id,
@@ -409,7 +409,7 @@ required this.vehicle_id,
 
 class LinkEntity extends Equatable{
 final dynamic url;
-final String label;
+final dynamic label;
 final bool active;
 
 LinkEntity({

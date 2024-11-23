@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:ctntelematics/core/utils/app_export_util.dart';
 // import 'package:ctntelematics/core/widgets/advert.dart';
 import 'package:ctntelematics/core/widgets/appBar.dart';
+import 'package:ctntelematics/modules/eshop/presentation/widgets/eshop_widget.dart';
+import 'package:ctntelematics/modules/profile/presentation/widgets/maintenance.dart';
 import 'package:ctntelematics/modules/websocket/domain/entitties/resp_entities/vehicle_entity.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -13,6 +15,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/widgets/advert.dart';
 import '../../../../service_locator.dart';
+import '../../../eshop/domain/entitties/req_entities/token_req_entity.dart';
+import '../../../eshop/presentation/bloc/eshop_bloc.dart';
 import '../../../websocket/data/datasources/pusher_service.dart';
 import '../../../websocket/presentation/bloc/vehicle_location_bloc.dart';
 import '../../domain/entitties/req_entities/dash_vehicle_req_entity.dart';
@@ -33,7 +37,7 @@ class _DashboardPageState extends State<DashboardPage> {
   String? middle_name;
   String? email;
   String? token;
-  String? userId;
+  String? userId, user_type;
   bool viewAdvert = false;
   bool vehiclePerformance = false;
   bool isLoading = true;
@@ -64,10 +68,11 @@ class _DashboardPageState extends State<DashboardPage> {
         email = authUser[3].isEmpty ? null : authUser[3];
         token = authUser[4].isEmpty ? null : authUser[4];
         userId = authUser[5].isEmpty ? null : authUser[5];
+        user_type = authUser[7].isEmpty ? null : authUser[7];
       }
       if (token != null && userId != null) {
         if (!sl.isRegistered<PusherService>()) {
-          sl.registerSingleton<PusherService>(PusherService(token!, userId!));
+          sl.registerSingleton<PusherService>(PusherService(token!, userId!, user_type!));
           final pusherService = sl<PusherService>();
           pusherService.initializePusher();
         }
@@ -218,7 +223,8 @@ class _DashboardPageState extends State<DashboardPage> {
                                 if (state is DashboardLoading) {
                                   return GridView.count(
                                     crossAxisCount: 2,
-                                    mainAxisSpacing: 10, // Adjust spacing between grid items
+                                    mainAxisSpacing:
+                                        10, // Adjust spacing between grid items
                                     crossAxisSpacing: 10,
                                     childAspectRatio: 1.9, //
                                     physics:
@@ -309,7 +315,9 @@ class _DashboardPageState extends State<DashboardPage> {
                                                 vehicles;
                                               });
                                             },
-                                            child: BlocBuilder<VehicleLocationBloc, List<VehicleEntity>>(
+                                            child: BlocBuilder<
+                                                VehicleLocationBloc,
+                                                List<VehicleEntity>>(
                                               builder: (context, vehicles) {
                                                 if (vehicles.isEmpty) {
                                                   return Text(
@@ -339,16 +347,16 @@ class _DashboardPageState extends State<DashboardPage> {
 
                                                 //List<VehicleEntity> displayedVehicles = _filterVehicles(vehicles);
                                                 return Text(
-                                                  movingVehicles.length.toString(),
+                                                  movingVehicles.length
+                                                      .toString(),
                                                   style: AppStyle.cardfooter
                                                       .copyWith(
-                                                      fontWeight:
-                                                      FontWeight
-                                                          .w300),
+                                                          fontWeight:
+                                                              FontWeight.w300),
                                                   maxLines:
-                                                  1, // Restrict to a single line for count as well
+                                                      1, // Restrict to a single line for count as well
                                                   overflow:
-                                                  TextOverflow.ellipsis,
+                                                      TextOverflow.ellipsis,
                                                 );
                                               },
                                             ),
@@ -368,7 +376,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                             overflow: TextOverflow.ellipsis,
                                           ),
                                           color: Colors.red,
-                                          icon: Icon(
+                                          icon: const Icon(
                                             CupertinoIcons.square_fill,
                                             color: Colors.white,
                                           )),
@@ -856,223 +864,345 @@ class _DashboardPageState extends State<DashboardPage> {
                                 const SizedBox(
                                   height: 10,
                                 ),
-                                SizedBox(
-                                  height: getVerticalSize(220),
-                                  child: GridView.builder(
-                                    physics:
-                                        const NeverScrollableScrollPhysics(),
-                                    itemCount: 8,
-                                    gridDelegate:
-                                        const SliverGridDelegateWithMaxCrossAxisExtent(
-                                      maxCrossAxisExtent:
-                                          100, // Set a max extent for the width
-                                      mainAxisSpacing:
-                                          10, // Adjust spacing between grid items
-                                      crossAxisSpacing: 5,
-                                      childAspectRatio:
-                                          0.8, // Adjust aspect ratio to fit content
-                                    ),
-                                    itemBuilder:
-                                        (BuildContext context, int index) {
-                                      return Container(
-                                        decoration: const BoxDecoration(
-                                            //border: Border.all(width: 1),
+                                BlocProvider(
+                                  create: (_) => sl<EshopGetAllProductBloc>()
+                                    ..add(EshopGetProductsEvent(
+                                        EshopTokenReqEntity(
+                                            token: token ?? ""))),
+                                  child: BlocConsumer<EshopGetAllProductBloc,
+                                      EshopState>(
+                                    builder: (context, state) {
+                                      if (state is EshopLoading) {
+                                        return const Center(
+                                          child: Padding(
+                                            padding: EdgeInsets.only(top: 10.0),
+                                            child: CircularProgressIndicator(
+                                                strokeWidth: 2.0),
+                                          ),
+                                        );
+                                      } else if (state
+                                          is EshopGetProductsDone) {
+                                        // Check if the schedule data is empty
+                                        if (state.resp.products.data == null ||
+                                            state.resp.products.data.isEmpty) {
+                                          return Center(
+                                            child: Text(
+                                              'No available product',
+                                              style: AppStyle.cardfooter,
                                             ),
-                                        child: Column(
+                                          );
+                                        }
+
+                                        return Column(
                                           children: [
-                                            Expanded(
-                                              child: Card(
-                                                child: SizedBox(
-                                                    width: double.infinity,
-                                                    child: Image.asset(
-                                                        "assets/images/shampoo.png")),
+                                            SizedBox(
+                                              height: getVerticalSize(220),
+                                              child: GridView.builder(
+                                                physics:
+                                                    const NeverScrollableScrollPhysics(),
+                                                itemCount: state.resp.products.data.length > 7 ? 7 : state.resp.products.data.length,
+                                                gridDelegate:
+                                                    const SliverGridDelegateWithMaxCrossAxisExtent(
+                                                  maxCrossAxisExtent: 100, // Set a max extent for the width
+                                                  mainAxisSpacing: 10, // Adjust spacing between grid items
+                                                  crossAxisSpacing: 5,
+                                                  childAspectRatio: 0.8, // Adjust aspect ratio to fit content
+                                                ),
+                                                itemBuilder:
+                                                    (BuildContext context,
+                                                        int index) {
+                                                  return InkWell(
+                                                    onTap: (){
+                                                      Navigator.pushNamed(context, "/productReview", arguments: {
+                                                        'productName': state.resp.products.data[index].name,
+                                                        'productImage': state.resp.products.data[index].image,
+                                                        'price': state.resp.products.data[index].price,
+                                                        'categoryId': state.resp.products.data[index].category_id,
+                                                        'description': state.resp.products.data[index].description,
+                                                        'token': token
+                                                      });
+                                                    },
+
+                                                    child: Container(
+                                                      decoration: const BoxDecoration(
+                                                          //border: Border.all(width: 1),
+                                                          ),
+                                                      child: Column(
+                                                        children: [
+                                                          Center(
+                                                            child: Image.network(
+                                                              'https://ecom.verifycentre.com${state.resp.products.data[index].image}',
+                                                              loadingBuilder:
+                                                                  (BuildContext
+                                                                          context,
+                                                                      Widget
+                                                                          child,
+                                                                      ImageChunkEvent?
+                                                                          loadingProgress) {
+                                                                if (loadingProgress ==
+                                                                    null) {
+                                                                  return child;
+                                                                }
+                                                                return Center(
+                                                                  child:
+                                                                      CircularProgressIndicator(
+                                                                    value: loadingProgress
+                                                                                .expectedTotalBytes !=
+                                                                            null
+                                                                        ? loadingProgress
+                                                                                .cumulativeBytesLoaded /
+                                                                            (loadingProgress.expectedTotalBytes ??
+                                                                                1)
+                                                                        : null,
+                                                                  ),
+                                                                );
+                                                              },
+                                                              errorBuilder:
+                                                                  (BuildContext
+                                                                          context,
+                                                                      Object
+                                                                          error,
+                                                                      StackTrace?
+                                                                          stackTrace) {
+                                                                return const Icon(
+                                                                  Icons.error,
+                                                                  size: 50,
+                                                                  color:
+                                                                      Colors.red,
+                                                                );
+                                                              },
+                                                            ),
+                                                          ),
+                                                          Text(
+                                                            state.resp.products
+                                                                .data[index].name,
+                                                            style: AppStyle
+                                                                .cardfooter
+                                                                .copyWith(
+                                                                    fontSize: 12),
+                                                            //overflow: TextOverflow.ellipsis,
+                                                            //maxLines: 1,
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  );
+                                                },
                                               ),
                                             ),
-                                            Text(
-                                              "Lubricant",
-                                              style: AppStyle.cardfooter
-                                                  .copyWith(fontSize: 12),
-                                              //overflow: TextOverflow.ellipsis,
-                                              //maxLines: 1,
-                                            ),
+                                            Row(
+                                              children: [
+                                                Container(),
+                                                const Spacer(),
+                                                OutlinedButton.icon(
+                                                    onPressed:() {
+                                                      Navigator.push(context, MaterialPageRoute(builder: (_) => EshopWidget(token: token)));
+                                                    },
+                                                    label: Row(
+                                                      children: [
+                                                        Text('more', style: AppStyle.cardfooter,),
+                                                        const Icon(Icons.arrow_forward, color: Colors.green, size: 18,)
+                                                      ],
+                                                    ),),
+                                              ],
+                                            )
                                           ],
-                                        ),
-                                      );
+                                        );
+                                      } else {
+                                        return Center(
+                                            child: Text(
+                                          'No records found',
+                                          style: AppStyle.cardfooter,
+                                        ));
+                                      }
+                                    },
+                                    listener: (context, state) {
+                                      if (state is EshopFailure) {
+                                        if (state.message.contains("401")) {
+                                          Navigator.pushNamed(
+                                              context, "/login");
+                                        }
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          SnackBar(
+                                              content: Text(state.message)),
+                                        );
+                                      }
                                     },
                                   ),
                                 )
                               ],
                             ),
                           ),
-                    quickLink == false
-                        ? const SizedBox(height: 0)
-                        : const SizedBox(height: 24),
-                    quickLink == false
-                        ? Container()
-                        : Container(
-                            padding: const EdgeInsets.all(16.0),
-                            // height: 350,
-                            decoration: BoxDecoration(
-                              color: Colors.grey.shade200,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Column(
-                              children: [
-                                Container(
-                                    padding: const EdgeInsets.all(8.0),
-                                    decoration: BoxDecoration(
-                                      color: Colors.green.shade200,
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: DashboardComponentTitle(
-                                      title: 'Quick Links',
-                                      subTitle:
-                                          'Get your vehicle equipments at a stand',
-                                    )),
-                                const SizedBox(
-                                  height: 10,
-                                ),
-                                SizedBox(
-                                  height: getVerticalSize(300),
-                                  child: GridView.count(
-                                    crossAxisCount: 2,
-                                    mainAxisSpacing:
-                                        10, // Adjust spacing between grid items
-                                    crossAxisSpacing: 10,
-                                    childAspectRatio: 1.8, //
-                                    physics:
-                                        const NeverScrollableScrollPhysics(),
-                                    children: const [
-                                      VehicleStatusCard1(
-                                          status: 'Driver',
-                                          count: 'Instructor',
-                                          color: Colors.white,
-                                          icon: Icon(
-                                            CupertinoIcons.car_detailed,
-                                            color: Colors.green,
-                                            size: 30,
-                                          )),
-                                      VehicleStatusCard1(
-                                          status: 'Get your',
-                                          count: 'Licence',
-                                          color: Colors.white,
-                                          icon: Icon(
-                                            CupertinoIcons.car_detailed,
-                                            color: Colors.red,
-                                            size: 30,
-                                          )),
-                                      VehicleStatusCard1(
-                                          status: 'Traffic',
-                                          count: 'Sign',
-                                          color: Colors.white,
-                                          icon: Icon(
-                                            Icons.traffic_outlined,
-                                            color: Colors.green,
-                                            size: 30,
-                                          )),
-                                      VehicleStatusCard1(
-                                        status: 'BRTA',
-                                        count: 'Instruction',
-                                        color: Colors.white,
-                                        icon: Icon(
-                                          CupertinoIcons.car_detailed,
-                                          color: Colors.red,
-                                          size: 30,
-                                        ),
-                                      ),
-                                      VehicleStatusCard1(
-                                          status: 'Car',
-                                          count: 'Knowledge',
-                                          color: Colors.white,
-                                          icon: Icon(CupertinoIcons.square_list,
-                                              color: Colors.green)),
-                                      VehicleStatusCard1(
-                                        status: 'Read',
-                                        count: 'Blogs',
-                                        color: Colors.white,
-                                        icon: Icon(Icons.social_distance,
-                                            color: Colors.green),
-                                      ),
-                                    ],
-                                  ),
-                                )
-                              ],
-                            ),
-                          ),
-                    faultCodes == false
-                        ? const SizedBox(height: 0)
-                        : const SizedBox(height: 24),
-                    faultCodes == false
-                        ? Container()
-                        : Container(
-                            padding: const EdgeInsets.all(16.0),
-                            // height: 350,
-                            decoration: BoxDecoration(
-                              color: Colors.grey.shade200,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Column(
-                              children: [
-                                Container(
-                                    padding: const EdgeInsets.all(8.0),
-                                    decoration: BoxDecoration(
-                                      color: Colors.green.shade200,
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: DashboardComponentTitle(
-                                      title: 'Fault Code (DTC)',
-                                      subTitle:
-                                          'Get your vehicle documents at a stand',
-                                    )),
-                                const SizedBox(
-                                  height: 10,
-                                ),
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      'Tijara -X Trail-OBD Fuel',
-                                      style: AppStyle.cardfooter
-                                          .copyWith(fontSize: 12),
-                                    ),
-                                    Text(
-                                      'P0420',
-                                      style: AppStyle.cardfooter
-                                          .copyWith(fontSize: 12),
-                                    ),
-                                  ],
-                                ),
-                                Container(
-                                  margin: const EdgeInsets.only(top: 5),
-                                  padding: const EdgeInsets.all(10.0),
-                                  decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(10),
-                                      color: Colors.green.shade100),
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Expanded(
-                                          child: Text(
-                                        'Catalyst System Efficiency below Threshold',
-                                        textAlign: TextAlign.start,
-                                        style: AppStyle.cardfooter
-                                            .copyWith(fontSize: 12),
-                                      )),
-                                      Expanded(
-                                          child: Text(
-                                        '2024-08-12 09:04:23',
-                                        style: AppStyle.cardfooter
-                                            .copyWith(fontSize: 12),
-                                        textAlign: TextAlign.end,
-                                      ))
-                                    ],
-                                  ),
-                                )
-                              ],
-                            ),
-                          ),
+                    // quickLink == false
+                    //     ? const SizedBox(height: 0)
+                    //     : const SizedBox(height: 24),
+                    // quickLink == false
+                    //     ? Container()
+                    //     : Container(
+                    //         padding: const EdgeInsets.all(16.0),
+                    //         // height: 350,
+                    //         decoration: BoxDecoration(
+                    //           color: Colors.grey.shade200,
+                    //           borderRadius: BorderRadius.circular(12),
+                    //         ),
+                    //         child: Column(
+                    //           children: [
+                    //             Container(
+                    //                 padding: const EdgeInsets.all(8.0),
+                    //                 decoration: BoxDecoration(
+                    //                   color: Colors.green.shade200,
+                    //                   borderRadius: BorderRadius.circular(12),
+                    //                 ),
+                    //                 child: DashboardComponentTitle(
+                    //                   title: 'Quick Links',
+                    //                   subTitle:
+                    //                       'Get your vehicle equipments at a stand',
+                    //                 )),
+                    //             const SizedBox(
+                    //               height: 10,
+                    //             ),
+                    //             SizedBox(
+                    //               height: getVerticalSize(300),
+                    //               child: GridView.count(
+                    //                 crossAxisCount: 2,
+                    //                 mainAxisSpacing:
+                    //                     10, // Adjust spacing between grid items
+                    //                 crossAxisSpacing: 10,
+                    //                 childAspectRatio: 1.8, //
+                    //                 physics:
+                    //                     const NeverScrollableScrollPhysics(),
+                    //                 children: const [
+                    //                   VehicleStatusCard1(
+                    //                       status: 'Driver',
+                    //                       count: 'Instructor',
+                    //                       color: Colors.white,
+                    //                       icon: Icon(
+                    //                         CupertinoIcons.car_detailed,
+                    //                         color: Colors.green,
+                    //                         size: 30,
+                    //                       )),
+                    //                   VehicleStatusCard1(
+                    //                       status: 'Get your',
+                    //                       count: 'Licence',
+                    //                       color: Colors.white,
+                    //                       icon: Icon(
+                    //                         CupertinoIcons.car_detailed,
+                    //                         color: Colors.red,
+                    //                         size: 30,
+                    //                       )),
+                    //                   VehicleStatusCard1(
+                    //                       status: 'Traffic',
+                    //                       count: 'Sign',
+                    //                       color: Colors.white,
+                    //                       icon: Icon(
+                    //                         Icons.traffic_outlined,
+                    //                         color: Colors.green,
+                    //                         size: 30,
+                    //                       )),
+                    //                   VehicleStatusCard1(
+                    //                     status: 'BRTA',
+                    //                     count: 'Instruction',
+                    //                     color: Colors.white,
+                    //                     icon: Icon(
+                    //                       CupertinoIcons.car_detailed,
+                    //                       color: Colors.red,
+                    //                       size: 30,
+                    //                     ),
+                    //                   ),
+                    //                   VehicleStatusCard1(
+                    //                       status: 'Car',
+                    //                       count: 'Knowledge',
+                    //                       color: Colors.white,
+                    //                       icon: Icon(CupertinoIcons.square_list,
+                    //                           color: Colors.green)),
+                    //                   VehicleStatusCard1(
+                    //                     status: 'Read',
+                    //                     count: 'Blogs',
+                    //                     color: Colors.white,
+                    //                     icon: Icon(Icons.social_distance,
+                    //                         color: Colors.green),
+                    //                   ),
+                    //                 ],
+                    //               ),
+                    //             )
+                    //           ],
+                    //         ),
+                    //       ),
+                    // faultCodes == false
+                    //     ? const SizedBox(height: 0)
+                    //     : const SizedBox(height: 24),
+                    // faultCodes == false
+                    //     ? Container()
+                    //     : Container(
+                    //         padding: const EdgeInsets.all(16.0),
+                    //         // height: 350,
+                    //         decoration: BoxDecoration(
+                    //           color: Colors.grey.shade200,
+                    //           borderRadius: BorderRadius.circular(12),
+                    //         ),
+                    //         child: Column(
+                    //           children: [
+                    //             Container(
+                    //                 padding: const EdgeInsets.all(8.0),
+                    //                 decoration: BoxDecoration(
+                    //                   color: Colors.green.shade200,
+                    //                   borderRadius: BorderRadius.circular(12),
+                    //                 ),
+                    //                 child: DashboardComponentTitle(
+                    //                   title: 'Fault Code (DTC)',
+                    //                   subTitle:
+                    //                       'Get your vehicle documents at a stand',
+                    //                 )),
+                    //             const SizedBox(
+                    //               height: 10,
+                    //             ),
+                    //             Row(
+                    //               mainAxisAlignment:
+                    //                   MainAxisAlignment.spaceBetween,
+                    //               children: [
+                    //                 Text(
+                    //                   'Tijara -X Trail-OBD Fuel',
+                    //                   style: AppStyle.cardfooter
+                    //                       .copyWith(fontSize: 12),
+                    //                 ),
+                    //                 Text(
+                    //                   'P0420',
+                    //                   style: AppStyle.cardfooter
+                    //                       .copyWith(fontSize: 12),
+                    //                 ),
+                    //               ],
+                    //             ),
+                    //             Container(
+                    //               margin: const EdgeInsets.only(top: 5),
+                    //               padding: const EdgeInsets.all(10.0),
+                    //               decoration: BoxDecoration(
+                    //                   borderRadius: BorderRadius.circular(10),
+                    //                   color: Colors.green.shade100),
+                    //               child: Row(
+                    //                 mainAxisAlignment:
+                    //                     MainAxisAlignment.spaceBetween,
+                    //                 children: [
+                    //                   Expanded(
+                    //                       child: Text(
+                    //                     'Catalyst System Efficiency below Threshold',
+                    //                     textAlign: TextAlign.start,
+                    //                     style: AppStyle.cardfooter
+                    //                         .copyWith(fontSize: 12),
+                    //                   )),
+                    //                   Expanded(
+                    //                       child: Text(
+                    //                     '2024-08-12 09:04:23',
+                    //                     style: AppStyle.cardfooter
+                    //                         .copyWith(fontSize: 12),
+                    //                     textAlign: TextAlign.end,
+                    //                   ))
+                    //                 ],
+                    //               ),
+                    //             )
+                    //           ],
+                    //         ),
+                    //       ),
                     maintenanceReminder == false
                         ? const SizedBox(height: 0)
                         : const SizedBox(height: 24),
@@ -1104,9 +1234,13 @@ class _DashboardPageState extends State<DashboardPage> {
                                 Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    _buildReminderCard(),
-                                    const SizedBox(height: 0),
-                                    _buildMaintenanceCard(),
+                                    InkWell(
+                                      onTap: (){
+                                        Navigator.push(context, MaterialPageRoute(builder: (_) => Maintenance(token: token,)));
+                                      },
+                                        child: _buildReminderCard()),
+                                    // const SizedBox(height: 0),
+                                    // _buildMaintenanceCard(),
                                     // const SizedBox(height: 0),
                                     // _buildMaintenanceCard(),
                                   ],
@@ -1135,16 +1269,16 @@ class _DashboardPageState extends State<DashboardPage> {
                                       borderRadius: BorderRadius.circular(12),
                                     ),
                                     child: DashboardComponentTitle(
-                                      title: 'Motor Shield',
-                                      subTitle: "Today's Status",
+                                      title: 'Vehicle Trips',
+                                      subTitle: "Recent Status",
                                     )),
                                 const SizedBox(
                                   height: 10,
                                 ),
-                                const Column(
+                                 Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    MotorShieldCard(),
+                                    MotorShieldCard(token: token),
                                     // const SizedBox(height: 0),
                                     // _buildMaintenanceCard(),
                                   ],
@@ -1574,26 +1708,71 @@ class VehicleStatusCard1 extends StatelessWidget {
 }
 
 class MotorShieldCard extends StatelessWidget {
-  const MotorShieldCard({super.key});
+  final String? token;
+  const MotorShieldCard({super.key, this.token});
 
   @override
   Widget build(BuildContext context) {
-    return const Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Details Section
-        _DetailItem(title: "Route Length", value: "50.00 KM"),
-        _DetailItem(title: "Fuel Cost", value: "1000.00 \$"),
-        _DetailItem(title: "Engine Work", value: "2H 45Min 10S"),
-        _DetailItem(title: "Engine Idle", value: "1H 45Min 24S"),
-        _DetailItem(title: "Average Speed", value: "20KPH"),
-        _DetailItem(title: "Fuel Consumption", value: "200LTRS"),
-        _DetailItem(title: "Move Duration", value: "1H 20Min 24S"),
-        _DetailItem(title: "Stop Duration", value: "2H 30Min 10S"),
-        _DetailItem(title: "Top Speed", value: "80KPH"),
-        _DetailItem(title: "Avg. Fuel Consumption", value: "500LTRS"),
-      ],
+    final dashVehicleReqEntity = DashVehicleReqEntity(
+        token: token ?? "", contentType: 'application/json');
+    return  BlocProvider(
+      create: (_) => sl<VehicleTripBloc>()
+        ..add(DashVehicleEvent(
+            DashVehicleReqEntity(token: dashVehicleReqEntity.token, contentType: dashVehicleReqEntity.contentType))),
+      child: BlocConsumer<VehicleTripBloc,
+          DashboardState>(
+        builder: (context, state) {
+          if (state is DashboardLoading) {
+            return const Center(
+              child: Padding(
+                padding: EdgeInsets.only(top: 10.0),
+                child: CircularProgressIndicator(
+                    strokeWidth: 2.0),
+              ),
+            );
+          } else if (state is VehicleTripDone) {
+
+            return
+              Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Details Section
+                _DetailItem(title: "Vehicle", value: state.resp[0].vehicleVin),
+                _DetailItem(title: "Driver", value: state.resp[0].name),
+                // _DetailItem(title: "Trip Status", value: state.resp.),
+                _DetailItem(title: "Start Time", value: state.resp[0].tripLocations[0].createdAt),
+                _DetailItem(title: "Start Location", value: state.resp[0].tripLocations[0].startLocation),
+                _DetailItem(title: "End Time", value: state.resp[0].tripLocations[0].arrivalTime),
+                _DetailItem(title: "End Location", value: state.resp[0].tripLocations[0].endLocation),
+                _DetailItem(title: "Start Latitude", value: state.resp[0].tripLocations[0].startLat),
+                _DetailItem(title: "End Latitude", value: state.resp[0].tripLocations[0].endLat),
+                // _DetailItem(title: "Number of Event", value: ),
+              ],
+            );
+          } else {
+            return Center(
+                child: Text(
+                  'No records found',
+                  style: AppStyle.cardfooter,
+                ));
+          }
+        },
+        listener: (context, state) {
+          if (state is DashboardFailure) {
+            if (state.message.contains("401")) {
+              Navigator.pushNamed(
+                  context, "/login");
+            }
+            ScaffoldMessenger.of(context)
+                .showSnackBar(
+              SnackBar(
+                  content: Text(state.message)),
+            );
+          }
+        },
+      ),
     );
+
   }
 }
 
