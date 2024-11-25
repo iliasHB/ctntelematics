@@ -1,5 +1,7 @@
+import 'package:ctntelematics/modules/eshop/domain/entitties/req_entities/initiate_payment_req_entity.dart';
 import 'package:ctntelematics/modules/eshop/domain/entitties/req_entities/token_req_entity.dart';
 import 'package:ctntelematics/modules/eshop/domain/entitties/resp_entities/get_category_entity.dart';
+import 'package:ctntelematics/modules/eshop/domain/entitties/resp_entities/get_payment_resp_entity.dart';
 
 import '../../../../core/usecase/usecase.dart';
 import '../entitties/resp_entities/get_all_product_entity.dart';
@@ -37,5 +39,16 @@ class GetProductUseCase extends UseCase<void, EshopTokenReqEntity> {
   Future<GetProductEntity> call(EshopTokenReqEntity params) {
     // TODO: implement call
     return repository.onGetProduct(params);
+  }
+}
+
+class InitiatePaymentUseCase extends UseCase<void, InitiatePaymentReqEntity> {
+  final EshopRepository repository;
+  InitiatePaymentUseCase(this.repository);
+
+  @override
+  Future<GetPaymentRespEntity> call(InitiatePaymentReqEntity params) {
+    // TODO: implement call
+    return repository.onInitiatePayment(params);
   }
 }

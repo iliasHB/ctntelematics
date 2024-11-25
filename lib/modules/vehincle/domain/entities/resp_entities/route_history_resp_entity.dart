@@ -3,16 +3,16 @@ import 'package:equatable/equatable.dart';
 class VehicleRouteHistoryRespEntity extends Equatable {
 
   final List<DatumEntity> data;
-  final double? total_distance_km;
+  final double? routeLength;
 
   const VehicleRouteHistoryRespEntity({
     required this.data,
-    required this.total_distance_km,
+    required this.routeLength,
   });
 
   @override
   // TODO: implement props
-  List<Object?> get props => [DatumEntity, total_distance_km];
+  List<Object?> get props => [DatumEntity, routeLength];
 }
 
 class DatumEntity extends Equatable{
@@ -46,6 +46,7 @@ class DatumEntity extends Equatable{
   dynamic status;
   dynamic created_at;
   dynamic updated_at;
+  dynamic connected;
 
   DatumEntity({
     required this.id,
@@ -78,6 +79,7 @@ class DatumEntity extends Equatable{
     required this.status,
     required this.created_at,
     required this.updated_at,
+    required this.connected
   });
 
   @override
@@ -112,7 +114,7 @@ class DatumEntity extends Equatable{
     status,
     created_at,
     updated_at,
-
+    connected
   ];
 }
 

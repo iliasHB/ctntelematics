@@ -130,7 +130,7 @@ class VehicleList extends StatelessWidget {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (_) => VehicleInformation(vehicle: state.resp.data![index], token: token)));
+                        builder: (_) => VehicleInformation(vehicle: state.resp.data![index], token: token,)));
               },
               child: Container(
                 margin: const EdgeInsets.symmetric(vertical: 10),

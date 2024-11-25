@@ -1,6 +1,9 @@
 import 'package:ctntelematics/config/theme/app_style.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../usecase/provider_usecase.dart';
 
 class AnimatedAppBar extends StatefulWidget implements PreferredSizeWidget {
   final String firstname;
@@ -173,70 +176,7 @@ class _AnimatedAppBarState extends State<AnimatedAppBar>
                         ),
                       ),
                       PopupMenuItem(
-                        value: 2,
-                        child: StatefulBuilder(
-                          builder: (context, setState) {
-                            return Row(
-                              children: [
-                                const Icon(
-                                  CupertinoIcons.checkmark_alt_circle,
-                                  size: 30,
-                                  color: Colors.green,
-                                ),
-                                const SizedBox(
-                                  width: 10,
-                                ),
-                                const Text("Vehicle Performance"),
-                                const Spacer(),
-                                Checkbox(
-                                  value: vehiclePerformance,
-                                  onChanged: (value) {
-                                    setState(() {
-                                      vehiclePerformance = value!;
-                                      widget.onVehiclePerformanceSelected!(
-                                          vehiclePerformance);
-                                    });
-                                  },
-                                ),
-                              ],
-                            );
-                          },
-                        ),
-                      ),
-                      PopupMenuItem(
-                        value: 3,
-                        onTap: () {
-                          // _setDateRange(3); // 3 days ago
-                        },
-                        child: StatefulBuilder(
-                          builder: (BuildContext context, setState) {
-                            return Row(
-                              children: [
-                                const Icon(
-                                  CupertinoIcons.checkmark_alt_circle,
-                                  size: 30,
-                                  color: Colors.green,
-                                ),
-                                const SizedBox(
-                                  width: 10,
-                                ),
-                                const Text("Mileage"),
-                                const Spacer(),
-                                Checkbox(
-                                    value: mileage,
-                                    onChanged: (value) {
-                                      setState(() {
-                                        mileage = value!;
-                                        widget.onMileageSelected!(value);
-                                      });
-                                    })
-                              ],
-                            );
-                          },
-                        ),
-                      ),
-                      PopupMenuItem(
-                        value: 4,
+                        value: 6,
                         onTap: () {
                           // _setDateRange(3); // 3 days ago
                         },
@@ -251,20 +191,94 @@ class _AnimatedAppBarState extends State<AnimatedAppBar>
                               const SizedBox(
                                 width: 10,
                               ),
-                              const Text("Odometer"),
+                              const Text("Shop Now"),
                               const Spacer(),
-                              Checkbox(
-                                  value: odometer,
-                                  onChanged: (value) {
-                                    setState(() {
-                                      odometer = value!;
-                                      widget.onOdometerSelected!(value);
-                                    });
-                                  })
+                              Consumer<ShopNowProvider>(
+                                builder: (context, shopNowProvider, child) {
+                                  return Checkbox(
+                                      value: shopNowProvider.isShopNow,
+                                      onChanged: (value) {
+                                        shopNowProvider.toggleShopNow(value!);
+                                        // widget.onMaintenanceReminderSelected!(value);
+                                        // });
+                                      });
+                                },
+                              )
+                              // Checkbox(
+                              //     value: shopNow,
+                              //     onChanged: (value) {
+                              //       setState(() {
+                              //         shopNow = value!;
+                              //         widget.onShopNowSelected!(value);
+                              //       });
+                              //     })
                             ],
                           );
                         }),
                       ),
+
+                      // PopupMenuItem(
+                      //   value: 3,
+                      //   onTap: () {
+                      //     // _setDateRange(3); // 3 days ago
+                      //   },
+                      //   child: StatefulBuilder(
+                      //     builder: (BuildContext context, setState) {
+                      //       return Row(
+                      //         children: [
+                      //           const Icon(
+                      //             CupertinoIcons.checkmark_alt_circle,
+                      //             size: 30,
+                      //             color: Colors.green,
+                      //           ),
+                      //           const SizedBox(
+                      //             width: 10,
+                      //           ),
+                      //           const Text("Mileage"),
+                      //           const Spacer(),
+                      //           Checkbox(
+                      //               value: mileage,
+                      //               onChanged: (value) {
+                      //                 setState(() {
+                      //                   mileage = value!;
+                      //                   widget.onMileageSelected!(value);
+                      //                 });
+                      //               })
+                      //         ],
+                      //       );
+                      //     },
+                      //   ),
+                      // ),
+                      // PopupMenuItem(
+                      //   value: 4,
+                      //   onTap: () {
+                      //     // _setDateRange(3); // 3 days ago
+                      //   },
+                      //   child: StatefulBuilder(builder: (context, setState) {
+                      //     return Row(
+                      //       children: [
+                      //         const Icon(
+                      //           CupertinoIcons.checkmark_alt_circle,
+                      //           size: 30,
+                      //           color: Colors.green,
+                      //         ),
+                      //         const SizedBox(
+                      //           width: 10,
+                      //         ),
+                      //         const Text("Odometer"),
+                      //         const Spacer(),
+                      //         Checkbox(
+                      //             value: odometer,
+                      //             onChanged: (value) {
+                      //               setState(() {
+                      //                 odometer = value!;
+                      //                 widget.onOdometerSelected!(value);
+                      //               });
+                      //             })
+                      //       ],
+                      //     );
+                      //   }),
+                      // ),
                       PopupMenuItem(
                         value: 5,
                         onTap: () {
@@ -283,108 +297,131 @@ class _AnimatedAppBarState extends State<AnimatedAppBar>
                               ),
                               const Text("Maintenance Reminder"),
                               const Spacer(),
-                              Checkbox(
-                                  value: maintenanceReminder,
-                                  onChanged: (value) {
-                                    setState(() {
-                                      maintenanceReminder = value!;
-                                      widget.onMaintenanceReminderSelected!(value);
-                                    });
-                                  })
+                              Consumer<MaintenanceReminderProvider>(
+                                builder: (context, maintenanceReminderProvider, child) {
+                                  return Checkbox(
+                                      value: maintenanceReminderProvider.isMaintenanceReminder,
+                                      onChanged: (value) {
+                                        maintenanceReminderProvider.toggleMaintenanceReminder(value!);
+
+                                      });
+                                },
+                              )
+                              // Checkbox(
+                              //     value: maintenanceReminder,
+                              //     onChanged: (value) {
+                              //       setState(() {
+                              //         maintenanceReminder = value!;
+                              //         widget.onMaintenanceReminderSelected!(
+                              //             value);
+                              //       });
+                              //     })
                             ],
                           );
                         }),
                       ),
                       PopupMenuItem(
-                        value: 6,
-                        onTap: () {
-                          // _setDateRange(3); // 3 days ago
-                        },
-                        child: StatefulBuilder(builder: (context, setState) {
-                          return Row(
-                            children: [
-                              const Icon(
-                                CupertinoIcons.checkmark_alt_circle,
-                                size: 30,
-                                color: Colors.green,
-                              ),
-                              const SizedBox(
-                                width: 10,
-                              ),
-                              const Text("Fault codes"),
-                              const Spacer(),
-                              Checkbox(
-                                  value: faultCodes,
-                                  onChanged: (value) {
-                                    setState(() {
-                                      faultCodes = value!;
-                                      widget.onFaultCodesSelected!(value);
-                                    });
-                                  })
-                            ],
-                          );
-                        }),
+                        value: 2,
+                        child: StatefulBuilder(
+                          builder: (context, setState) {
+                            return Row(
+                              children: [
+                                const Icon(
+                                  CupertinoIcons.checkmark_alt_circle,
+                                  size: 30,
+                                  color: Colors.green,
+                                ),
+                                const SizedBox(
+                                  width: 10,
+                                ),
+                                const Text("Vehicle Trip"),
+                                const Spacer(),
+                                Consumer<VehicleTripProvider>(
+                                  builder: (context, vehicleTripProvider, child) {
+                                    return Checkbox(
+                                        value: vehicleTripProvider.isVehicleTrip,
+                                        onChanged: (value) {
+                                          vehicleTripProvider.toggleVehicleTrip(value!);
+                                        });
+                                  },
+                                )
+
+                                // Checkbox(
+                                //   value: vehiclePerformance,
+                                //   onChanged: (value) {
+                                //     setState(() {
+                                //       vehiclePerformance = value!;
+                                //       widget.onVehiclePerformanceSelected!(
+                                //           vehiclePerformance);
+                                //     });
+                                //   },
+                                // ),
+                              ],
+                            );
+                          },
+                        ),
                       ),
-                      PopupMenuItem(
-                        value: 6,
-                        onTap: () {
-                          // _setDateRange(3); // 3 days ago
-                        },
-                        child: StatefulBuilder(builder: (context, setState) {
-                          return Row(
-                            children: [
-                              const Icon(
-                                CupertinoIcons.checkmark_alt_circle,
-                                size: 30,
-                                color: Colors.green,
-                              ),
-                              const SizedBox(
-                                width: 10,
-                              ),
-                              const Text("Shop Now"),
-                              const Spacer(),
-                              Checkbox(
-                                  value: shopNow,
-                                  onChanged: (value) {
-                                    setState(() {
-                                      shopNow = value!;
-                                      widget.onShopNowSelected!(value);
-                                    });
-                                  })
-                            ],
-                          );
-                        }),
-                      ),
-                      PopupMenuItem(
-                        value: 3,
-                        onTap: () {
-                          // _setDateRange(3); // 3 days ago
-                        },
-                        child: StatefulBuilder(builder: (context, setState) {
-                          return Row(
-                            children: [
-                              const Icon(
-                                CupertinoIcons.checkmark_alt_circle,
-                                size: 30,
-                                color: Colors.green,
-                              ),
-                              const SizedBox(
-                                width: 10,
-                              ),
-                              const Text("Quick Link"),
-                              const Spacer(),
-                              Checkbox(
-                                  value: quickLink,
-                                  onChanged: (value) {
-                                    setState(() {
-                                      quickLink = value!;
-                                      widget.onQuickLinkSelected!(value);
-                                    });
-                                  })
-                            ],
-                          );
-                        }),
-                      ),
+                      // PopupMenuItem(
+                      //   value: 6,
+                      //   onTap: () {
+                      //     // _setDateRange(3); // 3 days ago
+                      //   },
+                      //   child: StatefulBuilder(builder: (context, setState) {
+                      //     return Row(
+                      //       children: [
+                      //         const Icon(
+                      //           CupertinoIcons.checkmark_alt_circle,
+                      //           size: 30,
+                      //           color: Colors.green,
+                      //         ),
+                      //         const SizedBox(
+                      //           width: 10,
+                      //         ),
+                      //         const Text("Fault codes"),
+                      //         const Spacer(),
+                      //         Checkbox(
+                      //             value: faultCodes,
+                      //             onChanged: (value) {
+                      //               setState(() {
+                      //                 faultCodes = value!;
+                      //                 widget.onFaultCodesSelected!(value);
+                      //               });
+                      //             })
+                      //       ],
+                      //     );
+                      //   }),
+                      // ),
+                      ///
+                      // PopupMenuItem(
+                      //   value: 3,
+                      //   onTap: () {
+                      //     // _setDateRange(3); // 3 days ago
+                      //   },
+                      //   child: StatefulBuilder(builder: (context, setState) {
+                      //     return Row(
+                      //       children: [
+                      //         const Icon(
+                      //           CupertinoIcons.checkmark_alt_circle,
+                      //           size: 30,
+                      //           color: Colors.green,
+                      //         ),
+                      //         const SizedBox(
+                      //           width: 10,
+                      //         ),
+                      //         const Text("Quick Link"),
+                      //         const Spacer(),
+                      //         Checkbox(
+                      //             value: quickLink,
+                      //             onChanged: (value) {
+                      //               setState(() {
+                      //                 quickLink = value!;
+                      //                 widget.onQuickLinkSelected!(value);
+                      //               });
+                      //             })
+                      //       ],
+                      //     );
+                      //   }),
+                      // ),
                     ]),
           ),
 

@@ -6,6 +6,20 @@ class FormatData {
     return formattedValue;
   }
 
+  static String formatTimestamp(String timestamp) {
+    try {
+      // Parse the string timestamp into a DateTime object
+      DateTime parsedTimestamp = DateTime.parse(timestamp);
+
+      // Format the DateTime object into the desired format
+      return DateFormat('yyyy-MM-dd HH:mm:ss').format(parsedTimestamp);
+    } catch (e) {
+      // Handle parsing errors
+      print('Error parsing timestamp: $e');
+      return timestamp; // Return the original string if parsing fails
+    }
+  }
+
   static String convertDurationToDate(String duration) {
     final now = DateTime.now(); // Current date
     final today = DateTime(now.year, now.month, now.day); // Strip time

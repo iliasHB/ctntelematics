@@ -88,14 +88,10 @@ class _DashboardApiClient implements DashboardApiClient {
         )));
     final _result = await _dio.fetch<List<dynamic>>(_options);
     late List<GetTripRespModel> _value;
-    _value = _result.data!
-        .map((dynamic i) =>
-        GetTripRespModel.fromJson(i as Map<String, dynamic>))
-        .toList();
-
-    // final _result = await _dio.fetch<Map<String, dynamic>>(_options);
-    // late GetTripRespModel _value;
-    //   _value = GetTripRespModel.fromJson(_result.data!);
+      _value = _result.data!
+          .map((dynamic i) =>
+              GetTripRespModel.fromJson(i as Map<String, dynamic>))
+          .toList();
     return _value;
   }
 

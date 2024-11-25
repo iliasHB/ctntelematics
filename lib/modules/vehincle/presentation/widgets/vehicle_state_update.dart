@@ -293,7 +293,7 @@ class _VehicleRouteLastLocationAndUpdateState
                     _showVehicleOperation = false;
                     // _isContainerVisible = false; // Set visibility state
                   });
-                },
+                }, token: widget.token, vin: widget.vin,
               ),
             ),
           ),

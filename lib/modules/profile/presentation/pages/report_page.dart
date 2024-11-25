@@ -1,6 +1,8 @@
 import 'package:ctntelematics/config/theme/app_style.dart';
+import 'package:ctntelematics/core/widgets/format_data.dart';
 import 'package:ctntelematics/modules/dashboard/domain/entitties/resp_entities/get_trip_resp_entity.dart';
 import 'package:ctntelematics/modules/profile/domain/entitties/resp_entities/get_schedule_resp_entity.dart';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -26,52 +28,107 @@ class ReportPage extends StatelessWidget {
               borderRadius: BorderRadius.circular(5),
               color: Colors.grey.shade200,
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Details Section
-                _DetailItem(title: "Vehicle", value: report[index].vehicleVin),
-                _DetailItem(title: "Driver", value: report[index].name),
-                if (tripLocations != null && tripLocations.isNotEmpty) ...[
-                  _DetailItem(
-                      title: "Start Time", value: tripLocations[0].createdAt),
-                  _DetailItem(
-                      title: "Start Location",
-                      value: tripLocations[0].startLocation),
-                  _DetailItem(
-                      title: "End Time", value: tripLocations[0].arrivalTime),
-                  _DetailItem(
-                      title: "End Location",
-                      value: tripLocations[0].endLocation),
-                  _DetailItem(
-                      title: "Start Latitude",
-                      value: tripLocations[0].startLat.toString()),
-                  _DetailItem(
-                      title: "End Latitude",
-                      value: tripLocations[0].endLat.toString()),
-                ] else ...[
-                  // Fallback when tripLocations is empty or null
-                  const _DetailItem(
-                      title: "Start Time", value: "Not Available"),
-                  const _DetailItem(
-                      title: "Start Location", value: "Not Available"),
-                  const _DetailItem(title: "End Time", value: "Not Available"),
-                  const _DetailItem(
-                      title: "End Location", value: "Not Available"),
-                  const _DetailItem(
-                      title: "Start Latitude", value: "Not Available"),
-                  const _DetailItem(
-                      title: "End Latitude", value: "Not Available"),
+              child: Column(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8.0),
+                    decoration: BoxDecoration(
+                      color: Colors.green.shade200,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: DashboardComponentTitle(
+                        title: 'Route History', subTitle: report[index].name),
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Details Section
+                      _DetailItem(title: "Vehicle", value: report[index].vehicleVin),
+                      _DetailItem(title: "Driver", value: report[index].name),
+                      if (tripLocations != null && tripLocations.isNotEmpty) ...[
+                        _DetailItem(
+                            title: "Start Time", value: FormatData.formatTimestamp(tripLocations[0].createdAt)),
+                        _DetailItem(
+                            title: "Start Location",
+                            value: tripLocations[0].startLocation),
+                        _DetailItem(
+                            title: "End Time", value: tripLocations[0].arrivalTime),
+                        _DetailItem(
+                            title: "End Location",
+                            value: tripLocations[0].endLocation),
+                        _DetailItem(
+                            title: "Start Latitude",
+                            value: tripLocations[0].startLat.toString()),
+                        _DetailItem(
+                            title: "End Latitude",
+                            value: tripLocations[0].endLat.toString()),
+                      ] else ...[
+                        // Fallback when tripLocations is empty or null
+                        const _DetailItem(
+                            title: "Start Time", value: "Not Available"),
+                        const _DetailItem(
+                            title: "Start Location", value: "Not Available"),
+                        const _DetailItem(title: "End Time", value: "Not Available"),
+                        const _DetailItem(
+                            title: "End Location", value: "Not Available"),
+                        const _DetailItem(
+                            title: "Start Latitude", value: "Not Available"),
+                        const _DetailItem(
+                            title: "End Latitude", value: "Not Available"),
+                      ],
+                    ],
+                  ),
                 ],
-              ],
-            ),
+              ),
           );
         },
       ),
     );
   }
+
 }
 
+Widget DashboardComponentTitle(
+    {required String title, required String subTitle}) {
+  return Row(
+    children: [
+      const CircleAvatar(
+        backgroundColor: Colors.white,
+        child: Icon(
+          Icons.car_repair,
+          size: 30,
+          color: Colors.green,
+        ),
+      ),
+      const SizedBox(
+        width: 10,
+      ),
+      Expanded(
+        // Ensures the text wraps and respects constraints
+        child: Padding(
+          padding: const EdgeInsets.only(top: 5.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: AppStyle.cardSubtitle,
+              ),
+              Text(
+                subTitle,
+                style: AppStyle.cardfooter.copyWith(fontSize: 12),
+                softWrap: true,
+                overflow: TextOverflow.ellipsis, // Adds ellipsis for overflow
+                maxLines: 2, // Restricts to 2 lines
+              ),
+            ],
+          ),
+        ),
+      ),
+    ],
+  );
+}
 class _DetailItem extends StatelessWidget {
   final String title;
   final String value;
@@ -135,6 +192,16 @@ class MaintenanceReport extends StatelessWidget {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(8.0),
+                                    decoration: BoxDecoration(
+                                      color: Colors.green.shade200,
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: DashboardComponentTitle(
+                                        title: 'Maintenance', subTitle: ''),
+                                  ),
+                                  SizedBox(height: 10,),
                                   report[index].maintenance.isEmpty
                                       ? Center(
                                           child: Text(
@@ -285,3 +352,7 @@ class MaintenanceReport extends StatelessWidget {
         ));
   }
 }
+
+
+
+

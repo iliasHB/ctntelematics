@@ -64,7 +64,7 @@ class _SettingState extends State<Setting> {
       appBar: AppBar(
         title: Row(
           children: [
-            Text("Settings", style: AppStyle.cardTitle),
+            Text("Settings", style: AppStyle.cardTitle.copyWith(fontSize: 16)),
           ],
         ),
       ),
@@ -97,8 +97,11 @@ class _SettingState extends State<Setting> {
                         ],
                       ),
                       const Spacer(),
-                      const CircleAvatar(
-                        child: Icon(CupertinoIcons.bell_fill),
+                      InkWell(
+                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => NotificationWidget())),
+                        child: const CircleAvatar(
+                          child: Icon(CupertinoIcons.bell_fill),
+                        ),
                       )
                     ],
                   ),
@@ -127,10 +130,10 @@ class _SettingState extends State<Setting> {
                             const Spacer(),
                             Consumer<GeofenceProvider>(
                               builder: (context, geofenceProvider, child) {
-                                return Switch(
+                                return Checkbox(
                                   value: geofenceProvider.isGeofence,
                                   onChanged: (value) {
-                                    geofenceProvider.toggleGeofence(value);
+                                    geofenceProvider.toggleGeofence(value ?? false); // Ensure value isn't null
                                   },
                                 );
                               },
@@ -166,7 +169,7 @@ class _SettingState extends State<Setting> {
                               ),
                               Text("Report", style: AppStyle.cardfooter),
                               const Spacer(),
-                              Icon(
+                              const Icon(
                                 Icons.arrow_forward_ios_sharp,
                                 size: 15,
                               ),

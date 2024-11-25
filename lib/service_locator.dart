@@ -85,6 +85,7 @@ Future<void> initializeDependencies() async {
   sl.registerFactory<GetCategoryUseCase>(() => GetCategoryUseCase(sl()));
   sl.registerFactory<GetProductUseCase>(() => GetProductUseCase(sl()));
   sl.registerFactory<TripsUseCase>(() => TripsUseCase(sl()));
+  sl.registerFactory<InitiatePaymentUseCase>(() => InitiatePaymentUseCase(sl()));
 
 
 
@@ -102,7 +103,6 @@ Future<void> initializeDependencies() async {
   sl.registerFactory(() => LastLocationBloc(sl()));
   sl.registerFactory(() => RouteHistoryBloc(sl()));
   sl.registerFactory(() => VehicleRouteHistoryBloc(sl()));
-  // sl.registerFactory(() => VehicleLocationBloc(sl<GetVehicleLocationUpdateUseCase>()));
   sl.registerFactory(() => VehicleLocationBloc(sl()));
   sl.registerFactory(() => GetScheduleBloc(sl()));
   sl.registerFactory(() => CreateScheduleBloc(sl()));
@@ -112,6 +112,7 @@ Future<void> initializeDependencies() async {
   sl.registerFactory(() => EshopGetCategoryBloc(sl()));
   sl.registerFactory(() => EshopGetProductBloc(sl()));
   sl.registerFactory(() => VehicleTripBloc(sl()));
+  sl.registerFactory(() => InitiatePaymentBloc(sl()));
 
 
 }

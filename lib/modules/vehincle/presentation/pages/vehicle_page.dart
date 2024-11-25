@@ -623,9 +623,9 @@ class _VehicleListItemState extends State<VehicleListItem> {
                                               Text(
                                                   FormatData.formatTimeAgo(
                                                       widget
-                                                          .data![index]
-                                                          .last_location!
-                                                          .updated_at
+                                                          .data![index].updated_at
+                                                          // .last_location!
+                                                          // .updated_at
                                                           .toString()),
                                                   style: AppStyle.cardfooter
                                                       .copyWith(fontSize: 12)),

@@ -51,7 +51,7 @@ class _VehicleApiClient implements VehicleApiClient {
         )));
     final _result = await _dio.fetch<Map<String, dynamic>>(_options);
     late VehicleRespModel _value;
-    _value = VehicleRespModel.fromJson(_result.data!);
+      _value = VehicleRespModel.fromJson(_result.data!);
     return _value;
   }
 
@@ -89,7 +89,7 @@ class _VehicleApiClient implements VehicleApiClient {
         )));
     final _result = await _dio.fetch<Map<String, dynamic>>(_options);
     late VehicleRouteHistoryRespModel _value;
-    _value = VehicleRouteHistoryRespModel.fromJson(_result.data!);
+      _value = VehicleRouteHistoryRespModel.fromJson(_result.data!);
     return _value;
   }
 

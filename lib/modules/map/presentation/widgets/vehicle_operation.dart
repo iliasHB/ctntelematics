@@ -21,7 +21,7 @@ class VehicleOperation extends StatelessWidget {
       status,
       updated_at,
       number_plate,
-      gsm_signal_strength;
+      gsm_signal_strength, vin, token;
   final bool real_time_gps;
   const VehicleOperation(
       {super.key,
@@ -33,7 +33,7 @@ class VehicleOperation extends StatelessWidget {
       required this.status,
       required this.gsm_signal_strength,
       required this.updated_at,
-      required this.number_plate});
+      required this.number_plate, required this.vin, required this.token});
 
   @override
   Widget build(BuildContext context) {
@@ -71,7 +71,7 @@ class VehicleOperation extends StatelessWidget {
                             topRight: Radius.circular(20)),
                       ),
                       builder: (BuildContext context) {
-                        return const VehicleDashboard(); //VehicleLiveTracking();
+                        return VehicleDashboard(token: token, vin: vin); //VehicleLiveTracking();
                       });
                 },
                 child: VehicleOperationCard(
@@ -94,7 +94,7 @@ class VehicleOperation extends StatelessWidget {
                             topRight: Radius.circular(20)),
                       ),
                       builder: (BuildContext context) {
-                        return VehicleAnalysisPage();
+                        return VehicleAnalytics(token: token, vin: vin,);
                       });
                 }, //VehiclePlayBackToolTip.showTopModal(context),
                 child: VehicleOperationCard(

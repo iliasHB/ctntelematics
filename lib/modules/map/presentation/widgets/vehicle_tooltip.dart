@@ -28,7 +28,10 @@ class VehicleToolTipDialog {
       bool real_time_gps,
       String? status,
       String? gsm_signal_strength,
-      String? updated_at, email, country, licence_number) {
+      String? updated_at,
+      email,
+      country,
+      licence_number) {
     return showGeneralDialog(
       context: context,
       barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
@@ -149,16 +152,18 @@ class VehicleToolTipDialog {
                                               MainAxisAlignment.spaceEvenly,
                                           children: [
                                             InkWell(
-                                                onTap: () => Navigator.of(
-                                                        context)
+                                                onTap: () => Navigator
+                                                        .of(context)
                                                     .push(MaterialPageRoute(
                                                         builder: (context) =>
                                                             VehicleRouteHistory1(
                                                                 brand!,
                                                                 model!,
                                                                 vin!,
-                                                                double.parse(latitude!),
-                                                                double.parse( longitude!),
+                                                                double.parse(
+                                                                    latitude!),
+                                                                double.parse(
+                                                                    longitude!),
                                                                 token!))),
 
                                                 // VehicleRouteHistory
@@ -196,11 +201,14 @@ class VehicleToolTipDialog {
                                             ),
                                             InkWell(
                                                 onTap: () => VehicleLivePreview
-                                                    .showTopModal(context, brand,  model,
-                                                    vin,
-                                                    token,
-                                                    latitude,
-                                                    longitude),
+                                                    .showTopModal(
+                                                        context,
+                                                        brand,
+                                                        model,
+                                                        vin,
+                                                        token,
+                                                        latitude,
+                                                        longitude),
                                                 child: const Icon(CupertinoIcons
                                                     .photo_camera)),
                                             const SizedBox(
@@ -227,16 +235,23 @@ class VehicleToolTipDialog {
                                                       builder: (BuildContext
                                                           context) {
                                                         return VehicleOperation(
-                                                            voltage_level: voltage_level!,
+                                                            voltage_level:
+                                                                voltage_level!,
                                                             speed: speed!,
                                                             latitude: latitude!,
-                                                            longitude: longitude!,
-                                                            real_time_gps: real_time_gps,
+                                                            longitude:
+                                                                longitude!,
+                                                            real_time_gps:
+                                                                real_time_gps,
                                                             status: status!,
-                                                            gsm_signal_strength: gsm_signal_strength!,
-                                                            updated_at: updated_at!,
-                                                            number_plate: number_plate
-                                                        );
+                                                            gsm_signal_strength:
+                                                                gsm_signal_strength!,
+                                                            updated_at:
+                                                                updated_at!,
+                                                            number_plate:
+                                                                number_plate,
+                                                            vin: vin!,
+                                                            token: token!);
                                                       });
                                                 },
                                                 child: const Icon(CupertinoIcons
@@ -248,7 +263,15 @@ class VehicleToolTipDialog {
                                                 onTap: () {
                                                   VehicleDriverDialog
                                                       .showDriverDialog(
-                                                          context, name, phone, email, country, licence_number, vin, address, number_plate);
+                                                          context,
+                                                          name,
+                                                          phone,
+                                                          email,
+                                                          country,
+                                                          licence_number,
+                                                          vin,
+                                                          address,
+                                                          number_plate);
                                                 },
                                                 child: const Icon(
                                                     CupertinoIcons.person)),

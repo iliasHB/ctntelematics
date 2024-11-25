@@ -1,4 +1,5 @@
 import 'package:ctntelematics/modules/authentication/presentation/pages/onBoarding_page.dart';
+import 'package:ctntelematics/modules/eshop/presentation/widgets/checkout.dart';
 import 'package:ctntelematics/modules/profile/presentation/pages/setting_widget.dart';
 import 'package:ctntelematics/modules/dashboard/presentation/pages/dashboard_page.dart';
 import 'package:ctntelematics/modules/vehincle/presentation/pages/vehicle_page.dart';
@@ -36,5 +37,6 @@ final routes = {
   '/paymentMethod': (BuildContext context) =>  const PaymentMethod(),
   '/paymentSuccess': (BuildContext context) =>  const PaymentSuccess(),
   '/setting': (BuildContext context) =>  const Setting(),
+  '/checkout': (BuildContext context) =>  const Checkout(),
   // '/vehicleRoeLastLocation': (BuildContext context) =>  const VehicleRouteLastLocation(),
 };

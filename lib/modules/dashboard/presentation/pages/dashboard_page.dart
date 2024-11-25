@@ -13,6 +13,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/usecase/provider_usecase.dart';
 import '../../../../core/widgets/advert.dart';
 import '../../../../service_locator.dart';
 import '../../../eshop/domain/entitties/req_entities/token_req_entity.dart';
@@ -83,6 +84,9 @@ class _DashboardPageState extends State<DashboardPage> {
 
   @override
   Widget build(BuildContext context) {
+    final isShopNow = context.watch<ShopNowProvider>().isShopNow;
+    final isVehicleTrip = context.watch<VehicleTripProvider>().isVehicleTrip;
+    final isMaintenanceReminder = context.watch<MaintenanceReminderProvider>().isMaintenanceReminder;
     final dashVehicleReqEntity = DashVehicleReqEntity(
         token: token ?? "", contentType: 'application/json');
     return Scaffold(
@@ -837,10 +841,10 @@ class _DashboardPageState extends State<DashboardPage> {
                         ),
                       ),
                     ),
-                    shopNow == false
+                    isShopNow == false
                         ? const SizedBox(height: 0)
                         : const SizedBox(height: 24),
-                    shopNow == false
+                    isShopNow == false
                         ? Container()
                         : Container(
                             padding: const EdgeInsets.all(16.0),
@@ -932,6 +936,8 @@ class _DashboardPageState extends State<DashboardPage> {
                                                           Center(
                                                             child: Image.network(
                                                               'https://ecom.verifycentre.com${state.resp.products.data[index].image}',
+                                                              height: 80,
+                                                              width: 80,
                                                               loadingBuilder:
                                                                   (BuildContext
                                                                           context,
@@ -946,6 +952,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                                                 return Center(
                                                                   child:
                                                                       CircularProgressIndicator(
+                                                                        strokeWidth: 2.0,
                                                                     value: loadingProgress
                                                                                 .expectedTotalBytes !=
                                                                             null
@@ -1203,10 +1210,10 @@ class _DashboardPageState extends State<DashboardPage> {
                     //           ],
                     //         ),
                     //       ),
-                    maintenanceReminder == false
+                    isMaintenanceReminder == false
                         ? const SizedBox(height: 0)
                         : const SizedBox(height: 24),
-                    maintenanceReminder == false
+                    isMaintenanceReminder == false
                         ? Container()
                         : Container(
                             padding: const EdgeInsets.all(16.0),
@@ -1248,10 +1255,10 @@ class _DashboardPageState extends State<DashboardPage> {
                               ],
                             ),
                           ),
-                    vehiclePerformance == false
+                    isVehicleTrip == false
                         ? Container()
                         : const SizedBox(height: 24),
-                    vehiclePerformance == false
+                    isVehicleTrip == false
                         ? Container()
                         : Container(
                             padding: const EdgeInsets.all(16.0),
@@ -1286,40 +1293,40 @@ class _DashboardPageState extends State<DashboardPage> {
                               ],
                             ),
                           ),
-                    odometer == false
-                        ? const SizedBox(height: 0)
-                        : const SizedBox(height: 24),
-                    odometer == false
-                        ? Container()
-                        : Container(
-                            padding: const EdgeInsets.all(16.0),
-                            // height: 350,
-                            decoration: BoxDecoration(
-                              color: Colors.grey.shade200,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Column(
-                              children: [
-                                Container(
-                                    padding: const EdgeInsets.all(8.0),
-                                    decoration: BoxDecoration(
-                                      color: Colors.green.shade200,
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: DashboardComponentTitle(
-                                      title: 'Odometer',
-                                      subTitle: "In KM, Top 10",
-                                    )),
-                                const SizedBox(
-                                  height: 10,
-                                ),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [_buildOdometerList()],
-                                ),
-                              ],
-                            ),
-                          ),
+                    // odometer == false
+                    //     ? const SizedBox(height: 0)
+                    //     : const SizedBox(height: 24),
+                    // odometer == false
+                    //     ? Container()
+                    //     : Container(
+                    //         padding: const EdgeInsets.all(16.0),
+                    //         // height: 350,
+                    //         decoration: BoxDecoration(
+                    //           color: Colors.grey.shade200,
+                    //           borderRadius: BorderRadius.circular(12),
+                    //         ),
+                    //         child: Column(
+                    //           children: [
+                    //             Container(
+                    //                 padding: const EdgeInsets.all(8.0),
+                    //                 decoration: BoxDecoration(
+                    //                   color: Colors.green.shade200,
+                    //                   borderRadius: BorderRadius.circular(12),
+                    //                 ),
+                    //                 child: DashboardComponentTitle(
+                    //                   title: 'Odometer',
+                    //                   subTitle: "In KM, Top 10",
+                    //                 )),
+                    //             const SizedBox(
+                    //               height: 10,
+                    //             ),
+                    //             Column(
+                    //               crossAxisAlignment: CrossAxisAlignment.start,
+                    //               children: [_buildOdometerList()],
+                    //             ),
+                    //           ],
+                    //         ),
+                    //       ),
                     const SizedBox(
                       height: 50,
                     ),
@@ -1331,8 +1338,8 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   Widget DashboardComponentTitle(
-      {required String title, required String subTitle}) {
-    return Row(
+        {required String title, required String subTitle}) {
+      return Row(
       children: [
         const CircleAvatar(
           backgroundColor: Colors.white,
@@ -1528,71 +1535,71 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  Widget _buildOdometerList() {
-    final data = [
-      {"name": "OBD Plug and Play", "value": 2894368940},
-      {"name": "CM-U-11-0654-Y", "value": 216774},
-      {"name": "DM-GA327615", "value": 56127},
-      {"name": "Motor Sheild", "value": 56127},
-      {"name": "DM-GA-39-3528-Arra", "value": 56127},
-      {"name": "DM-GHA-171796", "value": 56127},
-    ];
-
-    return Padding(
-      padding: EdgeInsets.zero,
-      child: ListView.separated(
-        shrinkWrap: true, // Prevents ListView from expanding infinitely
-        padding: EdgeInsets.zero,
-        itemCount: data.length,
-        separatorBuilder: (_, __) => const SizedBox(height: 8),
-        itemBuilder: (context, index) {
-          final item = data[index];
-          return _buildOdometerRow(
-              item["name"] as String, item["value"] as int);
-        },
-      ),
-    );
-  }
-
-  Widget _buildOdometerRow(String name, int value) {
-    return Row(
-      children: [
-        Expanded(
-          flex: 4,
-          child:
-              Text(name, style: AppStyle.cardSubtitle.copyWith(fontSize: 12)),
-        ),
-        Expanded(
-          flex: 6,
-          child: Stack(
-            children: [
-              const Divider(
-                thickness: 1,
-                color: Colors.grey,
-                endIndent: 0,
-              ),
-              Positioned(
-                right: 0,
-                bottom: 0,
-                // top: 0,
-                child: Container(
-                  // height: 100,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
-                  decoration: BoxDecoration(
-                    color: Colors.green.shade300,
-                    borderRadius: BorderRadius.circular(4.0),
-                  ),
-                  child: Text(value.toString(),
-                      style: AppStyle.cardfooter.copyWith(fontSize: 12)),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
+  // Widget _buildOdometerList() {
+  //   final data = [
+  //     {"name": "OBD Plug and Play", "value": 2894368940},
+  //     {"name": "CM-U-11-0654-Y", "value": 216774},
+  //     {"name": "DM-GA327615", "value": 56127},
+  //     {"name": "Motor Sheild", "value": 56127},
+  //     {"name": "DM-GA-39-3528-Arra", "value": 56127},
+  //     {"name": "DM-GHA-171796", "value": 56127},
+  //   ];
+  //
+  //   return Padding(
+  //     padding: EdgeInsets.zero,
+  //     child: ListView.separated(
+  //       shrinkWrap: true, // Prevents ListView from expanding infinitely
+  //       padding: EdgeInsets.zero,
+  //       itemCount: data.length,
+  //       separatorBuilder: (_, __) => const SizedBox(height: 8),
+  //       itemBuilder: (context, index) {
+  //         final item = data[index];
+  //         return _buildOdometerRow(
+  //             item["name"] as String, item["value"] as int);
+  //       },
+  //     ),
+  //   );
+  // }
+///
+  // Widget _buildOdometerRow(String name, int value) {
+  //   return Row(
+  //     children: [
+  //       Expanded(
+  //         flex: 4,
+  //         child:
+  //             Text(name, style: AppStyle.cardSubtitle.copyWith(fontSize: 12)),
+  //       ),
+  //       Expanded(
+  //         flex: 6,
+  //         child: Stack(
+  //           children: [
+  //             const Divider(
+  //               thickness: 1,
+  //               color: Colors.grey,
+  //               endIndent: 0,
+  //             ),
+  //             Positioned(
+  //               right: 0,
+  //               bottom: 0,
+  //               // top: 0,
+  //               child: Container(
+  //                 // height: 100,
+  //                 padding:
+  //                     const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+  //                 decoration: BoxDecoration(
+  //                   color: Colors.green.shade300,
+  //                   borderRadius: BorderRadius.circular(4.0),
+  //                 ),
+  //                 child: Text(value.toString(),
+  //                     style: AppStyle.cardfooter.copyWith(fontSize: 12)),
+  //               ),
+  //             ),
+  //           ],
+  //         ),
+  //       ),
+  //     ],
+  //   );
+  // }
 }
 
 class VehicleStatusCard extends StatelessWidget {
