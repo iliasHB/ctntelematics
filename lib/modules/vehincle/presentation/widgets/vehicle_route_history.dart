@@ -622,7 +622,7 @@ class _RouteHistoryMapState extends State<RouteHistoryMap> {
                                   title: "Route Length",
                                   subTitle:
                                       FormatData.handle2DecimalPointFormat(
-                                          widget.resp.total_distance_km ?? 0.00),
+                                          widget.resp.routeLength ?? 0.00),
                                   color: Colors.green),
                               const SizedBox(
                                 width: 10,

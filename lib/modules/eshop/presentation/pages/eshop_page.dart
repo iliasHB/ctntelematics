@@ -316,7 +316,7 @@ class _EshopPageState extends State<EshopPage> {
                   itemCount: state.resp.products.data.length,
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2, // Number of columns
-                    childAspectRatio: 0.9, // Adjust for width-to-height ratio
+                    childAspectRatio: 1.1, // Adjust for width-to-height ratio
                     mainAxisSpacing: 0, // Removes vertical spacing
                     crossAxisSpacing: 0, // Removes horizontal spacing
                   ),
@@ -416,6 +416,8 @@ class AllCategory extends StatelessWidget {
                         Center(
                           child: Image.network(
                             'https://ecom.verifycentre.com$productImage',
+                            height: 100,
+                            width: 100,
                             loadingBuilder: (BuildContext context, Widget child,
                                 ImageChunkEvent? loadingProgress) {
                               if (loadingProgress == null) {
@@ -567,6 +569,8 @@ class AllProduct extends StatelessWidget {
                           child: Image.network(
                             'https://ecom.verifycentre.com$productImage',
                             headers: {'Authorization': token},
+                            height: 100,
+                            width: 100,
                             loadingBuilder: (BuildContext context, Widget child,
                                 ImageChunkEvent? loadingProgress) {
                               if (loadingProgress == null) {

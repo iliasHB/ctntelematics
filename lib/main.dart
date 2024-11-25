@@ -21,9 +21,14 @@ void main() async {
   ]);
 
   runApp(
-    ChangeNotifierProvider(
-      create: (_) => GeofenceProvider(),
-      child: MyApp(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => GeofenceProvider()),
+        ChangeNotifierProvider(create: (_) => ShopNowProvider()),
+        ChangeNotifierProvider(create: (_) => MaintenanceReminderProvider()),
+        ChangeNotifierProvider(create: (_) => VehicleTripProvider()),
+      ],
+      child: const MyApp(),
     ),
   );
 }
@@ -58,6 +63,7 @@ class MyApp extends StatelessWidget {
         Provider<EshopGetCategoryBloc>(create: (_) => sl<EshopGetCategoryBloc>()),
         Provider<EshopGetProductBloc>(create: (_) => sl<EshopGetProductBloc>()),
         Provider<VehicleTripBloc>(create: (_) => sl<VehicleTripBloc>()),
+        Provider<InitiatePaymentBloc>(create: (_) => sl<InitiatePaymentBloc>()),
       ],
       child: MaterialApp(
         title: 'CTN Telematics',

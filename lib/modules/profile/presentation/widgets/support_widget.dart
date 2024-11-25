@@ -4,6 +4,7 @@ import 'package:ctntelematics/core/utils/app_export_util.dart';
 import 'package:ctntelematics/core/widgets/advert.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+// import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
 
 
 class Support extends StatefulWidget {
@@ -91,7 +92,7 @@ class _SupportState extends State<Support> {
            child: const SupportCard(
              icon: Icon(Icons.email),
              title: "Email",
-             subTitle: '8am - 8pm'
+             subTitle: 'Email us'
            ),
          ),
           InkWell(
@@ -101,7 +102,7 @@ class _SupportState extends State<Support> {
             child: const SupportCard(
                 icon: Icon(Icons.call),
                 title: "Hotline",
-                subTitle: '8am - 8pm'
+                subTitle: 'Contact us'
             ),
           ),
           InkWell(
@@ -109,7 +110,7 @@ class _SupportState extends State<Support> {
             child: const SupportCard(
                 icon: Icon(Icons.chat),
                 title: "Live Chat",
-                subTitle: '8am - 8pm'
+                subTitle: 'Message us'
             ),
           ),
         ],
@@ -167,7 +168,7 @@ class SupportCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: AppStyle.cardSubtitle,),
+                Text(title, style: AppStyle.cardSubtitle.copyWith(fontSize: 14),),
                 Text(subTitle, style: AppStyle.cardfooter,)
               ],
             )

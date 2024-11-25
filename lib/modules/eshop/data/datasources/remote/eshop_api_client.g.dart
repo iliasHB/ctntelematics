@@ -51,9 +51,7 @@ class _EshopApiClient implements EshopApiClient {
         )));
     final _result = await _dio.fetch<Map<String, dynamic>>(_options);
     late GetAllProductModel _value;
-
       _value = GetAllProductModel.fromJson(_result.data!);
-
     return _value;
   }
 
@@ -119,6 +117,55 @@ class _EshopApiClient implements EshopApiClient {
     final _result = await _dio.fetch<Map<String, dynamic>>(_options);
     late GetProductModel _value;
       _value = GetProductModel.fromJson(_result.data!);
+    return _value;
+  }
+
+  @override
+  Future<GetPaymentRespModel> initiatePayment(
+    String email,
+    String contact_phone,
+    String delivery_address,
+    String quantity,
+    String product_id,
+    String location_id,
+    String token,
+    String sourceCode,
+  ) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{};
+    final _headers = <String, dynamic>{
+      r'Authorization': token,
+      r'source_code': sourceCode,
+    };
+    _headers.removeWhere((k, v) => v == null);
+    final _data = {
+      'email': email,
+      'contact_phone': contact_phone,
+      'delivery_address': delivery_address,
+      'quantity': quantity,
+      'product_id': product_id,
+      'location_id': location_id,
+    };
+    final _options = _setStreamType<GetPaymentRespModel>(Options(
+      method: 'POST',
+      headers: _headers,
+      extra: _extra,
+      contentType: 'application/x-www-form-urlencoded',
+    )
+        .compose(
+          _dio.options,
+          '/payment/initiate',
+          queryParameters: queryParameters,
+          data: _data,
+        )
+        .copyWith(
+            baseUrl: _combineBaseUrls(
+          _dio.options.baseUrl,
+          baseUrl,
+        )));
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late GetPaymentRespModel _value;
+      _value = GetPaymentRespModel.fromJson(_result.data!);
     return _value;
   }
 

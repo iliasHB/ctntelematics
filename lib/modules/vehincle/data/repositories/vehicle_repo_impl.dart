@@ -61,20 +61,21 @@ class VehicleRepositoryImpl implements VehicleRepository {
     String contentType = 'application/json';
 
     try {
-      return await handleVehicleRouteHistoryError(
-          apiClient.getRouteHistory(
+      // return await handleVehicleRouteHistoryError(
+          return apiClient.getRouteHistory(
             routeHistoryReqModel.vehicle_vin,
             routeHistoryReqModel.time_from,
             routeHistoryReqModel.time_to,
             routeHistoryReqModel.token,
-          )
-    );
-    }
-    on ApiErrorException catch (e) {
-      throw ApiErrorException(e.message); // Propagate the error with the API message
-    } on NetworkException catch (e) {
-      throw NetworkException(); // Propagate network-specific errors
+          );
+    // );
+    // }
+    // on ApiErrorException catch (e) {
+    //   throw ApiErrorException(e.message); // Propagate the error with the API message
+    // } on NetworkException catch (e) {
+    //   throw NetworkException(); // Propagate network-specific errors
     } catch (e) {
+      print('object $e');
       throw Exception("An error occurred while getting location.");
     }
   }

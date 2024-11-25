@@ -5,16 +5,18 @@ import 'package:ctntelematics/modules/vehincle/presentation/pages/vehicle_info.d
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import '../../../map/presentation/widgets/vehicle_analysis.dart';
 import '../pages/vehicle_alert.dart';
 import '../pages/vehicle_engine_lock.dart';
 import '../pages/vehicle_quick_setting.dart';
 
 class VehicleOperations extends StatefulWidget {
   final VoidCallback onClose;
+  final String token, vin;
 
   const VehicleOperations({
     super.key,
-    required this.onClose,
+    required this.onClose, required this.token, required this.vin,
   });
 
   @override
@@ -73,7 +75,7 @@ class _VehicleOperationsState extends State<VehicleOperations> {
                     InkWell(
                       onTap: (){
                         Navigator.of(context).push(MaterialPageRoute(
-                          builder: (context) => const VehicleDashboard(),
+                          builder: (context) =>  VehicleDashboard(token: widget.token, vin: widget.vin,),
                         ));
                       },
                       child: VehicleOperationCard(
@@ -84,7 +86,7 @@ class _VehicleOperationsState extends State<VehicleOperations> {
                     InkWell(
                       onTap: () {
                         Navigator.of(context).push(MaterialPageRoute(
-                          builder: (context) => const VehicleAnalyticsPage(),
+                          builder: (context) => VehicleAnalytics(token: widget.token, vin: widget.vin,),
                         ));
                       },//VehiclePlayBackToolTip.showTopModal(context),
                       child: VehicleOperationCard(

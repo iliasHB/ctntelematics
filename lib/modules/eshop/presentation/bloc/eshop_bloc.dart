@@ -1,7 +1,9 @@
 
+import 'package:ctntelematics/modules/eshop/domain/entitties/req_entities/initiate_payment_req_entity.dart';
 import 'package:ctntelematics/modules/eshop/domain/entitties/req_entities/token_req_entity.dart';
 import 'package:ctntelematics/modules/eshop/domain/entitties/resp_entities/get_all_product_entity.dart';
 import 'package:ctntelematics/modules/eshop/domain/entitties/resp_entities/get_category_entity.dart';
+import 'package:ctntelematics/modules/eshop/domain/entitties/resp_entities/get_payment_resp_entity.dart';
 import 'package:ctntelematics/modules/eshop/domain/entitties/resp_entities/get_product_entity.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -93,6 +95,37 @@ class EshopGetProductBloc extends Bloc<EshopEvent, EshopState> {
       // Use yield* to delegate stream handling to loginUseCase
       final resp = await getProductUseCase(event.eshopTokenReqEntity);
       yield EshopGetProductDone(resp); // Emit success state after getting the user
+    } catch (error) {
+      print(":::::::::: product-error :::::::::: ${error}");
+      // if (error is ApiErrorException) {
+      //   yield ProfileFailure(error.message); // Emit API error message
+      // } else if (error is NetworkException) {
+      //   yield ProfileFailure(error.message); // Emit network failure message
+      // } else {
+      yield const EshopFailure(
+          "An unexpected error occurred. Please try again."); // Emit generic error message
+    }
+  }
+}
+
+class InitiatePaymentBloc extends Bloc<EshopEvent, EshopState> {
+  final InitiatePaymentUseCase initiatePaymentUseCase;
+
+  InitiatePaymentBloc(this.initiatePaymentUseCase) : super(EshopInitial()) {
+    on<InitiatePaymentEvent>((event, emit) => emit.forEach<EshopState>(
+      mapEventToState(event),
+      onData: (state) => state,
+      onError: (error, stackTrace) =>
+          EshopFailure(error.toString()), // Handle error cases
+    ));
+  }
+
+  Stream<EshopState> mapEventToState(InitiatePaymentEvent event) async* {
+    yield EshopLoading(); // Emit loading state
+    try {
+      // Use yield* to delegate stream handling to loginUseCase
+      final resp = await initiatePaymentUseCase(event.initiatePaymentReqEntity);
+      yield InitiatePaymentDone(resp); // Emit success state after getting the user
     } catch (error) {
       print(":::::::::: product-error :::::::::: ${error}");
       // if (error is ApiErrorException) {

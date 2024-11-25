@@ -261,6 +261,8 @@ class _VehicleRouteLastLocationState extends State<VehicleRouteLastLocation> {
                       // _isContainerVisible = false; // Set visibility state
                     });
                   },
+                  token: widget.token,
+                  vin: widget.vin,
                 ),
               ),
             ),

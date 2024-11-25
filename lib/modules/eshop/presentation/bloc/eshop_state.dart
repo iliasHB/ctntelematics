@@ -48,4 +48,13 @@ class EshopGetProductDone extends EshopState {
   List<Object?> get props => [resp];
 }
 
+class InitiatePaymentDone extends EshopState {
+  final GetPaymentRespEntity resp;
+
+  const InitiatePaymentDone(this.resp);
+
+  @override
+  List<Object?> get props => [resp];
+}
+
 

@@ -12,17 +12,17 @@ class VehicleRouteHistoryRespModel extends VehicleRouteHistoryRespEntity{
 
   const VehicleRouteHistoryRespModel({
     required super.data,
-    required super.total_distance_km,
+    required super.routeLength,
   });
 
   factory VehicleRouteHistoryRespModel.fromJson(Map<String, dynamic> json) => VehicleRouteHistoryRespModel(
     data: List<Datum>.from(json["data"].map((x) => Datum.fromJson(x))),
-      total_distance_km: json['total_distance_km']
+      routeLength: json['total_distance_km']
   );
 
   Map<String, dynamic> toJson() => {
     "data": data,
-    "total_distance_km": total_distance_km
+    "total_distance_km": routeLength
   };
 
 }
@@ -60,6 +60,7 @@ class Datum extends DatumEntity{
     required super.status,
     required super.created_at,
     required super.updated_at,
+    required super.connected
   });
 
   factory Datum.fromJson(Map<String, dynamic> json) => Datum(
@@ -84,7 +85,10 @@ class Datum extends DatumEntity{
     cell_id: json["cell_id"],
     serial_number: json["serial_number"],
     error_check: json["error_check"],
-    event: List<dynamic>.from(json["event"].map((x) => x)),
+    event: json["event"] is String
+        ? [json["event"]] // Convert String to a single-element List
+        : List<dynamic>.from(json["event"] ?? []),
+    // event: List<dynamic>.from(json["event"].map((x) => x)),
     parse_time: json["parse_time"],
     terminal_info: json["terminal_info"],
     voltage_level: json["voltage_level"],
@@ -93,6 +97,7 @@ class Datum extends DatumEntity{
     status: json["status"],
     created_at: json["created_at"],
     updated_at: json["updated_at"],
+    connected: json["connected"],
   );
 
   Map<String, dynamic> toJson() => {
@@ -125,6 +130,7 @@ class Datum extends DatumEntity{
     "status": status,
     "created_at": created_at,
     "updated_at": updated_at,
+    'connected': connected
   };
 
 }
