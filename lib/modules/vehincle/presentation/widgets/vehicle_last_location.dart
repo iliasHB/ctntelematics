@@ -22,7 +22,13 @@ class VehicleRouteLastLocation extends StatefulWidget {
   final double? longitude;
   final String token;
   final String number_plate;
-  final String name, email, phone;
+  final String? name, email, phone;
+  final String status;
+  final String updated_at;
+  final String speed;
+  final String voltage_level;
+  final String gsm_signal_strength;
+  final bool real_time_gps;
   const VehicleRouteLastLocation(
       {super.key,
       required this.brand,
@@ -31,7 +37,17 @@ class VehicleRouteLastLocation extends StatefulWidget {
       this.latitude,
       this.longitude,
       required this.token,
-      required this.number_plate, required this.name, required this.email, required this.phone});
+      required this.number_plate,
+        this.name,
+        this.email,
+        this.phone,
+        required this.status,
+        required this.updated_at,
+        required this.speed,
+        required this.voltage_level,
+        required this.gsm_signal_strength,
+        required this.real_time_gps
+      });
 
   @override
   State<VehicleRouteLastLocation> createState() =>
@@ -263,10 +279,18 @@ class _VehicleRouteLastLocationState extends State<VehicleRouteLastLocation> {
                   },
                   token: widget.token,
                   vin: widget.vin,
+                  status: widget.status,
+                  updated_at: widget.updated_at,
+                  longitude: widget.longitude.toString(),
+                  latitude: widget.latitude.toString(),
+                  speed: widget.speed,
+                  number_plate: widget.number_plate,
+                  voltage_level: widget.voltage_level,
+                  gsm_signal_strength: widget.gsm_signal_strength,
+                  real_time_gps: widget.real_time_gps,
                 ),
               ),
             ),
-
           if (_showDriverInfo)
             AnimatedPositioned(
               duration: const Duration(milliseconds: 500),
@@ -276,18 +300,18 @@ class _VehicleRouteLastLocationState extends State<VehicleRouteLastLocation> {
               left: _isContainerVisible
                   ? 10
                   : MediaQuery.of(context)
-                  .size
-                  .width, // Starts off-screen and slides in
+                      .size
+                      .width, // Starts off-screen and slides in
               right: _isContainerVisible
                   ? 10
                   : -MediaQuery.of(context)
-                  .size
-                  .width, // Adjust right as well for slide-in effect
+                      .size
+                      .width, // Adjust right as well for slide-in effect
               child: DriverInfo(
                 vin: widget.vin,
-                name: widget.name,
-                phone: widget.phone,
-                email: widget.email,
+                name: widget.name!,
+                phone: widget.phone!,
+                email: widget.email!,
                 number_plate: widget.number_plate,
                 onClose: () {
                   setState(() {
@@ -752,11 +776,13 @@ class _VehicleRouteLastLocationState extends State<VehicleRouteLastLocation> {
                   _showVehicleOperation = !_showVehicleOperation;
                 });
               }),
-          buildIcon(icon: CupertinoIcons.person, onTap: () {
-            setState(() {
-              _showDriverInfo = !_showDriverInfo;
-            });
-          }),
+          buildIcon(
+              icon: CupertinoIcons.person,
+              onTap: () {
+                setState(() {
+                  _showDriverInfo = !_showDriverInfo;
+                });
+              }),
         ],
       ),
     );

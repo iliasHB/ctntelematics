@@ -1,3 +1,6 @@
+import 'package:ctntelematics/core/utils/app_export_util.dart';
+import 'package:ctntelematics/core/widgets/custom_button.dart';
+import 'package:ctntelematics/core/widgets/custom_input_decorator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -20,39 +23,14 @@ class ResetPasswordPage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // Logo and title
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.local_shipping, color: Colors.green, size: 40),
-                const SizedBox(width: 8),
-                Text(
-                  'CTN',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.green.withOpacity(0.4), fontSize: 28),
-                ),
-                const SizedBox(width: 8),
-                const Text(
-                  'Telematics',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
-                ),
-              ],
-            ),
+            Image.asset("assets/images/tematics_name.jpeg", height: 100,),
             const SizedBox(height: 40),
 
             // Forgot Password Heading
-            const Text(
+            Text(
               'Set A New Password?',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Colors.green,
-              ),
-            ),
+                textAlign: TextAlign.center,
+                style: AppStyle.cardTitle.copyWith(color: Colors.green[700])),
             const SizedBox(height: 8),
 
             // Instruction Text
@@ -66,7 +44,8 @@ class ResetPasswordPage extends StatelessWidget {
                   child: Text(
                     '- New password must be different from the \nprevious password.',
                     textAlign: TextAlign.left,
-                    style: TextStyle(color: Colors.grey[700]),
+                    style: AppStyle.cardfooter
+                        .copyWith(color: Colors.grey[700]),
                   ),
                 ),
               ],
@@ -81,8 +60,9 @@ class ResetPasswordPage extends StatelessWidget {
                   child: Text(
                     overflow: TextOverflow.ellipsis,
                     '- Password must include alphabet numeric & \ncharacter',
-                    textAlign: TextAlign.left,
-                    style: TextStyle(color: Colors.grey[700]),
+                    textAlign: TextAlign.center,
+                    style: AppStyle.cardfooter
+                        .copyWith(color: Colors.grey[700]),
                   ),
                 ),
               ],
@@ -96,17 +76,22 @@ class ResetPasswordPage extends StatelessWidget {
                 children: [
                   TextFormField(
                     controller: _pwdController,
-                    decoration: InputDecoration(
-                      labelText: 'New password',
-                      hintText: 'francisjoe@gmail.com',
-                      prefixIcon: const Icon(Icons.email_outlined, color: Colors.green),
-                      filled: true,
-                      fillColor: Colors.grey[200],
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide.none,
-                      ),
+                    decoration: customInputDecoration(
+                        labelText: 'New password',
+                        hintText: 'abc@gmail.com',
                     ),
+
+                    // InputDecoration(
+                    //   labelText: 'New password',
+                    //   hintText: 'francisjoe@gmail.com',
+                    //   prefixIcon: const Icon(Icons.email_outlined, color: Colors.green),
+                    //   filled: true,
+                    //   fillColor: Colors.grey[200],
+                    //   border: OutlineInputBorder(
+                    //     borderRadius: BorderRadius.circular(10),
+                    //     borderSide: BorderSide.none,
+                    //   ),
+                    // ),
                     validator: (value){
                       if(value!.isEmpty){
                         return "password can not be empty";
@@ -119,17 +104,21 @@ class ResetPasswordPage extends StatelessWidget {
                   // New password Field
                   TextFormField(
                     controller: _retypePwdController,
-                    decoration: InputDecoration(
-                      labelText: 'Confirm password',
-                      hintText: 'francisjoe@gmail.com',
-                      prefixIcon: const Icon(Icons.email_outlined, color: Colors.green),
-                      filled: true,
-                      fillColor: Colors.grey[200],
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide.none,
-                      ),
-                    ),
+                    decoration: customInputDecoration(
+                    labelText: 'Confirm password',
+                    hintText: 'abc@gmail.com',
+                  ),
+                    // InputDecoration(
+                    //   labelText: 'Confirm password',
+                    //   hintText: 'francisjoe@gmail.com',
+                    //   prefixIcon: const Icon(Icons.email_outlined, color: Colors.green),
+                    //   filled: true,
+                    //   fillColor: Colors.grey[200],
+                    //   border: OutlineInputBorder(
+                    //     borderRadius: BorderRadius.circular(10),
+                    //     borderSide: BorderSide.none,
+                    //   ),
+                    // ),
                     validator: (value){
                       if(value!.isEmpty){
                         return "password can not be empty";
@@ -163,9 +152,9 @@ class ResetPasswordPage extends StatelessWidget {
                     strokeAlign: -10.0,
                   );
                 }
-                return ElevatedButton(
+                return CustomPrimaryButton(
+                    label:  'Continue',
                   onPressed: () {
-
                     if (_formKey.currentState?.validate() ?? false) {
                       final changePwdReqEntity = ChangePwdReqEntity(
                           email: args['email'],
@@ -176,20 +165,35 @@ class ResetPasswordPage extends StatelessWidget {
                       context.read<EmailVerifyBloc>().add(ChangePwdEvent(changePwdReqEntity));
                     }
                   },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                  child: const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 16.0),
-                    child: Text(
-                      'Continue',
-                      style: TextStyle(fontSize: 18),
-                    ),
-                  ),
                 );
+
+                //   ElevatedButton(
+                //   onPressed: () {
+                //
+                //     if (_formKey.currentState?.validate() ?? false) {
+                //       final changePwdReqEntity = ChangePwdReqEntity(
+                //           email: args['email'],
+                //           otp: args['otp'],
+                //           password: _pwdController.text.trim(),
+                //           passwordConfirmation: _retypePwdController.text.trim()
+                //       );
+                //       context.read<EmailVerifyBloc>().add(ChangePwdEvent(changePwdReqEntity));
+                //     }
+                //   },
+                //   style: ElevatedButton.styleFrom(
+                //     backgroundColor: Colors.green,
+                //     shape: RoundedRectangleBorder(
+                //       borderRadius: BorderRadius.circular(10),
+                //     ),
+                //   ),
+                //   child: const Padding(
+                //     padding: EdgeInsets.symmetric(vertical: 16.0),
+                //     child: Text(
+                //       'Continue',
+                //       style: TextStyle(fontSize: 18),
+                //     ),
+                //   ),
+                // );
               },
             ),
 

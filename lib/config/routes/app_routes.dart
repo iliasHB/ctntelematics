@@ -24,7 +24,7 @@ import '../../modules/profile/presentation/widgets/response_widget.dart';
 final routes = {
   '/': (BuildContext context) => OnboardingPage(),
   '/login': (BuildContext context) => LoginPage(),
-  '/signup': (BuildContext context) => SignupPage(),
+  // '/signup': (BuildContext context) => SignupPage(),
   '/home': (BuildContext context) => const Home(),
   // '/dashboard': (BuildContext context) => const DashboardPage(),
   '/bottomNav': (BuildContext context) =>  BottomNavBar(),
@@ -33,10 +33,10 @@ final routes = {
   '/resetPassword': (BuildContext context) =>  ResetPasswordPage(),
   '/response': (BuildContext context) =>  ResponsePage(),
   '/responseProfile': (BuildContext context) =>  ResponseProfilePage(),
-  '/productReview': (BuildContext context) =>  const ProductReview(),
-  '/paymentMethod': (BuildContext context) =>  const PaymentMethod(),
+  // '/productReview': (BuildContext context) =>  const ProductReview(),
+  // '/paymentMethod': (BuildContext context) =>  const PaymentMethod(),
   '/paymentSuccess': (BuildContext context) =>  const PaymentSuccess(),
   '/setting': (BuildContext context) =>  const Setting(),
-  '/checkout': (BuildContext context) =>  const Checkout(),
+  // '/checkout': (BuildContext context) =>  const Checkout(),
   // '/vehicleRoeLastLocation': (BuildContext context) =>  const VehicleRouteLastLocation(),
 };

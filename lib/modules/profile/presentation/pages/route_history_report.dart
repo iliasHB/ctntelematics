@@ -20,57 +20,59 @@ class RouteHistoryReportPage extends StatelessWidget {
       ),
       body: Column(
         children: [
-          ListView.builder(
-            shrinkWrap: true,
-              itemCount: report.data.length,
-              itemBuilder: (context, index) {
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade200,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Column(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(8.0),
-                          decoration: BoxDecoration(
-                            color: Colors.green.shade200,
-                            borderRadius: BorderRadius.circular(12),
+          Expanded(
+            child: ListView.builder(
+              // shrinkWrap: true,
+                itemCount: report.data.length,
+                itemBuilder: (context, index) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade200,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Column(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8.0),
+                            decoration: BoxDecoration(
+                              color: Colors.green.shade200,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: DashboardComponentTitle(
+                                title: 'Route History', subTitle: 'List of all route history'),
                           ),
-                          child: DashboardComponentTitle(
-                              title: 'Route History', subTitle: ''),
-                        ),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Details Section
-                            _DetailItem(title: "Vehicle", value: vin!),
-                            _DetailItem(
-                                title: "Route Length",
-                                value: (report.routeLength ?? 0.00).toString()),
-                            _DetailItem(
-                                title: "Status",
-                                value: report.data[index].connected == null ? "N/A" : report.data[index].connected),
-                            _DetailItem(
-                                title: "Latitude",
-                                value: report.data[index].latitude),
-                            _DetailItem(
-                                title: "End Latitude",
-                                value: report.data[index].longitude),
-                            _DetailItem(
-                                title: "DateTime",
-                                value: FormatData.formatTimestamp(
-                                    report.data[index].created_at)),
-                            // _DetailItem(title: "Number of Event", value: ),
-                          ],
-                        )
-                      ],
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Details Section
+                              _DetailItem(title: "Vehicle", value: vin!),
+                              _DetailItem(
+                                  title: "Route Length",
+                                  value: (report.routeLength ?? 0.00).toString()),
+                              _DetailItem(
+                                  title: "Status",
+                                  value: report.data[index].connected == null ? "N/A" : report.data[index].connected),
+                              _DetailItem(
+                                  title: "Latitude",
+                                  value: report.data[index].latitude),
+                              _DetailItem(
+                                  title: "End Latitude",
+                                  value: report.data[index].longitude),
+                              _DetailItem(
+                                  title: "DateTime",
+                                  value: FormatData.formatTimestamp(
+                                      report.data[index].created_at)),
+                              // _DetailItem(title: "Number of Event", value: ),
+                            ],
+                          )
+                        ],
+                      ),
                     ),
-                  ),
-                );
-              })
+                  );
+                }),
+          )
         ],
       ),
     );

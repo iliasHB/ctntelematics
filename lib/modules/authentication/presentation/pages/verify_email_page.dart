@@ -1,8 +1,10 @@
 import 'dart:async';
 
+import 'package:ctntelematics/core/utils/app_export_util.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/widgets/custom_button.dart';
 import '../../domain/entities/auth_req_entites/verify_email_req_entity.dart';
 import '../bloc/auth_bloc.dart';
 
@@ -42,7 +44,7 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
     const oneSec = Duration(seconds: 1);
     _timer = Timer.periodic(
       oneSec,
-          (Timer timer) {
+      (Timer timer) {
         if (_start == 0) {
           setState(() {
             timer.cancel();
@@ -70,7 +72,8 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
 
   @override
   Widget build(BuildContext context) {
-    final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>;
+    final args =
+        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>;
     return Scaffold(
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -79,53 +82,29 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // Logo and title
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.local_shipping, color: Colors.green, size: 40),
-                const SizedBox(width: 8),
-                Text(
-                  'CTN',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.green.withOpacity(0.4), fontSize: 28),
-                ),
-                const SizedBox(width: 8),
-                const Text(
-                  'Telematics',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
-                ),
-              ],
+            Image.asset(
+              "assets/images/tematics_name.jpeg",
+              height: 100,
             ),
             const SizedBox(height: 40),
 
             // Forgot Password Heading
-            const Text(
-              'Forgot password?',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Colors.green,
-              ),
-            ),
+            Text('Forgot password?',
+                textAlign: TextAlign.center,
+                style: AppStyle.cardTitle.copyWith(color: Colors.green[700])),
             const SizedBox(height: 8),
 
             // Instruction Text
             Text(
               'We already sent a password reset link to your email ${args['email']}',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.grey[700]),
-            ),
+                textAlign: TextAlign.center,
+                style: AppStyle.cardfooter
+                    .copyWith(fontSize: 12, color: Colors.grey[600])),
             const SizedBox(height: 20),
             Form(
                 key: _formKey,
                 child: Row(
-                  mainAxisAlignment:
-                  MainAxisAlignment.spaceEvenly,
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     OtpInput(pinOne),
                     OtpInput(pinTwo),
@@ -137,20 +116,16 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
                 )),
             const SizedBox(height: 20),
 
-
             BlocConsumer<EmailVerifyBloc, AuthState>(
               listener: (context, state) {
                 if (state is AuthDone) {
                   // Navigator.pushNamed(context, "/resetPassword");
                   Navigator.pushNamedAndRemoveUntil(
-                      context,
-                      "/resetPassword",
-                          (route) => false,
+                      context, "/resetPassword", (route) => false,
                       arguments: {
                         'email': args['email'],
                         'otp': _otp,
-                      }
-                  );
+                      });
                   ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text(state.resp.message)));
                 } else if (state is AuthFailure) {
@@ -165,74 +140,108 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
                     strokeAlign: -10.0,
                   );
                 }
-                return ElevatedButton(
+                return CustomPrimaryButton(
+                  label:  'Continue',
                   onPressed: () {
                     setState(() {
                       _otp = pinOne.text +
                           pinTwo.text +
                           pinThree.text +
                           pinFour.text;
-                          // pinFive.text +
-                          // pinSix.text;
+                      // pinFive.text +
+                      // pinSix.text;
                     });
                     print(_otp);
 
                     if (_formKey.currentState?.validate() ?? false) {
                       final verifyEmailReqEntity = VerifyEmailReqEntity(
-                          email: args['email'],
-                          otp: _otp.toString());
-                      context.read<EmailVerifyBloc>().add(VerifyEmailEvent(verifyEmailReqEntity));
+                          email: args['email'], otp: _otp.toString());
+                      context
+                          .read<EmailVerifyBloc>()
+                          .add(VerifyEmailEvent(verifyEmailReqEntity));
                     }
-
                   },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                  child: const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 16.0),
-                    child: Text(
-                      'Continue',
-                      style: TextStyle(fontSize: 18),
-                    ),
-                  ),
                 );
+
+                //   ElevatedButton(
+                //   onPressed: () {
+                //     setState(() {
+                //       _otp = pinOne.text +
+                //           pinTwo.text +
+                //           pinThree.text +
+                //           pinFour.text;
+                //       // pinFive.text +
+                //       // pinSix.text;
+                //     });
+                //     print(_otp);
+                //
+                //     if (_formKey.currentState?.validate() ?? false) {
+                //       final verifyEmailReqEntity = VerifyEmailReqEntity(
+                //           email: args['email'], otp: _otp.toString());
+                //       context
+                //           .read<EmailVerifyBloc>()
+                //           .add(VerifyEmailEvent(verifyEmailReqEntity));
+                //     }
+                //   },
+                //   style: ElevatedButton.styleFrom(
+                //     backgroundColor: Colors.green,
+                //     shape: RoundedRectangleBorder(
+                //       borderRadius: BorderRadius.circular(10),
+                //     ),
+                //   ),
+                //   child: const Padding(
+                //     padding: EdgeInsets.symmetric(vertical: 16.0),
+                //     child: Text(
+                //       'Continue',
+                //       style: TextStyle(fontSize: 18),
+                //     ),
+                //   ),
+                // );
               },
             ),
             const SizedBox(height: 20),
 
             // Back to Login Button
-            TextButton.icon(
+
+            CustomSecondaryButton(
+                label:  'Back to login',
               onPressed: () {
-                Navigator.pushNamedAndRemoveUntil(context, "/login", (route) => false);
+                Navigator.pushNamedAndRemoveUntil(
+                    context, "/login", (route) => false);
               },
-              icon: const Icon(Icons.arrow_back, color: Colors.black),
-              label: const Text(
-                'Back to login',
-                style: TextStyle(color: Colors.black),
-              ),
-              style: TextButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16.0),
-                shape: RoundedRectangleBorder(
-                  side: const BorderSide(color: Colors.black),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
             ),
+
+            // TextButton.icon(
+            //   onPressed: () {
+            //     Navigator.pushNamedAndRemoveUntil(
+            //         context, "/login", (route) => false);
+            //   },
+            //   icon: const Icon(Icons.arrow_back, color: Colors.black),
+            //   label: const Text(
+            //     'Back to login',
+            //     style: TextStyle(color: Colors.black),
+            //   ),
+            //   style: TextButton.styleFrom(
+            //     padding: const EdgeInsets.symmetric(vertical: 16.0),
+            //     shape: RoundedRectangleBorder(
+            //       side: const BorderSide(color: Colors.black),
+            //       borderRadius: BorderRadius.circular(10),
+            //     ),
+            //   ),
+            // ),
             const SizedBox(height: 20),
             Center(
               child: RichText(
                 text: TextSpan(
                   text: "Didn\'t receive the email ",
                   // textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.grey[700]),
+                  style: AppStyle.cardfooter.copyWith(fontSize: 12, color: Colors.grey[700]),
                   children: const <TextSpan>[
                     TextSpan(
-                        text: 'Click to resend',
-                        style: TextStyle(fontWeight: FontWeight.bold, ),
-
+                      text: 'Click to resend',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ],
                 ),
@@ -249,7 +258,7 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
       width: 50,
       height: 50,
       child: TextFormField(
-        //autofocus: autoFocus,
+          //autofocus: autoFocus,
           textAlign: TextAlign.center,
           cursorHeight: 20,
           keyboardType: TextInputType.number,
@@ -258,7 +267,7 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
           maxLength: 1,
           // cursorColor: Colors.white,
           decoration: const InputDecoration(
-            border: OutlineInputBorder(),
+              border: OutlineInputBorder(),
               focusedBorder: OutlineInputBorder(
                 borderSide: BorderSide(color: Colors.green, width: 2.0),
               ),
@@ -269,7 +278,7 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
               hintStyle: TextStyle(color: Colors.white, fontSize: 30.0)),
           validator: (value) {
             if (value == null || value.isEmpty) {
-              return "Empty";
+              return "";
             }
             return null;
           },

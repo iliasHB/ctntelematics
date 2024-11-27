@@ -1,5 +1,6 @@
 import 'package:ctntelematics/core/utils/app_export_util.dart';
 import 'package:ctntelematics/core/widgets/advert.dart';
+import 'package:ctntelematics/modules/eshop/presentation/widgets/product_review.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -50,24 +51,34 @@ class _EshopPageState extends State<EshopPage> {
   @override
   Widget build(BuildContext context) {
     final List<Widget> _tabs = [
-      const Row(
+      Row(
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(CupertinoIcons.square_grid_2x2),
-          SizedBox(
+          const Icon(CupertinoIcons.square_grid_2x2),
+          const SizedBox(
             width: 10,
           ),
-          Text("All Categories")
+          Text("All Categories", style: AppStyle.cardfooter.copyWith(fontSize: 14),)
         ],
       ),
-      const Row(
+      Row(
         children: [
-          Icon(CupertinoIcons.square_grid_2x2),
-          SizedBox(
+          const Icon(CupertinoIcons.square_grid_2x2),
+          const SizedBox(
             width: 10,
           ),
-          Text("All Product")
+          Text("All Product", style: AppStyle.cardfooter.copyWith(fontSize: 14),)
+        ],
+      ),
+
+      Row(
+        children: [
+          const Icon(CupertinoIcons.cart_badge_plus),
+          const SizedBox(
+            width: 10,
+          ),
+          Text("Cart", style: AppStyle.cardfooter.copyWith(fontSize: 14),)
         ],
       ),
     ];
@@ -252,7 +263,8 @@ class _EshopPageState extends State<EshopPage> {
                                     .toString(),
                                 description:
                                     state.resp.products.data[index].description,
-                                token: token);
+                                token: token,
+                                productId: state.resp.products.data[index].id);
                           },
                         ),
                       ),
@@ -322,16 +334,17 @@ class _EshopPageState extends State<EshopPage> {
                   ),
                   itemBuilder: (BuildContext context, int index) {
                     return AllProduct(
-                        productName: state.resp.products.data[index].name,
-                        productImage: state.resp.products.data[index].image,
-                        price: state.resp.products.data[index].price.toString(),
-                        onAddToCart: () {},
-                        onFavorite: () {},
-                        categoryId: state.resp.products.data[index].category_id
-                            .toString(),
-                        description:
-                            state.resp.products.data[index].description,
-                        token: token!);
+                      productName: state.resp.products.data[index].name,
+                      productImage: state.resp.products.data[index].image,
+                      price: state.resp.products.data[index].price.toString(),
+                      onAddToCart: () {},
+                      onFavorite: () {},
+                      categoryId: state.resp.products.data[index].category_id
+                          .toString(),
+                      description: state.resp.products.data[index].description,
+                      token: token!,
+                      productId: state.resp.products.data[index].id,
+                    );
                   },
                 )
               ],
@@ -368,6 +381,7 @@ class AllCategory extends StatelessWidget {
   final String categoryId;
   final String description;
   final String? token;
+  final int productId;
 
   const AllCategory({
     super.key,
@@ -379,6 +393,7 @@ class AllCategory extends StatelessWidget {
     required this.categoryId,
     required this.description,
     required this.token,
+    required this.productId,
   });
 
   @override
@@ -391,14 +406,17 @@ class AllCategory extends StatelessWidget {
             children: [
               InkWell(
                 onTap: () {
-                  Navigator.pushNamed(context, "/productReview", arguments: {
-                    'productName': productName,
-                    'productImage': productImage,
-                    'price': price,
-                    'categoryId': categoryId,
-                    'description': description,
-                    'token': token
-                  });
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => ProductReview(
+                              productName: productName,
+                              productImage: productImage,
+                              price: price,
+                              categoryId: categoryId,
+                              description: description,
+                              token: token!,
+                              productId: productId)));
                 },
                 child: Container(
                   margin:
@@ -460,10 +478,16 @@ class AllCategory extends StatelessWidget {
                             maxLines: 3,
                           ),
                         ),
-                        Text(price,
-                            style: AppStyle.cardSubtitle.copyWith(
-                                fontWeight: FontWeight.w500,
-                                color: Colors.green[800]))
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Image.asset("assets/images/naira.png", height: 20, width: 20,),
+                            Text(price,
+                                style: AppStyle.cardSubtitle.copyWith(
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.green[800])),
+                          ],
+                        )
                       ],
                     ),
                   ),
@@ -476,33 +500,33 @@ class AllCategory extends StatelessWidget {
                     children: [
                       Container(
                         decoration: BoxDecoration(
-                            border: Border.all(width: 1, color: Colors.grey),
+                            border: Border.all(width: 1, color: Colors.white),
                             borderRadius: BorderRadius.circular(50)),
-                        child: const CircleAvatar(
+                        child: CircleAvatar(
                           radius: 15,
-                          backgroundColor: Colors.white,
-                          child: Icon(
-                            Icons.shopping_cart_outlined,
+                          backgroundColor: Colors.green[700],
+                          child: const Icon(
+                            Icons.shopping_cart_outlined, color: Colors.white,
                             size: 15,
                           ),
                         ),
                       ),
-                      const SizedBox(
-                        height: 5,
-                      ),
-                      Container(
-                        decoration: BoxDecoration(
-                            border: Border.all(width: 1, color: Colors.grey),
-                            borderRadius: BorderRadius.circular(50)),
-                        child: const CircleAvatar(
-                          radius: 15,
-                          backgroundColor: Colors.white,
-                          child: Icon(
-                            Icons.favorite_border,
-                            size: 15,
-                          ),
-                        ),
-                      )
+                      // const SizedBox(
+                      //   height: 5,
+                      // ),
+                      // Container(
+                      //   decoration: BoxDecoration(
+                      //       border: Border.all(width: 1, color: Colors.grey),
+                      //       borderRadius: BorderRadius.circular(50)),
+                      //   child: const CircleAvatar(
+                      //     radius: 15,
+                      //     backgroundColor: Colors.white,
+                      //     child: Icon(
+                      //       Icons.favorite_border,
+                      //       size: 15,
+                      //     ),
+                      //   ),
+                      // )
                     ],
                   ))
             ],
@@ -520,6 +544,7 @@ class AllProduct extends StatelessWidget {
   final VoidCallback onAddToCart;
   final VoidCallback onFavorite;
   final String categoryId, description, token;
+  final int productId;
 
   const AllProduct({
     super.key,
@@ -531,6 +556,7 @@ class AllProduct extends StatelessWidget {
     required this.categoryId,
     required this.description,
     required this.token,
+    required this.productId,
   });
 
   @override
@@ -543,14 +569,26 @@ class AllProduct extends StatelessWidget {
             children: [
               InkWell(
                 onTap: () {
-                  Navigator.pushNamed(context, "/productReview", arguments: {
-                    'productName': productName,
-                    'productImage': productImage,
-                    'price': price,
-                    'categoryId': categoryId,
-                    'description': description,
-                    'token': token
-                  });
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => ProductReview(
+                              productName: productName,
+                              productImage: productImage,
+                              price: price,
+                              categoryId: categoryId,
+                              description: description,
+                              token: token,
+                              productId: productId)));
+
+                  // Navigator.pushNamed(context, "/productReview", arguments: {
+                  //   'productName': productName,
+                  //   'productImage': productImage,
+                  //   'price': price,
+                  //   'categoryId': categoryId,
+                  //   'description': description,
+                  //   'token': token
+                  // });
                 },
                 child: Container(
                   margin:
@@ -613,10 +651,16 @@ class AllProduct extends StatelessWidget {
                             maxLines: 3,
                           ),
                         ),
-                        Text(price,
-                            style: AppStyle.cardSubtitle.copyWith(
-                                fontWeight: FontWeight.w500,
-                                color: Colors.green[800]))
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Image.asset("assets/images/naira.png", height: 20, width: 20,),
+                            Text(price,
+                                style: AppStyle.cardSubtitle.copyWith(
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.green[800])),
+                          ],
+                        )
                       ],
                     ),
                   ),
@@ -629,33 +673,33 @@ class AllProduct extends StatelessWidget {
                     children: [
                       Container(
                         decoration: BoxDecoration(
-                            border: Border.all(width: 1, color: Colors.grey),
+                            border: Border.all(width: 1, color: Colors.white),
                             borderRadius: BorderRadius.circular(50)),
-                        child: const CircleAvatar(
+                        child: CircleAvatar(
                           radius: 15,
-                          backgroundColor: Colors.white,
-                          child: Icon(
-                            Icons.shopping_cart_outlined,
+                          backgroundColor: Colors.green[700],
+                          child: const Icon(
+                            Icons.shopping_cart_outlined, color: Colors.white,
                             size: 15,
                           ),
                         ),
                       ),
-                      const SizedBox(
-                        height: 5,
-                      ),
-                      Container(
-                        decoration: BoxDecoration(
-                            border: Border.all(width: 1, color: Colors.grey),
-                            borderRadius: BorderRadius.circular(50)),
-                        child: const CircleAvatar(
-                          radius: 15,
-                          backgroundColor: Colors.white,
-                          child: Icon(
-                            Icons.favorite_border,
-                            size: 15,
-                          ),
-                        ),
-                      )
+                      // const SizedBox(
+                      //   height: 5,
+                      // ),
+                      // Container(
+                      //   decoration: BoxDecoration(
+                      //       border: Border.all(width: 1, color: Colors.grey),
+                      //       borderRadius: BorderRadius.circular(50)),
+                      //   child: const CircleAvatar(
+                      //     radius: 15,
+                      //     backgroundColor: Colors.white,
+                      //     child: Icon(
+                      //       Icons.favorite_border,
+                      //       size: 15,
+                      //     ),
+                      //   ),
+                      // )
                     ],
                   ))
             ],

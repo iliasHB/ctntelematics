@@ -19,6 +19,8 @@ class VehicleRouteLastLocationAndUpdate extends StatefulWidget {
   final double? longitude;
   final String token;
   final String number_plate;
+  final String voltage_level, speed, status, updated_at, gsm_signal_strength;
+  final bool real_time_gps;
   const VehicleRouteLastLocationAndUpdate(
       {super.key,
       required this.brand,
@@ -27,7 +29,14 @@ class VehicleRouteLastLocationAndUpdate extends StatefulWidget {
       this.latitude,
       this.longitude,
       required this.token,
-      required this.number_plate});
+      required this.number_plate,
+      required this.real_time_gps,
+        required this.gsm_signal_strength,
+        required this.voltage_level,
+        required this.speed,
+        required this.updated_at,
+        required this.status
+      });
 
   @override
   State<VehicleRouteLastLocationAndUpdate> createState() =>
@@ -293,7 +302,18 @@ class _VehicleRouteLastLocationAndUpdateState
                     _showVehicleOperation = false;
                     // _isContainerVisible = false; // Set visibility state
                   });
-                }, token: widget.token, vin: widget.vin,
+                },
+                token: widget.token,
+                vin: widget.vin,
+                status: widget.status,
+                updated_at: widget.updated_at,
+                longitude: widget.longitude.toString(),
+                latitude: widget.latitude.toString(),
+                speed: widget.speed,
+                number_plate: widget.number_plate,
+                voltage_level: widget.voltage_level,
+                gsm_signal_strength: widget.gsm_signal_strength,
+                real_time_gps: widget.real_time_gps,
               ),
             ),
           ),

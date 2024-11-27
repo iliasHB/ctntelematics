@@ -18,6 +18,7 @@ import '../../../../core/widgets/advert.dart';
 import '../../../../service_locator.dart';
 import '../../../eshop/domain/entitties/req_entities/token_req_entity.dart';
 import '../../../eshop/presentation/bloc/eshop_bloc.dart';
+import '../../../eshop/presentation/widgets/product_review.dart';
 import '../../../websocket/data/datasources/pusher_service.dart';
 import '../../../websocket/presentation/bloc/vehicle_location_bloc.dart';
 import '../../domain/entitties/req_entities/dash_vehicle_req_entity.dart';
@@ -73,7 +74,8 @@ class _DashboardPageState extends State<DashboardPage> {
       }
       if (token != null && userId != null) {
         if (!sl.isRegistered<PusherService>()) {
-          sl.registerSingleton<PusherService>(PusherService(token!, userId!, user_type!));
+          sl.registerSingleton<PusherService>(
+              PusherService(token!, userId!, user_type!));
           final pusherService = sl<PusherService>();
           pusherService.initializePusher();
         }
@@ -86,7 +88,8 @@ class _DashboardPageState extends State<DashboardPage> {
   Widget build(BuildContext context) {
     final isShopNow = context.watch<ShopNowProvider>().isShopNow;
     final isVehicleTrip = context.watch<VehicleTripProvider>().isVehicleTrip;
-    final isMaintenanceReminder = context.watch<MaintenanceReminderProvider>().isMaintenanceReminder;
+    final isMaintenanceReminder =
+        context.watch<MaintenanceReminderProvider>().isMaintenanceReminder;
     final dashVehicleReqEntity = DashVehicleReqEntity(
         token: token ?? "", contentType: 'application/json');
     return Scaffold(
@@ -211,7 +214,7 @@ class _DashboardPageState extends State<DashboardPage> {
                               ),
                               child: DashboardComponentTitle(
                                 title: 'Vehicle Status',
-                                subTitle: '',
+                                subTitle: 'Vehicle real-time update',
                               )),
                           const SizedBox(
                             height: 10,
@@ -249,7 +252,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                               CupertinoIcons.graph_circle_fill,
                                               color: Colors.white)),
                                       const VehicleStatusCard(
-                                          status: 'Stopped',
+                                          status: 'Offline',
                                           count: SizedBox(
                                             height: 15,
                                             width: 15,
@@ -337,10 +340,6 @@ class _DashboardPageState extends State<DashboardPage> {
                                                         TextOverflow.ellipsis,
                                                   );
                                                 }
-                                                // final movingVehicles = vehicles
-                                                //     .where(
-                                                //         (v) => v.locationInfo.vehicleStatus == "Moving")
-                                                //     .toList();
 
                                                 final movingVehicles =
                                                     vehicles.where((v) {
@@ -370,15 +369,80 @@ class _DashboardPageState extends State<DashboardPage> {
                                               CupertinoIcons.graph_circle_fill,
                                               color: Colors.white)),
                                       VehicleStatusCard(
-                                          status: 'Stopped',
-                                          count: Text(
-                                            state.resp.data!.length.toString(),
-                                            style: AppStyle.cardfooter.copyWith(
-                                                fontWeight: FontWeight.w300),
-                                            maxLines:
-                                                1, // Restrict to a single line for count as well
-                                            overflow: TextOverflow.ellipsis,
+                                          status: 'offline',
+                                          count: BlocListener<
+                                              VehicleLocationBloc,
+                                              List<VehicleEntity>>(
+                                            listener: (context, vehicles) {
+                                              // _updateVehicleCounts(vehicles);
+                                              setState(() {
+                                                vehicles;
+                                              });
+                                            },
+                                            child: BlocBuilder<
+                                                VehicleLocationBloc,
+                                                List<VehicleEntity>>(
+                                              builder: (context, vehicles) {
+                                                int offlineLength = state
+                                                        .resp.data
+                                                        ?.where((vehicle) =>
+                                                            vehicle.last_location
+                                                                    ?.status ==
+                                                                'offline' ||
+                                                            vehicle.last_location
+                                                                    ?.status !=
+                                                                "online")
+                                                        .length ??
+                                                    0;
+
+                                                if (vehicles.isEmpty) {
+                                                  return Text(
+                                                    offlineLength.toString(),
+                                                    // state.resp.data!.length
+                                                    //     .toString(),
+                                                    style: AppStyle.cardfooter
+                                                        .copyWith(
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .w300),
+                                                    maxLines:
+                                                        1, // Restrict to a single line for count as well
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                  );
+                                                }
+
+                                                final onlineVehicles =
+                                                    vehicles.where((v) {
+                                                  return v.locationInfo.tracker!
+                                                          .status ==
+                                                      "online";
+                                                }).toList();
+
+                                                //List<VehicleEntity> displayedVehicles = _filterVehicles(vehicles);
+                                                return Text(
+                                                  '${state.resp.data!.length - onlineVehicles.length}',
+                                                  style: AppStyle.cardfooter
+                                                      .copyWith(
+                                                          fontWeight:
+                                                              FontWeight.w300),
+                                                  maxLines:
+                                                      1, // Restrict to a single line for count as well
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                );
+                                              },
+                                            ),
                                           ),
+
+                                          // Text(
+                                          //   state.resp.data!.length.toString(),
+                                          //   style: AppStyle.cardfooter.copyWith(
+                                          //       fontWeight: FontWeight.w300),
+                                          //   maxLines:
+                                          //       1, // Restrict to a single line for count as well
+                                          //   overflow: TextOverflow.ellipsis,
+                                          // ),
                                           color: Colors.red,
                                           icon: const Icon(
                                             CupertinoIcons.square_fill,
@@ -386,14 +450,54 @@ class _DashboardPageState extends State<DashboardPage> {
                                           )),
                                       VehicleStatusCard(
                                           status: 'Idling',
-                                          count: Text(
-                                            state.resp.data!.length.toString(),
-                                            style: AppStyle.cardfooter.copyWith(
-                                                fontWeight: FontWeight.w300),
-                                            maxLines:
-                                                1, // Restrict to a single line for count as well
-                                            overflow: TextOverflow.ellipsis,
+                                          count: BlocBuilder<
+                                              VehicleLocationBloc,
+                                              List<VehicleEntity>>(
+                                            builder: (context, vehicles) {
+                                              if (vehicles.isEmpty) {
+                                                return Text(
+                                                  '0',
+                                                  style: AppStyle.cardfooter
+                                                      .copyWith(
+                                                          fontWeight:
+                                                              FontWeight.w300),
+                                                  maxLines:
+                                                      1, // Restrict to a single line for count as well
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                );
+                                              }
+
+                                              final idlingVehicles =
+                                                  vehicles.where((v) {
+                                                return v.locationInfo
+                                                        .vehicleStatus ==
+                                                    "Idling";
+                                                // && v.locationInfo.tracker?.position?.ignition == "on";
+                                              }).toList();
+
+                                              //List<VehicleEntity> displayedVehicles = _filterVehicles(vehicles);
+                                              return Text(
+                                                '${idlingVehicles.length}',
+                                                style: AppStyle.cardfooter
+                                                    .copyWith(
+                                                        fontWeight:
+                                                            FontWeight.w300),
+                                                maxLines:
+                                                    1, // Restrict to a single line for count as well
+                                                overflow: TextOverflow.ellipsis,
+                                              );
+                                            },
                                           ),
+
+                                          // Text(
+                                          //   state.resp.data!.length.toString(),
+                                          //   style: AppStyle.cardfooter.copyWith(
+                                          //       fontWeight: FontWeight.w300),
+                                          //   maxLines: 1, // Restrict to a single line for count as well
+                                          //   overflow: TextOverflow.ellipsis,
+                                          // ),
+
                                           color: Colors.yellow,
                                           icon: const Icon(
                                               CupertinoIcons
@@ -401,14 +505,59 @@ class _DashboardPageState extends State<DashboardPage> {
                                               color: Colors.white)),
                                       VehicleStatusCard(
                                         status: 'Parked',
-                                        count: Text(
-                                          state.resp.data!.length.toString(),
-                                          style: AppStyle.cardfooter.copyWith(
-                                              fontWeight: FontWeight.w300),
-                                          maxLines:
-                                              1, // Restrict to a single line for count as well
-                                          overflow: TextOverflow.ellipsis,
+                                        count: BlocBuilder<VehicleLocationBloc,
+                                            List<VehicleEntity>>(
+                                          builder: (context, vehicles) {
+                                            String packedLength = state
+                                                .resp.data!.length.toString();
+
+                                            if (vehicles.isEmpty) {
+                                              return Text(
+                                                packedLength,
+                                                style: AppStyle.cardfooter
+                                                    .copyWith(
+                                                        fontWeight:
+                                                            FontWeight.w300),
+                                                maxLines:
+                                                    1, // Restrict to a single line for count as well
+                                                overflow: TextOverflow.ellipsis,
+                                              );
+                                            }
+
+                                            final parkedVehicles =
+                                                vehicles.where((v) {
+                                              return v.locationInfo
+                                                          .vehicleStatus ==
+                                                      "Parked" ||
+                                                  v.locationInfo.vehicleStatus == "Stopped";
+                                            }).toList();
+
+                                            final movingVehicles =
+                                            vehicles.where((v) {
+                                              return v.locationInfo.vehicleStatus == "Moving";
+                                            }).toList();
+
+                                            //List<VehicleEntity> displayedVehicles = _filterVehicles(vehicles);
+                                            return Text(
+                                              '${state.resp.data!.length - movingVehicles.length}',
+                                              style: AppStyle.cardfooter
+                                                  .copyWith(
+                                                      fontWeight:
+                                                          FontWeight.w300),
+                                              maxLines:
+                                                  1, // Restrict to a single line for count as well
+                                              overflow: TextOverflow.ellipsis,
+                                            );
+                                          },
                                         ),
+                                        // Text(
+                                        //   state.resp.data!.length.toString(),
+                                        //   style: AppStyle.cardfooter.copyWith(
+                                        //       fontWeight: FontWeight.w300),
+                                        //   maxLines:
+                                        //       1, // Restrict to a single line for count as well
+                                        //   overflow: TextOverflow.ellipsis,
+                                        // ),
                                         color: Colors.black,
                                         icon: const Icon(
                                             CupertinoIcons.wifi_slash,
@@ -904,37 +1053,97 @@ class _DashboardPageState extends State<DashboardPage> {
                                               child: GridView.builder(
                                                 physics:
                                                     const NeverScrollableScrollPhysics(),
-                                                itemCount: state.resp.products.data.length > 7 ? 7 : state.resp.products.data.length,
+                                                itemCount: state.resp.products
+                                                            .data.length >
+                                                        7
+                                                    ? 7
+                                                    : state.resp.products.data
+                                                        .length,
                                                 gridDelegate:
                                                     const SliverGridDelegateWithMaxCrossAxisExtent(
-                                                  maxCrossAxisExtent: 100, // Set a max extent for the width
-                                                  mainAxisSpacing: 10, // Adjust spacing between grid items
+                                                  maxCrossAxisExtent:
+                                                      100, // Set a max extent for the width
+                                                  mainAxisSpacing:
+                                                      10, // Adjust spacing between grid items
                                                   crossAxisSpacing: 5,
-                                                  childAspectRatio: 0.8, // Adjust aspect ratio to fit content
+                                                  childAspectRatio:
+                                                      0.8, // Adjust aspect ratio to fit content
                                                 ),
                                                 itemBuilder:
                                                     (BuildContext context,
                                                         int index) {
+                                                  var product = state.resp
+                                                      .products.data[index];
                                                   return InkWell(
-                                                    onTap: (){
-                                                      Navigator.pushNamed(context, "/productReview", arguments: {
-                                                        'productName': state.resp.products.data[index].name,
-                                                        'productImage': state.resp.products.data[index].image,
-                                                        'price': state.resp.products.data[index].price,
-                                                        'categoryId': state.resp.products.data[index].category_id,
-                                                        'description': state.resp.products.data[index].description,
-                                                        'token': token
-                                                      });
+                                                    onTap: () {
+                                                      Navigator.push(
+                                                          context,
+                                                          MaterialPageRoute(
+                                                              builder: (_) =>
+                                                                  ProductReview(
+                                                                    productName:
+                                                                        product
+                                                                            .name,
+                                                                    productImage:
+                                                                        product
+                                                                            .image,
+                                                                    price: product
+                                                                        .price,
+                                                                    categoryId: product
+                                                                        .category_id
+                                                                        .toString(),
+                                                                    description:
+                                                                        product
+                                                                            .description,
+                                                                    token:
+                                                                        token!,
+                                                                    productId:
+                                                                        product
+                                                                            .id,
+                                                                  )));
+                                                      // Navigator.pushNamed(
+                                                      //     context,
+                                                      //     "/productReview",
+                                                      //     arguments: {
+                                                      //       'productName': state
+                                                      //           .resp
+                                                      //           .products
+                                                      //           .data[index]
+                                                      //           .name,
+                                                      //       'productImage':
+                                                      //           state
+                                                      //               .resp
+                                                      //               .products
+                                                      //               .data[index]
+                                                      //               .image,
+                                                      //       'price': state
+                                                      //           .resp
+                                                      //           .products
+                                                      //           .data[index]
+                                                      //           .price,
+                                                      //       'categoryId': state
+                                                      //           .resp
+                                                      //           .products
+                                                      //           .data[index]
+                                                      //           .category_id,
+                                                      //       'description': state
+                                                      //           .resp
+                                                      //           .products
+                                                      //           .data[index]
+                                                      //           .description,
+                                                      //       'token': token
+                                                      //     });
                                                     },
-
                                                     child: Container(
-                                                      decoration: const BoxDecoration(
-                                                          //border: Border.all(width: 1),
-                                                          ),
+                                                      decoration:
+                                                          const BoxDecoration(
+                                                              //border: Border.all(width: 1),
+                                                              ),
                                                       child: Column(
                                                         children: [
                                                           Center(
-                                                            child: Image.network(
+                                                            child:
+                                                                Image.network(
                                                               'https://ecom.verifycentre.com${state.resp.products.data[index].image}',
                                                               height: 80,
                                                               width: 80,
@@ -951,16 +1160,19 @@ class _DashboardPageState extends State<DashboardPage> {
                                                                 }
                                                                 return Center(
                                                                   child:
-                                                                      CircularProgressIndicator(
-                                                                        strokeWidth: 2.0,
-                                                                    value: loadingProgress
-                                                                                .expectedTotalBytes !=
-                                                                            null
-                                                                        ? loadingProgress
-                                                                                .cumulativeBytesLoaded /
-                                                                            (loadingProgress.expectedTotalBytes ??
-                                                                                1)
-                                                                        : null,
+                                                                      Container(
+                                                                    height: 20,
+                                                                    width: 20,
+                                                                    child:
+                                                                        CircularProgressIndicator(
+                                                                      strokeWidth:
+                                                                          2.0,
+                                                                      value: loadingProgress.expectedTotalBytes !=
+                                                                              null
+                                                                          ? loadingProgress.cumulativeBytesLoaded /
+                                                                              (loadingProgress.expectedTotalBytes ?? 1)
+                                                                          : null,
+                                                                    ),
                                                                   ),
                                                                 );
                                                               },
@@ -974,19 +1186,23 @@ class _DashboardPageState extends State<DashboardPage> {
                                                                 return const Icon(
                                                                   Icons.error,
                                                                   size: 50,
-                                                                  color:
-                                                                      Colors.red,
+                                                                  color: Colors
+                                                                      .red,
                                                                 );
                                                               },
                                                             ),
                                                           ),
                                                           Text(
-                                                            state.resp.products
-                                                                .data[index].name,
+                                                            state
+                                                                .resp
+                                                                .products
+                                                                .data[index]
+                                                                .name,
                                                             style: AppStyle
-                                                                .cardfooter
+                                                                .cardSubtitle
                                                                 .copyWith(
-                                                                    fontSize: 12),
+                                                                    fontSize:
+                                                                        12),
                                                             //overflow: TextOverflow.ellipsis,
                                                             //maxLines: 1,
                                                           ),
@@ -1002,15 +1218,31 @@ class _DashboardPageState extends State<DashboardPage> {
                                                 Container(),
                                                 const Spacer(),
                                                 OutlinedButton.icon(
-                                                    onPressed:() {
-                                                      Navigator.push(context, MaterialPageRoute(builder: (_) => EshopWidget(token: token)));
-                                                    },
-                                                    label: Row(
-                                                      children: [
-                                                        Text('more', style: AppStyle.cardfooter,),
-                                                        const Icon(Icons.arrow_forward, color: Colors.green, size: 18,)
-                                                      ],
-                                                    ),),
+                                                  onPressed: () {
+                                                    Navigator.push(
+                                                        context,
+                                                        MaterialPageRoute(
+                                                            builder: (_) =>
+                                                                EshopWidget(
+                                                                    token:
+                                                                        token)));
+                                                  },
+                                                  label: Row(
+                                                    children: [
+                                                      Text(
+                                                        'more',
+                                                        style:
+                                                            AppStyle.cardfooter,
+                                                      ),
+                                                      Icon(
+                                                        Icons.arrow_forward,
+                                                        color:
+                                                            Colors.green[500],
+                                                        size: 18,
+                                                      )
+                                                    ],
+                                                  ),
+                                                ),
                                               ],
                                             )
                                           ],
@@ -1242,9 +1474,14 @@ class _DashboardPageState extends State<DashboardPage> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     InkWell(
-                                      onTap: (){
-                                        Navigator.push(context, MaterialPageRoute(builder: (_) => Maintenance(token: token,)));
-                                      },
+                                        onTap: () {
+                                          Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                  builder: (_) => Maintenance(
+                                                        token: token,
+                                                      )));
+                                        },
                                         child: _buildReminderCard()),
                                     // const SizedBox(height: 0),
                                     // _buildMaintenanceCard(),
@@ -1282,7 +1519,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                 const SizedBox(
                                   height: 10,
                                 ),
-                                 Column(
+                                Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     MotorShieldCard(token: token),
@@ -1338,8 +1575,8 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   Widget DashboardComponentTitle(
-        {required String title, required String subTitle}) {
-      return Row(
+      {required String title, required String subTitle}) {
+    return Row(
       children: [
         const CircleAvatar(
           backgroundColor: Colors.white,
@@ -1362,7 +1599,7 @@ class _DashboardPageState extends State<DashboardPage> {
               children: [
                 Text(
                   title,
-                  style: AppStyle.cardSubtitle,
+                  style: AppStyle.cardSubtitle.copyWith(fontSize: 14),
                 ),
                 Text(
                   subTitle,
@@ -1560,7 +1797,7 @@ class _DashboardPageState extends State<DashboardPage> {
   //     ),
   //   );
   // }
-///
+  ///
   // Widget _buildOdometerRow(String name, int value) {
   //   return Row(
   //     children: [
@@ -1722,64 +1959,69 @@ class MotorShieldCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final dashVehicleReqEntity = DashVehicleReqEntity(
         token: token ?? "", contentType: 'application/json');
-    return  BlocProvider(
+    return BlocProvider(
       create: (_) => sl<VehicleTripBloc>()
-        ..add(DashVehicleEvent(
-            DashVehicleReqEntity(token: dashVehicleReqEntity.token, contentType: dashVehicleReqEntity.contentType))),
-      child: BlocConsumer<VehicleTripBloc,
-          DashboardState>(
+        ..add(DashVehicleEvent(DashVehicleReqEntity(
+            token: dashVehicleReqEntity.token,
+            contentType: dashVehicleReqEntity.contentType))),
+      child: BlocConsumer<VehicleTripBloc, DashboardState>(
         builder: (context, state) {
           if (state is DashboardLoading) {
             return const Center(
               child: Padding(
                 padding: EdgeInsets.only(top: 10.0),
-                child: CircularProgressIndicator(
-                    strokeWidth: 2.0),
+                child: CircularProgressIndicator(strokeWidth: 2.0),
               ),
             );
           } else if (state is VehicleTripDone) {
-
-            return
-              Column(
+            return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Details Section
                 _DetailItem(title: "Vehicle", value: state.resp[0].vehicleVin),
                 _DetailItem(title: "Driver", value: state.resp[0].name),
                 // _DetailItem(title: "Trip Status", value: state.resp.),
-                _DetailItem(title: "Start Time", value: state.resp[0].tripLocations[0].createdAt),
-                _DetailItem(title: "Start Location", value: state.resp[0].tripLocations[0].startLocation),
-                _DetailItem(title: "End Time", value: state.resp[0].tripLocations[0].arrivalTime),
-                _DetailItem(title: "End Location", value: state.resp[0].tripLocations[0].endLocation),
-                _DetailItem(title: "Start Latitude", value: state.resp[0].tripLocations[0].startLat),
-                _DetailItem(title: "End Latitude", value: state.resp[0].tripLocations[0].endLat),
+                _DetailItem(
+                    title: "Start Time",
+                    value: state.resp[0].tripLocations[0].createdAt),
+                _DetailItem(
+                    title: "Start Location",
+                    value: state.resp[0].tripLocations[0].startLocation),
+                _DetailItem(
+                    title: "End Time",
+                    value: state.resp[0].tripLocations[0].arrivalTime),
+                _DetailItem(
+                    title: "End Location",
+                    value: state.resp[0].tripLocations[0].endLocation),
+                _DetailItem(
+                    title: "Start Latitude",
+                    value: state.resp[0].tripLocations[0].startLat),
+                _DetailItem(
+                    title: "End Latitude",
+                    value: state.resp[0].tripLocations[0].endLat),
                 // _DetailItem(title: "Number of Event", value: ),
               ],
             );
           } else {
             return Center(
                 child: Text(
-                  'No records found',
-                  style: AppStyle.cardfooter,
-                ));
+              'No records found',
+              style: AppStyle.cardfooter,
+            ));
           }
         },
         listener: (context, state) {
           if (state is DashboardFailure) {
             if (state.message.contains("401")) {
-              Navigator.pushNamed(
-                  context, "/login");
+              Navigator.pushNamed(context, "/login");
             }
-            ScaffoldMessenger.of(context)
-                .showSnackBar(
-              SnackBar(
-                  content: Text(state.message)),
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(state.message)),
             );
           }
         },
       ),
     );
-
   }
 }
 

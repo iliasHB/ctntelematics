@@ -1,7 +1,9 @@
+import 'package:ctntelematics/core/widgets/custom_input_decorator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/utils/app_export_util.dart';
+import '../../../../core/widgets/custom_button.dart';
 import '../../domain/entities/auth_req_entites/login_req_entity.dart';
 import '../bloc/auth_bloc.dart';
 
@@ -29,7 +31,8 @@ class _LoginPageState extends State<LoginPage> {
       String email,
       String token,
       String phone,
-      String status, String user_type) async {
+      String status,
+      String user_type) async {
     // SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefUtils.setStringList('auth_user', <String>[
       first_name,
@@ -52,38 +55,59 @@ class _LoginPageState extends State<LoginPage> {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Image.asset("assets/images/tematics_name.jpeg", height: 100,),
+            Image.asset(
+              "assets/images/tematics_name.jpeg",
+              height: 100,
+            ),
             const SizedBox(height: 40),
 
             Form(
                 key: _formKey,
                 child: Column(
                   children: [
-                    TextField(
+                    TextFormField(
                       controller: _emailController,
-                      decoration: InputDecoration(
-                        labelText: 'Username or email',
-                        hintText: 'francisjoe@gmail.com',
-                        prefixIcon: const Icon(Icons.email_outlined,
-                            color: Colors.green),
-                        filled: true,
-                        fillColor: Colors.grey[200],
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
+                      cursorColor: Colors.green,
+                      decoration: customInputDecoration(
+                          labelText: 'Username or email',
+                          hintText: 'abc@gmail.com'),
+                      validator: (value) {
+                        if (_emailController.text.isEmpty ||
+                            _emailController.text == "") {
+                          return "Username or email is empty";
+                        }
+                        return null;
+                      },
+
+                      // InputDecoration(
+                      //   labelText: 'Username or email',
+                      //   hintText: 'francisjoe@gmail.com',
+                      //   hintStyle: AppStyle.cardfooter,
+                      //   prefixIcon: const Icon(Icons.email_outlined,
+                      //       color: Colors.green),
+                      //   filled: true,
+                      //   fillColor: Colors.grey[200],
+                      //   border: OutlineInputBorder(
+                      //     borderRadius: BorderRadius.circular(10),
+                      //     borderSide: BorderSide.none,
+                      //   ),
+                      // ),
                     ),
 
                     const SizedBox(height: 16),
 
                     // Password Field
-                    TextField(
+                    TextFormField(
                       controller: _passwordController,
                       obscureText: isPasswordVisible,
+                      cursorColor: Colors.green,
                       decoration: InputDecoration(
                         labelText: 'Password',
-                        hintText: 'Francisjoe@123',
+                        hintText: 'abc@gmail.com',
+                        hintStyle: AppStyle.cardfooter
+                            .copyWith(fontSize: 12, color: Colors.grey[600]),
+                        labelStyle: AppStyle.cardfooter
+                            .copyWith(fontSize: 12, color: Colors.green[800]),
                         prefixIcon:
                             const Icon(Icons.lock_outline, color: Colors.green),
                         suffix: InkWell(
@@ -95,9 +119,14 @@ class _LoginPageState extends State<LoginPage> {
                               });
                             },
                             child: isPasswordVisible
-                                ? const Icon(Icons.remove_red_eye, color: Colors.green,)
-                                : const Icon(Icons
-                                .remove_red_eye_outlined, color: Colors.green,)),
+                                ? const Icon(
+                                    Icons.remove_red_eye,
+                                    color: Colors.green,
+                                  )
+                                : const Icon(
+                                    Icons.remove_red_eye_outlined,
+                                    color: Colors.green,
+                                  )),
                         filled: true,
                         fillColor: Colors.grey[200],
                         border: OutlineInputBorder(
@@ -105,6 +134,13 @@ class _LoginPageState extends State<LoginPage> {
                           borderSide: BorderSide.none,
                         ),
                       ),
+                      validator: (value) {
+                        if (_passwordController.text.isEmpty ||
+                            _passwordController.text == "") {
+                          return "Password is empty";
+                        }
+                        return null;
+                      },
                     ),
                   ],
                 )),
@@ -129,9 +165,10 @@ class _LoginPageState extends State<LoginPage> {
                 TextButton(
                   onPressed: () =>
                       Navigator.pushNamed(context, "/forgetPassword"),
-                  child: const Text(
+                  child: Text(
                     'Forgotten Password?',
-                    style: TextStyle(color: Colors.red),
+                    style: AppStyle.cardfooter
+                        .copyWith(fontSize: 14, color: Colors.red),
                   ),
                 ),
               ],
@@ -168,15 +205,17 @@ class _LoginPageState extends State<LoginPage> {
                   return const Center(
                     child: SizedBox(
                       height: 30, // Adjust the height
-                      width: 30,  // Adjust the width
+                      width: 30, // Adjust the width
                       child: CircularProgressIndicator(
                         strokeWidth: 3, // Adjust the thickness
-                        color: Colors.green, // Optional: Change the color to match your theme
+                        color: Colors
+                            .green, // Optional: Change the color to match your theme
                       ),
                     ),
                   );
                 }
-                return ElevatedButton(
+                return CustomPrimaryButton(
+                  label: 'Log in',
                   onPressed: () {
                     if (_formKey.currentState?.validate() ?? false) {
                       final loginReqEntity = LoginReqEntity(
@@ -185,20 +224,31 @@ class _LoginPageState extends State<LoginPage> {
                       context.read<LoginBloc>().add(LoginEvent(loginReqEntity));
                     }
                   },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                  child: const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 16.0),
-                    child: Text(
-                      'Login',
-                      style: TextStyle(fontSize: 18),
-                    ),
-                  ),
                 );
+
+                //   ElevatedButton(
+                //   onPressed: () {
+                //     if (_formKey.currentState?.validate() ?? false) {
+                //       final loginReqEntity = LoginReqEntity(
+                //           email: _emailController.text.trim(),
+                //           password: _passwordController.text.trim());
+                //       context.read<LoginBloc>().add(LoginEvent(loginReqEntity));
+                //     }
+                //   },
+                //   style: ElevatedButton.styleFrom(
+                //     backgroundColor: Colors.green,
+                //     shape: RoundedRectangleBorder(
+                //       borderRadius: BorderRadius.circular(10),
+                //     ),
+                //   ),
+                //   child: Padding(
+                //     padding: EdgeInsets.symmetric(vertical: 16.0),
+                //     child: Text(
+                //       'Login',
+                //       style: AppStyle.cardfooter.copyWith(fontSize: 16),
+                //     ),
+                //   ),
+                // );
               },
             ),
             // Login Button
@@ -206,10 +256,11 @@ class _LoginPageState extends State<LoginPage> {
             const SizedBox(height: 20),
 
             // Terms & Conditions
-            const Text(
+            Text(
               'By successful login you are agreeing with our Terms & Conditions and Privacy Policy.',
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.grey, fontSize: 12),
+              style: AppStyle.cardfooter
+                  .copyWith(fontSize: 12, color: Colors.grey),
             ),
           ],
         ),

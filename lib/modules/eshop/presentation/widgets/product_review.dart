@@ -1,4 +1,5 @@
 import 'package:ctntelematics/config/theme/app_style.dart';
+import 'package:ctntelematics/core/widgets/custom_button.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -7,9 +8,26 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../service_locator.dart';
 import '../../domain/entitties/req_entities/token_req_entity.dart';
 import '../bloc/eshop_bloc.dart';
+import 'checkout.dart';
 
 class ProductReview extends StatefulWidget {
-  const ProductReview({super.key});
+  final String productName;
+  final String productImage;
+  final String price;
+  final String categoryId;
+  final String description;
+  final String token;
+  final int productId;
+  const ProductReview({
+    super.key,
+    required this.productName,
+    required this.productImage,
+    required this.price,
+    required this.categoryId,
+    required this.description,
+    required this.token,
+    required this.productId,
+  });
 
   @override
   State<ProductReview> createState() => _ProductReviewState();
@@ -18,29 +36,63 @@ class ProductReview extends StatefulWidget {
 class _ProductReviewState extends State<ProductReview> {
   int quantity = 1; // Move quantity here so it persists across widget rebuilds
   bool showQty = false;
+
+  String? productName;
+  String? productImage;
+  String? price;
+  String? categoryId;
+  String? description;
+  int? productId;
+
+  // double? unitPrice; // Store the original price as a double
+  // double totalPrice = 0.0; // Store the total price dynamically
+
+  double priceValue = 0.0;  // Store the numeric price
+
+  @override
+  void initState() {
+    super.initState();
+    productName = widget.productName;
+    productImage = widget.productImage;
+    price = widget.price;
+    priceValue = double.tryParse(price ?? '0.0') ?? 0.0;
+    categoryId = widget.categoryId;
+    description = widget.description;
+    productId = widget.productId;
+  }
+
+  void onProductSelected({
+    required String newProductName,
+    required String newProductImage,
+    required String newPrice,
+    required String newCategoryId,
+    required String newDescription,
+    required int newProductId,
+  }) {
+    print('Product selected: $newProductName');
+    setState(() {
+      productName = newProductName;
+      productImage = newProductImage;
+      price = newPrice;
+      categoryId = newCategoryId;
+      description = newDescription;
+      productId = newProductId;
+      // Convert the price from string to double for calculation
+      priceValue = double.tryParse(price ?? '0.0') ?? 0.0;
+    });
+  }
+
+  double getTotalPrice() {
+    return priceValue * quantity;
+  }
+
+  // void _updateTotalPrice() {
+  //   setState(() {
+  //     totalPrice = (unitPrice ?? 0.0) * quantity;
+  //   });
+  // }
   @override
   Widget build(BuildContext context) {
-
-    // Retrieve arguments passed from the previous page
-    final arguments =
-        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>;
-
-    // Access individual fields
-    final productName = arguments['productName'];
-    final productImage = arguments['productImage'];
-    final price = double.parse(arguments['price']);
-    final categoryId = arguments['categoryId'];
-    final description = arguments['description'];
-    final token = arguments['token'];
-
-    void _buyNow() {
-      Navigator.pushNamed(context, "/checkout", arguments: {
-        'productName': productName,
-        'productImage': productImage,
-        'price': price,
-        'quantity': quantity,
-      });
-    }
 
     return Scaffold(
       appBar: AppBar(),
@@ -51,10 +103,9 @@ class _ProductReviewState extends State<ProductReview> {
             children: [
               Card(
                 child: Center(
-          
                   child: Image.network(
-                    'https://ecom.verifycentre.com'+productImage,
-                    headers: {'Authorization': token},
+                    'https://ecom.verifycentre.com${productImage!}',
+                    headers: {'Authorization': widget.token},
                     loadingBuilder: (BuildContext context, Widget child,
                         ImageChunkEvent? loadingProgress) {
                       if (loadingProgress == null) {
@@ -83,13 +134,22 @@ class _ProductReviewState extends State<ProductReview> {
               const SizedBox(
                 height: 10,
               ),
-          
+
               Align(
                   alignment: Alignment.topLeft,
-                  child: Text(
-                    "description: $description",
-                    style: AppStyle.cardfooter,
-                    textAlign: TextAlign.start,
+                  child: Row(
+                    children: [
+                      Text(
+                        "Description: ",
+                        style: AppStyle.cardSubtitle.copyWith(fontSize: 14),
+                        textAlign: TextAlign.start,
+                      ),
+                      Text(
+                        "$description",
+                        style: AppStyle.cardfooter,
+                        textAlign: TextAlign.start,
+                      ),
+                    ],
                   )),
               const SizedBox(
                 height: 5,
@@ -99,9 +159,9 @@ class _ProductReviewState extends State<ProductReview> {
                 children: [
                   Text(
                     "Product: $productName",
-                    style: AppStyle.cardSubtitle,
+                    style: AppStyle.cardSubtitle.copyWith(fontSize: 14),
                   ),
-                  const Icon(CupertinoIcons.heart)
+                  // const Icon(CupertinoIcons.heart)
                 ],
               ),
               const SizedBox(
@@ -109,101 +169,130 @@ class _ProductReviewState extends State<ProductReview> {
               ),
               Align(
                 alignment: Alignment.topLeft,
-                child: Text(price.toString(), style: AppStyle.cardSubtitle),
+                child:
+                    Row(
+                      children: [
+
+                        Text('Price: ',  style: AppStyle.cardSubtitle.copyWith(fontSize: 14)),
+                        Image.asset('assets/images/naira.png', height: 20, width: 20,),
+                        // Text(price.toString(), style: AppStyle.cardSubtitle.copyWith(color: Colors.green),),
+                        Text(
+                          getTotalPrice().toStringAsFixed(2), // Display total price
+                          style: AppStyle.cardSubtitle.copyWith(color: Colors.green),
+                        ),
+                      ],
+                    ),
               ),
-          
-              SizedBox(
+
+              const SizedBox(
                 height: 20,
               ),
-          
+
               // Quantity Controls
-              showQty == false ? Container() : Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text("Quantity:", style: AppStyle.cardSubtitle),
-                  Row(
-                    children: [
-                      OutlinedButton.icon(
-                        onPressed: quantity > 1
-                            ? () {
-                                setState(() => quantity--);
-                              }
-                            : null,
-                        icon: const Icon(Icons.remove),
-                        label: const SizedBox(), // Remove the label
-                        style: OutlinedButton.styleFrom(
-                          padding:
-                              EdgeInsets.zero, // Remove padding around the icon
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(
-                                2), // Minimized border radius
-                          ),
+              showQty == false
+                  ? Container()
+                  : Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text("Quantity:", style: AppStyle.cardSubtitle),
+                        Row(
+                          children: [
+                            ElevatedButton.icon(
+                              onPressed: quantity > 1
+                                  ? () {
+                                      setState(() => quantity--);
+                                    }
+                                  : null,
+                              icon: const Icon(Icons.remove),
+                              label: const SizedBox(), // Remove the label
+                              style: ElevatedButton.styleFrom(
+                                padding: EdgeInsets
+                                    .zero, // Remove padding around the icon
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(
+                                      2), // Minimized border radius
+                                ),
+                              ),
+                            ),
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 10.0),
+                              child: Text('$quantity',
+                                  style: AppStyle.cardSubtitle),
+                            ),
+                            ElevatedButton.icon(
+                              onPressed: () {
+                                setState(() {
+                                  // double pri = price + price;
+                                  // print("price: $pri");
+                                  quantity++;
+                                });
+                              },
+                              icon: const Icon(Icons.add),
+                              label: const SizedBox(), // Remove the label
+                              style: ElevatedButton.styleFrom(
+                                padding: EdgeInsets
+                                    .zero, // Remove padding around the icon
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(
+                                      2), // Minimized border radius
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                        child: Text('$quantity', style: AppStyle.cardSubtitle),
-                      ),
-                      OutlinedButton.icon(
-                        onPressed: () {
-                          setState(() {
-                            double pri = price + price;
-                            print("price: $pri");
-                            quantity++;
-                          });
-          
-                        },
-                        icon: const Icon(Icons.add),
-                        label: const SizedBox(), // Remove the label
-                        style: OutlinedButton.styleFrom(
-                          padding:
-                              EdgeInsets.zero, // Remove padding around the icon
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(
-                                2), // Minimized border radius
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-              SizedBox(
+                      ],
+                    ),
+              const SizedBox(
                 height: 10,
               ),
               // Action Buttons
               Row(children: [
-                showQty == false ? Expanded(
-                  child: ElevatedButton(
-                    onPressed: _addToCart,
-                    child: Padding(
-                      padding: EdgeInsets.all(15.0),
-                      child: Text("Add to Cart",
-                          style: AppStyle.cardSubtitle
-                              .copyWith(color: Colors.green[800])),
-                    ),
-                  ),
-                ) : OutlinedButton(onPressed: (){
-                  setState(() {
-                    quantity = 1;
-                    showQty = false;
-                  });
-          
-                }, child: Icon(Icons.delete, color: Colors.red,)),
+                showQty == false
+                    ? Expanded(
+                        child: CustomPrimaryButton(
+                        label: 'Add to Cart',
+                        onPressed: _addToCart,
+                      )
+                        )
+                    : ElevatedButton(
+                        onPressed: () {
+                          setState(() {
+                            quantity = 1;
+                            showQty = false;
+                          });
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green[500], // Default here
+                          padding: const EdgeInsets.symmetric(vertical: 0.0),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(5),
+                          ),
+                        ),
+                        child: const Icon(
+                          Icons.delete,
+                          color: Colors.white,
+                        )),
                 const SizedBox(width: 10),
                 Expanded(
-                  child: OutlinedButton(
-                    onPressed: _buyNow,
-                    child: Padding(
-                      padding: EdgeInsets.all(15.0),
-                      child: Text("Buy Now",
-                          style: AppStyle.cardSubtitle
-                              .copyWith(color: Colors.green)),
-                    ),
-                  ),
+                  child: CustomSecondaryButton(
+                      label: "Buy Now",
+                      onPressed: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => Checkout(
+                                    productName: productName!,
+                                    productImage: productImage!,
+                                    price: getTotalPrice().toString(),//priceValue.toString(),
+                                    categoryId: categoryId!,
+                                    description: description!,
+                                    token: widget.token,
+                                    productId: productId!,
+                                    quantity: quantity,
+                                  )))),
                 ),
               ]),
-              SizedBox(
+              const SizedBox(
                 height: 20,
               ),
               Align(
@@ -216,7 +305,7 @@ class _ProductReviewState extends State<ProductReview> {
               BlocProvider(
                 create: (_) => sl<EshopGetAllProductBloc>()
                   ..add(EshopGetProductsEvent(
-                      EshopTokenReqEntity(token: token ?? ""))),
+                      EshopTokenReqEntity(token: widget.token ?? ""))),
                 child: BlocConsumer<EshopGetAllProductBloc, EshopState>(
                   builder: (context, state) {
                     if (state is EshopLoading) {
@@ -237,7 +326,7 @@ class _ProductReviewState extends State<ProductReview> {
                           ),
                         );
                       }
-          
+
                       return Column(
                         children: [
                           GridView.builder(
@@ -248,18 +337,26 @@ class _ProductReviewState extends State<ProductReview> {
                                 const SliverGridDelegateWithFixedCrossAxisCount(
                               crossAxisCount: 2, // Number of columns
                               childAspectRatio:
-                                  0.9, // Adjust for width-to-height ratio
+                                  1.11, // Adjust for width-to-height ratio
                               mainAxisSpacing: 0, // Removes vertical spacing
                               crossAxisSpacing: 0, // Removes horizontal spacing
                             ),
                             itemBuilder: (BuildContext context, int index) {
+                              var product = state.resp.similar_goods.data[index];
                               return CategoryItem(
-                                productName: state.resp.products.data[index].name,
-                                productImage:
-                                    state.resp.products.data[index].image,
-                                price: state.resp.products.data[index].price
-                                    .toString(),
-                                token: token
+                                productName: product.name,
+                                productImage: product.image,
+                                price: product.price.toString(),
+                                token: widget.token,
+                                productId: product.id,
+                                onProductSelected: () => onProductSelected(
+                                  newProductName: product.name,
+                                  newProductImage: product.image,
+                                  newPrice: product.price.toString(),
+                                  newCategoryId: product.category_id.toString(),
+                                  newDescription: product.description,
+                                  newProductId: product.id,
+                                ),
                               );
                             },
                           )
@@ -301,76 +398,132 @@ class _ProductReviewState extends State<ProductReview> {
 
 class CategoryItem extends StatelessWidget {
   final String productImage, productName, price, token;
+  final int productId;
+  final VoidCallback onProductSelected;
   const CategoryItem(
       {super.key,
       required this.productImage,
       required this.productName,
-      required this.price, required this.token});
+      required this.price,
+      required this.token,
+      required this.productId, required this.onProductSelected,});
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Container(
-          margin: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 10),
-          decoration: BoxDecoration(
-              color: Colors.green.shade50,
-              borderRadius: BorderRadius.circular(10)),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 5),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Center(
-                  child: Image.network(
-                    'https://ecom.verifycentre.com$productImage',
-                    headers: {'Authorization': token},
-                    loadingBuilder: (BuildContext context, Widget child,
-                        ImageChunkEvent? loadingProgress) {
-                      if (loadingProgress == null) {
-                        return child;
-                      }
-                      return Center(
-                        child: CircularProgressIndicator(
-                          value: loadingProgress.expectedTotalBytes != null
-                              ? loadingProgress.cumulativeBytesLoaded /
-                                  (loadingProgress.expectedTotalBytes ?? 1)
-                              : null,
+    return GestureDetector(
+      onTap: onProductSelected,
+      child: Column(
+        children: [
+          Stack(
+            children: [
+              Container(
+                margin: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 10),
+                decoration: BoxDecoration(
+                    color: Colors.green.shade50,
+                    borderRadius: BorderRadius.circular(10)),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 5),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Center(
+                        child: Image.network(
+                          'https://ecom.verifycentre.com$productImage',
+                          headers: {'Authorization': token},
+                          height: 100,
+                          width: 100,
+                          loadingBuilder: (BuildContext context, Widget child,
+                              ImageChunkEvent? loadingProgress) {
+                            if (loadingProgress == null) {
+                              return child;
+                            }
+                            return Center(
+                              child: CircularProgressIndicator(
+                                value: loadingProgress.expectedTotalBytes != null
+                                    ? loadingProgress.cumulativeBytesLoaded /
+                                        (loadingProgress.expectedTotalBytes ?? 1)
+                                    : null,
+                              ),
+                            );
+                          },
+                          errorBuilder: (BuildContext context, Object error,
+                              StackTrace? stackTrace) {
+                            return const Icon(
+                              Icons.error,
+                              size: 50,
+                              color: Colors.red,
+                            );
+                          },
                         ),
-                      );
-                    },
-                    errorBuilder: (BuildContext context, Object error,
-                        StackTrace? stackTrace) {
-                      return const Icon(
-                        Icons.error,
-                        size: 50,
-                        color: Colors.red,
-                      );
-                    },
+                      ),
+                      Center(
+                        child: Text(
+                          productName,
+                          style: AppStyle.cardfooter,
+                          textAlign: TextAlign.center,
+                          softWrap: true,
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 3,
+                        ),
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Image.asset('assets/images/naira.png', height: 20, width: 20,),
+                          Text(
+                            price,
+                            style: TextStyle(
+                                color: Colors.green.shade900,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w500),
+                          ),
+                        ],
+                      )
+                    ],
                   ),
                 ),
-                Center(
-                  child: Text(
-                    productName,
-                    textAlign: TextAlign.center,
-                    softWrap: true,
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 3,
-                  ),
-                ),
-                Text(
-                  "\$ $price",
-                  style: TextStyle(
-                      color: Colors.green.shade900,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w500),
-                )
-              ],
-            ),
+              ),
+              Positioned(
+                  top: 20,
+                  right: 15,
+                  child: Column(
+                    children: [
+                      Container(
+                        decoration: BoxDecoration(
+                            border: Border.all(width: 1, color: Colors.white),
+                            borderRadius: BorderRadius.circular(50)),
+                        child: CircleAvatar(
+                          radius: 15,
+                          backgroundColor: Colors.green[700],
+                          child: const Icon(
+                            Icons.shopping_cart_outlined, color: Colors.white,
+                            size: 15,
+                          ),
+                        ),
+                      ),
+                      // const SizedBox(
+                      //   height: 5,
+                      // ),
+                      // Container(
+                      //   decoration: BoxDecoration(
+                      //       border: Border.all(width: 1, color: Colors.grey),
+                      //       borderRadius: BorderRadius.circular(50)),
+                      //   child: const CircleAvatar(
+                      //     radius: 15,
+                      //     backgroundColor: Colors.white,
+                      //     child: Icon(
+                      //       Icons.favorite_border,
+                      //       size: 15,
+                      //     ),
+                      //   ),
+                      // )
+                    ],
+                  ))
+            ],
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

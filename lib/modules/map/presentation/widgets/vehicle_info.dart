@@ -6,18 +6,26 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
 class VehicleInfo extends StatelessWidget {
-  final String voltage_level, speed, latitude, longitude, status, updated_at, number_plate, gsm_signal_strength;
+  final String voltage_level,
+      speed,
+      latitude,
+      longitude,
+      status,
+      updated_at,
+      number_plate,
+      gsm_signal_strength;
   final bool real_time_gps;
-  const VehicleInfo({super.key,
-    required this.voltage_level,
-    required this.speed,
-    required this.latitude,
-    required this.longitude,
-    required this.real_time_gps,
-    required this.status,
-    required this.gsm_signal_strength,
-    required this.updated_at, required this.number_plate
-  });
+  const VehicleInfo(
+      {super.key,
+      required this.voltage_level,
+      required this.speed,
+      required this.latitude,
+      required this.longitude,
+      required this.real_time_gps,
+      required this.status,
+      required this.gsm_signal_strength,
+      required this.updated_at,
+      required this.number_plate});
 
   @override
   Widget build(BuildContext context) {
@@ -33,10 +41,12 @@ class VehicleInfo extends StatelessWidget {
                 ),
               ],
             ),
-            actions: [const Padding(
-              padding: EdgeInsets.only(right: 8.0),
-              child: Icon(Icons.refresh),
-            )],
+            // actions: [
+            //   const Padding(
+            //     padding: EdgeInsets.only(right: 8.0),
+            //     child: Icon(Icons.refresh),
+            //   )
+            // ],
           ),
           body: SingleChildScrollView(
             child: Column(
@@ -136,7 +146,8 @@ class VehicleInfo extends StatelessWidget {
                                               style: AppStyle.cardSubtitle),
                                           Text(
                                             "KM/H",
-                                            style: AppStyle.cardSubtitle.copyWith(fontSize: 12),
+                                            style: AppStyle.cardSubtitle
+                                                .copyWith(fontSize: 12),
                                           )
                                         ],
                                       )
@@ -153,7 +164,7 @@ class VehicleInfo extends StatelessWidget {
                         Row(
                           children: [
                             Padding(
-                              padding: const EdgeInsets.only(left:8.0),
+                              padding: const EdgeInsets.only(left: 8.0),
                               child: const CircleAvatar(
                                 backgroundColor: Colors.red,
                                 radius: 3,
@@ -167,13 +178,13 @@ class VehicleInfo extends StatelessWidget {
                                 children: [
                                   Text(
                                     status,
-                                    style: AppStyle.cardSubtitle.copyWith(fontSize: 12),
+                                    style: AppStyle.cardSubtitle
+                                        .copyWith(fontSize: 12),
                                   ),
                                   Spacer(),
-                                  Text(
-                                    FormatData.formatTimeAgo(updated_at),
-                                    style: AppStyle.cardfooter.copyWith(color: Colors.red)
-                                  ),
+                                  Text(FormatData.formatTimeAgo(updated_at),
+                                      style: AppStyle.cardfooter
+                                          .copyWith(color: Colors.red)),
                                 ],
                               ),
                             ),
@@ -211,11 +222,13 @@ class VehicleInfo extends StatelessWidget {
                               children: [
                                 Text(
                                   "Coordinate ",
-                                  style: AppStyle.cardSubtitle.copyWith(fontSize: 12),
+                                  style: AppStyle.cardSubtitle
+                                      .copyWith(fontSize: 12),
                                 ),
                                 Text(
                                   '${latitude}, ${longitude}',
-                                  style: AppStyle.cardfooter.copyWith(fontSize: 12),
+                                  style: AppStyle.cardfooter
+                                      .copyWith(fontSize: 12),
                                 ),
                               ],
                             )),
@@ -453,10 +466,11 @@ class VehicleInfo extends StatelessWidget {
                           children: [
                             Center(
                                 child: Text(
-                                  "\nGPS LeveL",
-                                  textAlign: TextAlign.center,
-                                  style: AppStyle.cardSubtitle.copyWith(fontSize: 12),
-                                )),
+                              "\nGPS LeveL",
+                              textAlign: TextAlign.center,
+                              style:
+                                  AppStyle.cardSubtitle.copyWith(fontSize: 12),
+                            )),
                             const SizedBox(
                               height: 10,
                             ),
@@ -476,9 +490,12 @@ class VehicleInfo extends StatelessWidget {
                                 Flexible(
                                   child: Text(
                                     real_time_gps.toString(),
-                                    style: AppStyle.cardfooter.copyWith(fontSize: 12),
-                                    softWrap: true,  // This ensures the text wraps to the next line if needed.
-                                    overflow: TextOverflow.ellipsis,  // You can change this to TextOverflow.clip if preferred.
+                                    style: AppStyle.cardfooter
+                                        .copyWith(fontSize: 12),
+                                    softWrap:
+                                        true, // This ensures the text wraps to the next line if needed.
+                                    overflow: TextOverflow
+                                        .ellipsis, // You can change this to TextOverflow.clip if preferred.
                                     maxLines: 2,
                                   ),
                                 ),
@@ -495,10 +512,11 @@ class VehicleInfo extends StatelessWidget {
                           children: [
                             Center(
                                 child: Text(
-                                  "\nGSM Level",
-                                  textAlign: TextAlign.center,
-                                    style: AppStyle.cardSubtitle.copyWith(fontSize: 12),
-                                )),
+                              "\nGSM Level",
+                              textAlign: TextAlign.center,
+                              style:
+                                  AppStyle.cardSubtitle.copyWith(fontSize: 12),
+                            )),
                             const SizedBox(
                               height: 10,
                             ),
@@ -515,12 +533,15 @@ class VehicleInfo extends StatelessWidget {
                                 const SizedBox(
                                   width: 5,
                                 ),
-        Flexible(
+                                Flexible(
                                   child: Text(
-                                      gsm_signal_strength,
-                                    style: AppStyle.cardfooter.copyWith(fontSize: 12),
-                                    softWrap: true,  // This ensures the text wraps to the next line if needed.
-                                    overflow: TextOverflow.ellipsis,  // You can change this to TextOverflow.clip if preferred.
+                                    gsm_signal_strength,
+                                    style: AppStyle.cardfooter
+                                        .copyWith(fontSize: 12),
+                                    softWrap:
+                                        true, // This ensures the text wraps to the next line if needed.
+                                    overflow: TextOverflow
+                                        .ellipsis, // You can change this to TextOverflow.clip if preferred.
                                     maxLines: 2,
                                   ),
                                 ),
@@ -536,10 +557,11 @@ class VehicleInfo extends StatelessWidget {
                           children: [
                             Center(
                                 child: Text(
-                                  "\nIgnition",
-                                  textAlign: TextAlign.center,
-                                  style: AppStyle.cardSubtitle.copyWith(fontSize: 12),
-                                )),
+                              "\nIgnition",
+                              textAlign: TextAlign.center,
+                              style:
+                                  AppStyle.cardSubtitle.copyWith(fontSize: 12),
+                            )),
                             const SizedBox(
                               height: 10,
                             ),
@@ -559,9 +581,12 @@ class VehicleInfo extends StatelessWidget {
                                 Flexible(
                                   child: Text(
                                     "OFF",
-                                    style: AppStyle.cardfooter.copyWith(fontSize: 12),
-                                    softWrap: true,  // This ensures the text wraps to the next line if needed.
-                                    overflow: TextOverflow.ellipsis,  // You can change this to TextOverflow.clip if preferred.
+                                    style: AppStyle.cardfooter
+                                        .copyWith(fontSize: 12),
+                                    softWrap:
+                                        true, // This ensures the text wraps to the next line if needed.
+                                    overflow: TextOverflow
+                                        .ellipsis, // You can change this to TextOverflow.clip if preferred.
                                     maxLines: 2,
                                   ),
                                 ),
@@ -661,16 +686,16 @@ class VehicleInfo extends StatelessWidget {
                           children: [
                             Center(
                                 child: Text(
-                                  "Odometer",
-                                  textAlign: TextAlign.center,
-                                  style: AppStyle.cardSubtitle.copyWith(fontSize: 12),
-                                )),
+                              "Odometer",
+                              textAlign: TextAlign.center,
+                              style:
+                                  AppStyle.cardSubtitle.copyWith(fontSize: 12),
+                            )),
                             const SizedBox(
                               height: 10,
                             ),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
-
                               children: [
                                 CircleAvatar(
                                   backgroundColor: Colors.green.shade200,
@@ -685,12 +710,14 @@ class VehicleInfo extends StatelessWidget {
                                 Flexible(
                                   child: Text(
                                     "0 km",
-                                    style: AppStyle.cardfooter.copyWith(fontSize: 12),
-                                    softWrap: true,  // This ensures the text wraps to the next line if needed.
-                                    overflow: TextOverflow.ellipsis,  // You can change this to TextOverflow.clip if preferred.
+                                    style: AppStyle.cardfooter
+                                        .copyWith(fontSize: 12),
+                                    softWrap:
+                                        true, // This ensures the text wraps to the next line if needed.
+                                    overflow: TextOverflow
+                                        .ellipsis, // You can change this to TextOverflow.clip if preferred.
                                     maxLines: 2,
                                   ),
-
                                 ),
                               ],
                             ),

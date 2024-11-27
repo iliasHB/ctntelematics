@@ -9,9 +9,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 
+import '../../../../core/usecase/databse_helper.dart';
 import '../../../../core/usecase/provider_usecase.dart';
 import '../../../../core/utils/app_export_util.dart';
 import '../../../../core/utils/pref_util.dart';
+import '../../../websocket/domain/entitties/resp_entities/vehicle_entity.dart';
+import '../../../websocket/presentation/bloc/vehicle_location_bloc.dart';
 import '../widgets/change_dialog.dart';
 import '../widgets/expenses_widget.dart';
 import '../widgets/geofence_setting.dart';
@@ -58,6 +61,144 @@ class _SettingState extends State<Setting> {
     });
   }
 
+  Future<void> saveNotifications(
+      List<VehicleEntity> geofenceVehicles,
+      List<VehicleEntity> speedLimitVehicles,
+      ) async {
+    final dbHelper = DatabaseHelper();
+
+    // Save geofence notifications
+    for (var v in geofenceVehicles) {
+      await dbHelper.insertGeofenceNotification({
+        'vin': v.locationInfo.vin,
+        'brand': v.locationInfo.brand,
+        'model': v.locationInfo.model,
+        'numberPlate': v.locationInfo.numberPlate,
+        'createdAt': v.locationInfo.createdAt,
+      });
+    }
+
+    // Save speed limit notifications
+    for (var v in speedLimitVehicles) {
+      await dbHelper.insertSpeedLimitNotification({
+        'vin': v.locationInfo.vin,
+        'brand': v.locationInfo.brand,
+        'model': v.locationInfo.model,
+        'numberPlate': v.locationInfo.numberPlate,
+        'speedLimit': v.locationInfo.speedLimit,
+        'createdAt': v.locationInfo.createdAt,
+      });
+    }
+  }
+  Future<List<NotificationItem>> fetchCombinedNotifications() async {
+      final dbHelper = DatabaseHelper();
+
+      final geofenceData = await dbHelper.fetchGeofenceNotifications();
+      final speedLimitData = await dbHelper.fetchSpeedLimitNotifications();
+
+    // Convert to respective objects
+    List<NotificationItem> geofenceItems =
+    geofenceData.map((row) => GeofenceNotificationItem.fromJson(row)).toList();
+    List<NotificationItem> speedLimitItems =
+    speedLimitData.map((row) => SpeedLimitNotificationItem.fromJson(row)).toList();
+
+    // Combine lists
+    List<NotificationItem> allNotifications = [...geofenceItems, ...speedLimitItems];
+
+    return allNotifications;
+  }
+
+
+  ///
+
+  // Future<List<NotificationItem>> fetchCombinedNotifications() async {
+  //   final dbHelper = DatabaseHelper();
+  //
+  //   final geofenceData = await dbHelper.fetchGeofenceNotifications();
+  //   final speedLimitData = await dbHelper.fetchSpeedLimitNotifications();
+  //
+  //   final geofenceNotifications = geofenceData.map((e) => GeofenceNotificationItem.fromJson(e)).toList();
+  //   final speedLimitNotifications = speedLimitData.map((e) => SpeedLimitNotificationItem.fromJson(e)).toList();
+  //
+  //   final combinedNotifications = <NotificationItem>[];
+  //     combinedNotifications.addAll(geofenceNotifications as Iterable<NotificationItem>);
+  //     combinedNotifications.addAll(speedLimitNotifications as Iterable<NotificationItem>);
+  //
+  //  return combinedNotifications;
+  //
+  //   // return [...geofenceNotifications, ...speedLimitNotifications];
+  // }
+
+///
+  // Future<List<NotificationItem>> fetchCombinedNotifications() async {
+  //   final dbHelper = DatabaseHelper();
+  //
+  //   final geofenceData = await dbHelper.fetchGeofenceNotifications();
+  //   final speedLimitData = await dbHelper.fetchSpeedLimitNotifications();
+  //
+  //   final geofenceNotifications = geofenceData.map((e) => GeofenceNotificationItem.fromJson(e)).toList();
+  //   final speedLimitNotifications = speedLimitData.map((e) => SpeedLimitNotificationItem.fromJson(e)).toList();
+  //
+  //
+  //   // Combine the notifications from both sources
+  //   // final combinedNotifications = <NotificationItem>[];
+  //   //
+  //   // combinedNotifications.addAll(geofenceNotifications);
+  //   // combinedNotifications.addAll(speedLimitNotifications);
+  //   //
+  //   // return combinedNotifications;
+  //     return [...geofenceNotifications, ...speedLimitNotifications];
+  // }
+///----
+
+  // Future<List<NotificationItem>> fetchCombinedNotifications() async {
+  //   final dbHelper = DatabaseHelper();
+  //
+  //   final geofenceData = await dbHelper.fetchGeofenceNotifications();
+  //   final speedLimitData = await dbHelper.fetchSpeedLimitNotifications();
+  //
+  //   final geofenceNotifications = geofenceData.map((e) => GeofenceNotificationItem.fromJson(e)).toList();
+  //   final speedLimitNotifications = speedLimitData.map((e) => SpeedLimitNotificationItem.fromJson(e)).toList();
+  //
+  //
+  //   // Combine the notifications from both sources
+  //   final combinedNotifications = <NotificationItem>[];
+  //
+  //   combinedNotifications.addAll(geofenceNotifications);
+  //   combinedNotifications.addAll(speedLimitNotifications);
+  //
+  //   return combinedNotifications;
+  // }
+
+  ///----
+
+  // void saveNotifications(List<VehicleEntity> vehicleNotifications, List<VehicleEntity> speedLimitNotifications) async {
+  //   final dbHelper = DatabaseHelper();
+  //
+  //   for (var vehicle in vehicleNotifications) {
+  //     final notification = NotificationItem(
+  //       vin: vehicle.locationInfo.vin,
+  //       brand: vehicle.locationInfo.brand,
+  //       model: vehicle.locationInfo.model,
+  //       numberPlate: vehicle.locationInfo.numberPlate,
+  //       geofence: vehicle.locationInfo.withinGeofence?.isInGeofence ?? false,
+  //       createdAt: vehicle.locationInfo.createdAt,
+  //       updatedAt: vehicle.locationInfo.updatedAt,
+  //     );
+  //
+  //     // Insert into the database
+  //     await dbHelper.insertNotification(notification.toMap());
+  //   }
+  // }
+
+  // Future<List<NotificationItem>> fetchSavedNotifications() async {
+  //   final dbHelper = DatabaseHelper();
+  //   final notifications = await dbHelper.fetchNotifications();
+  //   return notifications
+  //       .map((notification) => NotificationItem.fromMap(notification))
+  //       .toList();
+  // }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -97,12 +238,64 @@ class _SettingState extends State<Setting> {
                         ],
                       ),
                       const Spacer(),
-                      InkWell(
-                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => NotificationWidget())),
-                        child: const CircleAvatar(
-                          child: Icon(CupertinoIcons.bell_fill),
-                        ),
-                      )
+                      BlocBuilder<VehicleLocationBloc, List<VehicleEntity>>(
+                        builder: (context, vehicles) {
+                          if (vehicles.isEmpty) {
+                            return InkWell(
+                              onTap: () async {
+                                final savedNotifications =
+                                    await fetchCombinedNotifications();
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (_) => NotificationWidget(
+                                            notifications: savedNotifications)));
+                              },
+                              child: const CircleAvatar(
+                                child: Icon(CupertinoIcons.bell_fill),
+                              ),
+                            );
+                          }
+
+                          // Filter vehicles with geofence violations or exceeding speed limits
+                          final geofenceNotifications = vehicles.where((v) {
+                            return !(v.locationInfo.withinGeofence?.isInGeofence ?? true);
+                          }).toList();
+
+                          final speedLimitNotifications = vehicles.where((v) {
+                            final speedLimit =
+                                double.tryParse(v.locationInfo.speedLimit?.toString() ?? '0') ?? 0;
+                            final vehicleSpeed =
+                                double.tryParse(v.locationInfo.tracker?.position?.speed?.toString() ?? '0') ?? 0;
+                            return vehicleSpeed > speedLimit;
+                          }).toList();
+
+                          saveNotifications(geofenceNotifications, speedLimitNotifications);
+                          
+                          return InkWell(
+                            onTap: () async {
+                              final savedNotifications = await fetchCombinedNotifications();
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (_) => NotificationWidget(notifications: savedNotifications)));
+                            },
+                            child: const Stack(
+                              children: [
+                                CircleAvatar(
+                                  child: Icon(CupertinoIcons.bell_fill),
+                                ),
+                                Positioned(
+                                    top: 0,
+                                    right: 1,
+                                    child: Badge(
+                                      smallSize: 10.0,
+                                    ))
+                              ],
+                            ),
+                          );
+                        },
+                      ),
                     ],
                   ),
                 ),
@@ -133,7 +326,8 @@ class _SettingState extends State<Setting> {
                                 return Checkbox(
                                   value: geofenceProvider.isGeofence,
                                   onChanged: (value) {
-                                    geofenceProvider.toggleGeofence(value ?? false); // Ensure value isn't null
+                                    geofenceProvider.toggleGeofence(value ??
+                                        false); // Ensure value isn't null
                                   },
                                 );
                               },
@@ -182,7 +376,8 @@ class _SettingState extends State<Setting> {
                           Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => Maintenance(token: token)));
+                                  builder: (context) =>
+                                      Maintenance(token: token)));
                         },
                         child: Container(
                           padding: const EdgeInsets.symmetric(vertical: 10),
@@ -198,7 +393,7 @@ class _SettingState extends State<Setting> {
                               ),
                               Text("Maintenance", style: AppStyle.cardfooter),
                               const Spacer(),
-                              Icon(
+                              const Icon(
                                 Icons.arrow_forward_ios_sharp,
                                 size: 15,
                               ),
@@ -227,7 +422,7 @@ class _SettingState extends State<Setting> {
                               ),
                               Text("Support", style: AppStyle.cardfooter),
                               const Spacer(),
-                              Icon(
+                              const Icon(
                                 Icons.arrow_forward_ios_sharp,
                                 size: 15,
                               )
@@ -290,7 +485,8 @@ class _SettingState extends State<Setting> {
                             return Row(
                               children: [
                                 Container(
-                                  padding: const EdgeInsets.symmetric(vertical: 10),
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 10),
                                   child: Row(
                                     children: [
                                       const Icon(
@@ -348,36 +544,36 @@ class _SettingState extends State<Setting> {
                           );
                         },
                       ),
-                      InkWell(
-                        onTap: () {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) =>
-                                      const NotificationWidget()));
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 10),
-                          child: Row(
-                            children: [
-                              const Icon(
-                                CupertinoIcons.bell,
-                                color: Colors.green,
-                                size: 20,
-                              ),
-                              const SizedBox(
-                                width: 10,
-                              ),
-                              Text("Notification", style: AppStyle.cardfooter),
-                              const Spacer(),
-                              Icon(
-                                Icons.arrow_forward_ios_sharp,
-                                size: 15,
-                              )
-                            ],
-                          ),
-                        ),
-                      ),
+                      // InkWell(
+                      //   onTap: () {
+                      //     Navigator.push(
+                      //         context,
+                      //         MaterialPageRoute(
+                      //             builder: (context) =>
+                      //                 NotificationWidget()));
+                      //   },
+                      //   child: Container(
+                      //     padding: const EdgeInsets.symmetric(vertical: 10),
+                      //     child: Row(
+                      //       children: [
+                      //         const Icon(
+                      //           CupertinoIcons.bell,
+                      //           color: Colors.green,
+                      //           size: 20,
+                      //         ),
+                      //         const SizedBox(
+                      //           width: 10,
+                      //         ),
+                      //         Text("Notification", style: AppStyle.cardfooter),
+                      //         const Spacer(),
+                      //         const Icon(
+                      //           Icons.arrow_forward_ios_sharp,
+                      //           size: 15,
+                      //         )
+                      //       ],
+                      //     ),
+                      //   ),
+                      // ),
                       InkWell(
                         onTap: () {
                           Navigator.push(
@@ -399,7 +595,7 @@ class _SettingState extends State<Setting> {
                               ),
                               Text("Terms of Use", style: AppStyle.cardfooter),
                               const Spacer(),
-                              Icon(
+                              const Icon(
                                 Icons.arrow_forward_ios_sharp,
                                 size: 15,
                               ),
@@ -471,7 +667,8 @@ class _SettingState extends State<Setting> {
                           Navigator.push(
                               context,
                               (MaterialPageRoute(
-                                  builder: (context) => const PrivacyPolicy())));
+                                  builder: (context) =>
+                                      const PrivacyPolicy())));
                         },
                         child: Container(
                           padding: const EdgeInsets.symmetric(vertical: 10),
@@ -485,9 +682,10 @@ class _SettingState extends State<Setting> {
                               const SizedBox(
                                 width: 10,
                               ),
-                              Text("Privacy Policy", style: AppStyle.cardfooter),
+                              Text("Privacy Policy",
+                                  style: AppStyle.cardfooter),
                               const Spacer(),
-                              Icon(
+                              const Icon(
                                 Icons.arrow_forward_ios_sharp,
                                 size: 15,
                               )
@@ -550,18 +748,16 @@ class _SettingState extends State<Setting> {
                       //   ),
                       // ),
 
-
                       BlocConsumer<LogoutBloc, ProfileState>(
                         listener: (context, state) {
                           if (state is ProfileDone) {
                             Navigator.pushNamedAndRemoveUntil(
                               context,
                               '/login',
-                                  (route) => false,
+                              (route) => false,
                             );
                             ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                    content: Text(state.resp.message)));
+                                SnackBar(content: Text(state.resp.message)));
                           } else if (state is ProfileFailure) {
                             ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(content: Text(state.message)));
@@ -572,7 +768,8 @@ class _SettingState extends State<Setting> {
                             Row(
                               children: [
                                 Container(
-                                  padding: const EdgeInsets.symmetric(vertical: 10),
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 10),
                                   child: Row(
                                     children: [
                                       const Icon(
@@ -583,7 +780,8 @@ class _SettingState extends State<Setting> {
                                       const SizedBox(
                                         width: 10,
                                       ),
-                                      Text("Logout", style: AppStyle.cardfooter),
+                                      Text("Logout",
+                                          style: AppStyle.cardfooter),
                                       // const Spacer(),
                                     ],
                                   ),
@@ -608,13 +806,12 @@ class _SettingState extends State<Setting> {
                                 const SizedBox(
                                   width: 10,
                                 ),
-                                Text("Logout",
-                                    style: AppStyle.cardfooter),
+                                Text("Logout", style: AppStyle.cardfooter),
                                 const Spacer(),
                                 InkWell(
                                   onTap: () {
                                     final tokenReqEntity =
-                                    TokenReqEntity(token: token.toString());
+                                        TokenReqEntity(token: token.toString());
                                     context
                                         .read<LogoutBloc>()
                                         .add(LogoutEvent(tokenReqEntity));
