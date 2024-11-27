@@ -17,12 +17,12 @@ class VehicleRouteHistoryRespModel extends VehicleRouteHistoryRespEntity{
 
   factory VehicleRouteHistoryRespModel.fromJson(Map<String, dynamic> json) => VehicleRouteHistoryRespModel(
     data: List<Datum>.from(json["data"].map((x) => Datum.fromJson(x))),
-      routeLength: json['total_distance_km']
+      routeLength: json['routeLength']
   );
 
   Map<String, dynamic> toJson() => {
     "data": data,
-    "total_distance_km": routeLength
+    "routeLength": routeLength
   };
 
 }

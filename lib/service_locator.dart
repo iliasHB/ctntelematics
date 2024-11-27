@@ -87,8 +87,6 @@ Future<void> initializeDependencies() async {
   sl.registerFactory<TripsUseCase>(() => TripsUseCase(sl()));
   sl.registerFactory<InitiatePaymentUseCase>(() => InitiatePaymentUseCase(sl()));
 
-
-
   // Register Bloc
   sl.registerFactory(() => LoginBloc(sl()));
   sl.registerFactory(() => GenerateOtpBloc(sl()));

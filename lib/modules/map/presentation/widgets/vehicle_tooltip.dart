@@ -243,7 +243,7 @@ class VehicleToolTipDialog {
                                                                 longitude!,
                                                             real_time_gps:
                                                                 real_time_gps,
-                                                            status: status!,
+                                                            status: status ?? "N/A",
                                                             gsm_signal_strength:
                                                                 gsm_signal_strength!,
                                                             updated_at:

@@ -12,6 +12,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../core/utils/math_util.dart';
+import '../../../vehincle/presentation/pages/vehicle_analytics.dart';
 
 class VehicleOperation extends StatelessWidget {
   final String voltage_level,
@@ -82,20 +83,22 @@ class VehicleOperation extends StatelessWidget {
               ),
               InkWell(
                 onTap: () {
-                  Navigator.pop(context);
-                  showModalBottomSheet(
-                      context: context,
-                      isDismissible: false,
-                      isScrollControlled: true,
-                      //useSafeArea: true,
-                      shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(20),
-                            topRight: Radius.circular(20)),
-                      ),
-                      builder: (BuildContext context) {
-                        return VehicleAnalytics(token: token, vin: vin,);
-                      });
+                  Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => VehicleAnalytics(token: token, vin: vin,),
+                  ));
+                  // showModalBottomSheet(
+                  //     context: context,
+                  //     isDismissible: false,
+                  //     isScrollControlled: true,
+                  //     //useSafeArea: true,
+                  //     shape: const RoundedRectangleBorder(
+                  //       borderRadius: BorderRadius.only(
+                  //           topLeft: Radius.circular(20),
+                  //           topRight: Radius.circular(20)),
+                  //     ),
+                  //     builder: (BuildContext context) {
+                  //       return VehicleAnalytics(token: token, vin: vin,);
+                  //     });
                 }, //VehiclePlayBackToolTip.showTopModal(context),
                 child: VehicleOperationCard(
                     status: 'Analysis',

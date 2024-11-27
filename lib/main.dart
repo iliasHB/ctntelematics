@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import 'config/routes/app_routes.dart';
+import 'core/usecase/databse_helper.dart';
 import 'core/usecase/provider_usecase.dart';
 import 'modules/dashboard/presentation/bloc/dashboard_bloc.dart';
 import 'modules/map/presentation/bloc/map_bloc.dart';
@@ -15,11 +16,13 @@ import 'modules/websocket/presentation/bloc/vehicle_location_bloc.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  initializeDependencies();
+  await DatabaseHelper().database; // Force database creation
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
   ]);
-
+  // Initialize the database
+  // await _initializeDatabase();
+  initializeDependencies();
   runApp(
     MultiProvider(
       providers: [
@@ -32,6 +35,8 @@ void main() async {
     ),
   );
 }
+
+
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});

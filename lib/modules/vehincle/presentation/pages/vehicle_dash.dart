@@ -1,3 +1,4 @@
+import 'package:ctntelematics/core/utils/app_export_util.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -79,65 +80,59 @@ class _VehicleDashboardState extends State<VehicleDashboard> {
           token: widget.token),
     ];
 
-    return Padding(
-      padding: const EdgeInsets.only(top: 20),
-      child: Scaffold(
-        appBar: AppBar(
-          title: Row(
-            children: [
-              Text(
-                "Dashboard",
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                ),
-              ),
-            ],
-          ),
-        ),
-        body: Column(
+    return Scaffold(
+      appBar: AppBar(
+        title: Row(
           children: [
-            // Tab Selection (Chips)
-            SizedBox(
-              height: 50.0,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: _tabs.length,
-                itemBuilder: (context, index) {
-                  return GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        _selectedTabIndex = index;
-                      });
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                      child: Chip(
-                        side: BorderSide.none,
-                        backgroundColor: _selectedTabIndex == index
-                            ? Colors.green
-                            : Colors.grey.shade200,
-                        label: Text(
-                          _tabs[index],
-                          style: TextStyle(
-                            color: _selectedTabIndex == index
-                                ? Colors.white
-                                : Colors.black,
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-
-            // Display selected page
-            Expanded(
-              child: pages[_selectedTabIndex],
+            Text(
+              "Dashboard",
+              style: AppStyle.cardSubtitle.copyWith(fontSize: 16)
             ),
           ],
         ),
+      ),
+      body: Column(
+        children: [
+          // Tab Selection (Chips)
+          SizedBox(
+            height: 50.0,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: _tabs.length,
+              itemBuilder: (context, index) {
+                return GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _selectedTabIndex = index;
+                    });
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    child: Chip(
+                      side: BorderSide.none,
+                      backgroundColor: _selectedTabIndex == index
+                          ? Colors.green
+                          : Colors.grey.shade200,
+                      label: Text(
+                        _tabs[index],
+                        style: TextStyle(
+                          color: _selectedTabIndex == index
+                              ? Colors.white
+                              : Colors.black,
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+
+          // Display selected page
+          Expanded(
+            child: pages[_selectedTabIndex],
+          ),
+        ],
       ),
     );
   }

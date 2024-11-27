@@ -1,10 +1,17 @@
+import 'package:ctntelematics/core/utils/app_export_util.dart';
 import 'package:ctntelematics/core/widgets/advert.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-class VehicleAlert extends StatelessWidget {
+class VehicleAlert extends StatefulWidget {
   const VehicleAlert({super.key});
 
+  @override
+  State<VehicleAlert> createState() => _VehicleAlertState();
+}
+
+class _VehicleAlertState extends State<VehicleAlert> {
+  bool viewAdvert = false;
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -12,31 +19,98 @@ class VehicleAlert extends StatelessWidget {
       child: Scaffold(
         appBar: AppBar(
           title: Row(
-            children: [Text("Alert")],
+            children: [
+              Text(
+                "Alert",
+                style: AppStyle.cardSubtitle,
+              )
+            ],
           ),
           actions: [
-            Padding(
-              padding: const EdgeInsets.only(right: 10.0),
+            const Padding(
+              padding: EdgeInsets.only(right: 10.0),
               child: Icon(Icons.filter_alt),
             )
           ],
         ),
         body: Column(
           children: [
-            Advert(),
+            viewAdvert == false
+                ? Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(10.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        //crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(top: 5.0),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text('Check Latest Stock',
+                                        style: AppStyle.cardfooter
+                                            .copyWith(fontSize: 14)),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          IconButton(
+                              onPressed: () {
+                                setState(() {
+                                  viewAdvert = true;
+                                });
+                              },
+                              icon: const Icon(
+                                CupertinoIcons.chevron_down,
+                                size: 15,
+                              ))
+                        ],
+                      ),
+                    ),
+                  )
+                : Stack(children: [
+                    const Advert(),
+                    Positioned(
+                      right: 10,
+                      top: 0,
+                      child: IconButton(
+                          onPressed: () {
+                            setState(() {
+                              viewAdvert = false;
+                            });
+                          },
+                          icon: const Icon(
+                            Icons.cancel_outlined,
+                            color: Colors.white,
+                          )),
+                    )
+                  ]),
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(10.0),
                 child: Row(
                   children: [
-                    Icon(Icons.warning, size: 40, color: Colors.green.shade300,),
-                    SizedBox(width: 10,),
-                    Flexible(
-                        child: Text("Sometimes you may not get alert due to GPD coverage network errors, battery voltage issue and unsupported vehicle",
-                          softWrap: true,  // This ensures the text wraps to the next line if needed.
-                          //overflow: TextOverflow.ellipsis,  // You can change this to TextOverflow.clip if preferred.
-                          //maxLines: 5,
-                        ))
+                    Icon(
+                      Icons.warning,
+                      size: 40,
+                      color: Colors.green.shade300,
+                    ),
+                    const SizedBox(
+                      width: 10,
+                    ),
+                    const Flexible(
+                        child: Text(
+                      "Sometimes you may not get alert due to GPD coverage network errors, battery voltage issue and unsupported vehicle",
+                      softWrap:
+                          true, // This ensures the text wraps to the next line if needed.
+                      //overflow: TextOverflow.ellipsis,  // You can change this to TextOverflow.clip if preferred.
+                      //maxLines: 5,
+                    ))
                   ],
                 ),
               ),
