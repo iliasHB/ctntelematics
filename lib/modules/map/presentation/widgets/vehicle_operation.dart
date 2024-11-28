@@ -12,6 +12,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../core/utils/math_util.dart';
+import '../../../vehincle/presentation/pages/vehicle_alert.dart';
 import '../../../vehincle/presentation/pages/vehicle_analytics.dart';
 
 class VehicleOperation extends StatelessWidget {
@@ -22,7 +23,7 @@ class VehicleOperation extends StatelessWidget {
       status,
       updated_at,
       number_plate,
-      gsm_signal_strength, vin, token;
+      gsm_signal_strength, vin, token, model, brand;
   final bool real_time_gps;
   const VehicleOperation(
       {super.key,
@@ -34,7 +35,7 @@ class VehicleOperation extends StatelessWidget {
       required this.status,
       required this.gsm_signal_strength,
       required this.updated_at,
-      required this.number_plate, required this.vin, required this.token});
+      required this.number_plate, required this.vin, required this.token, required this.brand,required this.model});
 
   @override
   Widget build(BuildContext context) {
@@ -110,28 +111,46 @@ class VehicleOperation extends StatelessWidget {
               ),
               InkWell(
                 onTap: () {
-                  showModalBottomSheet(
-                      context: context,
-                      isDismissible: false,
-                      isScrollControlled: true,
-                      //useSafeArea: true,
-                      shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(20),
-                            topRight: Radius.circular(20)),
-                      ),
-                      builder: (BuildContext context) {
-                        return VehicleInfo(
-                            voltage_level: voltage_level,
-                            speed: speed,
-                            latitude: latitude,
-                            longitude: longitude,
-                            status: status,
-                            updated_at: updated_at,
-                            real_time_gps: real_time_gps,
-                            gsm_signal_strength: gsm_signal_strength,
-                            number_plate: number_plate);
-                      });
+
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => VehicleInfo(
+                    voltage_level: voltage_level,
+                    speed: speed,
+                    latitude: latitude,
+                    longitude: longitude,
+                    status: status,
+                    updated_at: updated_at,
+                    real_time_gps: real_time_gps,
+                    gsm_signal_strength: gsm_signal_strength,
+                    number_plate: number_plate,
+                    brand: brand,
+                    model: model,
+                  )));
+                  // showModalBottomSheet(
+                  //     context: context,
+                  //     isDismissible: false,
+                  //     isScrollControlled: true,
+                  //     //useSafeArea: true,
+                  //     shape: const RoundedRectangleBorder(
+                  //       borderRadius: BorderRadius.only(
+                  //           topLeft: Radius.circular(20),
+                  //           topRight: Radius.circular(20)),
+                  //     ),
+                  //     builder: (BuildContext context) {
+                  //       return VehicleInfo(
+                  //           voltage_level: voltage_level,
+                  //           speed: speed,
+                  //           latitude: latitude,
+                  //           longitude: longitude,
+                  //           status: status,
+                  //           updated_at: updated_at,
+                  //           real_time_gps: real_time_gps,
+                  //           gsm_signal_strength: gsm_signal_strength,
+                  //           number_plate: number_plate,
+                  //         brand: brand,
+                  //         model: model,
+                  //       );
+
+                      // });
                 },
                 child: VehicleOperationCard(
                     status: 'Vehicle Info',
@@ -162,19 +181,20 @@ class VehicleOperation extends StatelessWidget {
               ),
               InkWell(
                 onTap: () {
-                  showModalBottomSheet(
-                      context: context,
-                      isDismissible: false,
-                      isScrollControlled: true,
-                      //useSafeArea: true,
-                      shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(20),
-                            topRight: Radius.circular(20)),
-                      ),
-                      builder: (BuildContext context) {
-                        return const VehicleAlert();
-                      });
+                  Navigator.push(context, MaterialPageRoute(builder: (_) =>  const VehicleAlertPage()));
+                  // showModalBottomSheet(
+                  //     context: context,
+                  //     isDismissible: false,
+                  //     isScrollControlled: true,
+                  //     //useSafeArea: true,
+                  //     shape: const RoundedRectangleBorder(
+                  //       borderRadius: BorderRadius.only(
+                  //           topLeft: Radius.circular(20),
+                  //           topRight: Radius.circular(20)),
+                  //     ),
+                  //     builder: (BuildContext context) {
+                  //       return const VehicleAlertPage();
+                  //     });
                 },
                 child: VehicleOperationCard(
                     status: 'Alert',

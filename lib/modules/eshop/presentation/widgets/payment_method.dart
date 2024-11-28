@@ -359,6 +359,13 @@ class PaymentMethod extends StatelessWidget {
                           child: CustomPrimaryButton(
                             label: 'Proceed to pay',
                             onPressed: () {
+                              print('email: $email');
+                              print('quantity: $quantity');
+                              print('contact: $contact');
+                              print('address: $address');
+                              print('locationId: $locationId');
+                              print('token: $token');
+
                               // if (_formKey.currentState?.validate() ?? false) {
                                 final loginReqEntity = InitiatePaymentReqEntity(
                                     email: email,

@@ -100,14 +100,11 @@ class _VehicleAnalyticsState extends State<VehicleAnalytics> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Row(
+        title: Row(
           children: [
             Text(
               "Analytics",
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 18,
-              ),
+              style: AppStyle.cardSubtitle
             ),
           ],
         ),
@@ -428,122 +425,250 @@ class _VehicleRouteDataAnalyticsState extends State<VehicleRouteDataAnalytics> {
         padding: const EdgeInsets.all(16.0),
         child: analytics == null
             ? const Center(child: CircularProgressIndicator())
-            : SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Text('VIN: ', style: AppStyle.cardSubtitle,),
-                  Text(widget.vin, style: AppStyle.cardfooter,),
-                ],
-              ),
-              const SizedBox(height: 5.0,),
-              Row(
-                children: [
-                  const CircleAvatar(
-                    backgroundColor: Colors.green,
-                    radius: 5,
-                  ),
-                  const SizedBox(width: 10,),
-                  Text('Online',
-                      style: AppStyle.cardSubtitle.copyWith(fontSize: 14))
-                ],
-              ),
-              Row(
-                children: [
-                  const CircleAvatar(
-                    backgroundColor: Colors.red,
-                    radius: 5,
-                  ),
-                  const SizedBox(width: 10,),
-                  Text('offline',
-                      style: AppStyle.cardSubtitle.copyWith(fontSize: 14))
-                ],
-              ),
-              const SizedBox(height: 20),
-              // Pie chart visualization
-              Center(
-                child: SizedBox(
-                  width: 200,
-                  height: 200,
-                  child: PieChart(
-                    PieChartData(
-                      sections: [
-                        if (analytics!.onlineCount > 0)
-                          PieChartSectionData(
-                            value: analytics!.onlineCount.toDouble(),
-                            color: Colors.green,
-                            title: '${analytics!.onlineCount}',
-                            radius: 100,
-                            titleStyle: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold),
-                          ),
-                        if (analytics!.offlineCount > 0)
-                          PieChartSectionData(
-                            value: analytics!.offlineCount.toDouble(),
-                            color: Colors.red,
-                            title: '${analytics!.offlineCount}',
-                            radius: 100,
-                            titleStyle: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold),
-                          ),
-                        // Fallback for cases where both counts are zero
-                        if (analytics!.onlineCount == 0 &&
-                            analytics!.offlineCount == 0)
-                          PieChartSectionData(
-                            value: 1,
-                            color: Colors.grey,
-                            title: 'No Data',
-                            radius: 60,
-                            titleStyle: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold),
-                          ),
-                      ],
-                    ),
-                  ),
+            : Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Text('VIN: ', style: AppStyle.cardSubtitle),
+                Text(widget.vin, style: AppStyle.cardfooter),
+              ],
+            ),
+            const SizedBox(height: 5.0),
+            Row(
+              children: [
+                const CircleAvatar(
+                  backgroundColor: Colors.green,
+                  radius: 5,
                 ),
-              ),
-              const SizedBox(height: 20),
-              Text(
-                  'Vehicle Details:',
-                  style:AppStyle.cardSubtitle.copyWith(fontSize: 14)
-              ),
-              const SizedBox(height: 10),
-              SizedBox(
-                height: 400,
-                child: ListView.builder(
-                  itemCount: widget.vehicles.length,
-                  itemBuilder: (context, index) {
-                    var vehicle = widget.vehicles[index];
-                    return Card(
-                      elevation: 3,
-                      margin: const EdgeInsets.symmetric(vertical: 8),
-                      child: ListTile(
-                        title:  Text('Status: ${vehicle.connected}', style: AppStyle.cardfooter,),
-                        subtitle: Text('DateTime: '+FormatData.formatTimestamp('${vehicle.created_at}'), style: AppStyle.cardfooter,),
-                        trailing: Icon(
-                          vehicle.connected == 'online'
-                              ? Icons.check_circle
-                              : Icons.remove_circle,
-                          color: vehicle.connected == 'online'
-                              ? Colors.green
-                              : Colors.red,
+                const SizedBox(width: 10),
+                Text('Online',
+                    style: AppStyle.cardSubtitle.copyWith(fontSize: 14)),
+              ],
+            ),
+            Row(
+              children: [
+                const CircleAvatar(
+                  backgroundColor: Colors.red,
+                  radius: 5,
+                ),
+                const SizedBox(width: 10),
+                Text('Offline',
+                    style: AppStyle.cardSubtitle.copyWith(fontSize: 14)),
+              ],
+            ),
+            const SizedBox(height: 20),
+            // Pie chart visualization
+            Center(
+              child: SizedBox(
+                width: 200,
+                height: 200,
+                child: PieChart(
+                  PieChartData(
+                    sections: [
+                      if (analytics!.onlineCount > 0)
+                        PieChartSectionData(
+                          value: analytics!.onlineCount.toDouble(),
+                          color: Colors.green,
+                          title: '${analytics!.onlineCount}',
+                          radius: 100,
+                          titleStyle: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold),
                         ),
-                      ),
-                    );
-                  },
+                      if (analytics!.offlineCount > 0)
+                        PieChartSectionData(
+                          value: analytics!.offlineCount.toDouble(),
+                          color: Colors.red,
+                          title: '${analytics!.offlineCount}',
+                          radius: 100,
+                          titleStyle: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold),
+                        ),
+                      // Fallback for cases where both counts are zero
+                      if (analytics!.onlineCount == 0 &&
+                          analytics!.offlineCount == 0)
+                        PieChartSectionData(
+                          value: 1,
+                          color: Colors.grey,
+                          title: 'No Data',
+                          radius: 60,
+                          titleStyle: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold),
+                        ),
+                    ],
+                  ),
                 ),
               ),
-            ],
-          ),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              'Analysis Details:',
+              style: AppStyle.cardSubtitle.copyWith(fontSize: 12),
+            ),
+            const SizedBox(height: 10),
+            // Use Flexible or define a height for the ListView.builder
+            Flexible(
+              child: ListView.builder(
+                itemCount: widget.vehicles.length,
+                itemBuilder: (context, index) {
+                  var vehicle = widget.vehicles[index];
+                  return Card(
+                    elevation: 3,
+                    margin: const EdgeInsets.symmetric(vertical: 8),
+                    child: ListTile(
+                      title: Text(
+                        'Status: ${vehicle.connected}',
+                        style: AppStyle.cardfooter,
+                      ),
+                      subtitle: Text(
+                        'DateTime: ' +
+                            FormatData.formatTimestamp(
+                                '${vehicle.created_at}'),
+                        style: AppStyle.cardfooter,
+                      ),
+                      trailing: Icon(
+                        vehicle.connected == 'online'
+                            ? Icons.check_circle
+                            : Icons.remove_circle,
+                        color: vehicle.connected == 'online'
+                            ? Colors.green
+                            : Colors.red,
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
+
+  // Widget build(BuildContext context) {
+  //   return Scaffold(
+  //     body: Padding(
+  //       padding: const EdgeInsets.all(16.0),
+  //       child: analytics == null
+  //           ? const Center(child: CircularProgressIndicator())
+  //           : SingleChildScrollView(
+  //         child: Column(
+  //           crossAxisAlignment: CrossAxisAlignment.start,
+  //           children: [
+  //             Row(
+  //               children: [
+  //                 Text('VIN: ', style: AppStyle.cardSubtitle,),
+  //                 Text(widget.vin, style: AppStyle.cardfooter,),
+  //               ],
+  //             ),
+  //             const SizedBox(height: 5.0,),
+  //             Row(
+  //               children: [
+  //                 const CircleAvatar(
+  //                   backgroundColor: Colors.green,
+  //                   radius: 5,
+  //                 ),
+  //                 const SizedBox(width: 10,),
+  //                 Text('Online',
+  //                     style: AppStyle.cardSubtitle.copyWith(fontSize: 14))
+  //               ],
+  //             ),
+  //             Row(
+  //               children: [
+  //                 const CircleAvatar(
+  //                   backgroundColor: Colors.red,
+  //                   radius: 5,
+  //                 ),
+  //                 const SizedBox(width: 10,),
+  //                 Text('offline',
+  //                     style: AppStyle.cardSubtitle.copyWith(fontSize: 14))
+  //               ],
+  //             ),
+  //             const SizedBox(height: 20),
+  //             // Pie chart visualization
+  //             Center(
+  //               child: SizedBox(
+  //                 width: 200,
+  //                 height: 200,
+  //                 child: PieChart(
+  //                   PieChartData(
+  //                     sections: [
+  //                       if (analytics!.onlineCount > 0)
+  //                         PieChartSectionData(
+  //                           value: analytics!.onlineCount.toDouble(),
+  //                           color: Colors.green,
+  //                           title: '${analytics!.onlineCount}',
+  //                           radius: 100,
+  //                           titleStyle: const TextStyle(
+  //                               color: Colors.white,
+  //                               fontWeight: FontWeight.bold),
+  //                         ),
+  //                       if (analytics!.offlineCount > 0)
+  //                         PieChartSectionData(
+  //                           value: analytics!.offlineCount.toDouble(),
+  //                           color: Colors.red,
+  //                           title: '${analytics!.offlineCount}',
+  //                           radius: 100,
+  //                           titleStyle: const TextStyle(
+  //                               color: Colors.white,
+  //                               fontWeight: FontWeight.bold),
+  //                         ),
+  //                       // Fallback for cases where both counts are zero
+  //                       if (analytics!.onlineCount == 0 &&
+  //                           analytics!.offlineCount == 0)
+  //                         PieChartSectionData(
+  //                           value: 1,
+  //                           color: Colors.grey,
+  //                           title: 'No Data',
+  //                           radius: 60,
+  //                           titleStyle: const TextStyle(
+  //                               color: Colors.white,
+  //                               fontWeight: FontWeight.bold),
+  //                         ),
+  //                     ],
+  //                   ),
+  //                 ),
+  //               ),
+  //             ),
+  //             const SizedBox(height: 20),
+  //             Text(
+  //                 'Analysis Details:',
+  //                 style:AppStyle.cardSubtitle.copyWith(fontSize: 12)
+  //             ),
+  //             const SizedBox(height: 10),
+  //             Expanded(
+  //               child: ListView.builder(
+  //                 itemCount: widget.vehicles.length,
+  //                 itemBuilder: (context, index) {
+  //                   var vehicle = widget.vehicles[index];
+  //                   return Card(
+  //                     elevation: 3,
+  //                     margin: const EdgeInsets.symmetric(vertical: 8),
+  //                     child: ListTile(
+  //                       title:  Text('Status: ${vehicle.connected}', style: AppStyle.cardfooter,),
+  //                       subtitle: Text('DateTime: '+FormatData.formatTimestamp('${vehicle.created_at}'), style: AppStyle.cardfooter,),
+  //                       trailing: Icon(
+  //                         vehicle.connected == 'online'
+  //                             ? Icons.check_circle
+  //                             : Icons.remove_circle,
+  //                         color: vehicle.connected == 'online'
+  //                             ? Colors.green
+  //                             : Colors.red,
+  //                       ),
+  //                     ),
+  //                   );
+  //                 },
+  //               ),
+  //             ),
+  //           ],
+  //         ),
+  //       ),
+  //     ),
+  //   );
+  // }
 
 }
 

@@ -18,6 +18,7 @@ class LoginRespEntity extends Equatable{
 }
 
 class UserEntity extends Equatable{
+  int id;
   String first_name;
   String last_name;
   String middle_name;
@@ -30,6 +31,7 @@ class UserEntity extends Equatable{
   String updated_at;
 
   UserEntity({
+    required this.id,
     required this.first_name,
     required this.last_name,
     required this.middle_name,
@@ -44,6 +46,6 @@ class UserEntity extends Equatable{
 
   @override
   // TODO: implement props
-  List<Object?> get props => [first_name, last_name, middle_name, phone, user_type, status, email, email_verified_at, updated_at, created_at];
+  List<Object?> get props => [id, first_name, last_name, middle_name, phone, user_type, status, email, email_verified_at, updated_at, created_at];
 
 }

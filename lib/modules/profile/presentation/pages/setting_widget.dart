@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:ctntelematics/modules/profile/domain/entitties/req_entities/gen_otp_req_entity.dart';
 import 'package:ctntelematics/modules/profile/domain/entitties/req_entities/token_req_entity.dart';
 import 'package:ctntelematics/modules/profile/presentation/bloc/profile_bloc.dart';
@@ -7,6 +9,8 @@ import 'package:ctntelematics/modules/profile/presentation/widgets/report_widget
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/usecase/databse_helper.dart';
@@ -16,11 +20,7 @@ import '../../../../core/utils/pref_util.dart';
 import '../../../websocket/domain/entitties/resp_entities/vehicle_entity.dart';
 import '../../../websocket/presentation/bloc/vehicle_location_bloc.dart';
 import '../widgets/change_dialog.dart';
-import '../widgets/expenses_widget.dart';
-import '../widgets/geofence_setting.dart';
 import '../widgets/notification_widget.dart';
-import '../widgets/pay_now_widget.dart';
-import '../widgets/refer_widget.dart';
 import '../widgets/support_widget.dart';
 import '../widgets/term_use_widget.dart';
 
@@ -38,7 +38,10 @@ class _SettingState extends State<Setting> {
   String? middle_name;
   String? email;
   String? token;
+  String? userId;
   bool isGeofence = false;
+  DB_notification db_notification = DB_notification();
+  File? _image;
   @override
   void initState() {
     super.initState();
@@ -53,151 +56,85 @@ class _SettingState extends State<Setting> {
   _getAuthUser() async {
     List<String>? authUser = await prefUtils.getStringList('auth_user');
     setState(() {
-      first_name = authUser![0] == "" ? null : authUser[0];
-      last_name = authUser[1] == "" ? null : authUser[1];
-      middle_name = authUser[2] == "" ? null : authUser[2];
-      email = authUser[3] == "" ? null : authUser[3];
-      token = authUser[4] == "" ? null : authUser[4];
+      first_name = authUser?[0] == "" ? null : authUser?[0];
+      last_name = authUser?[1] == "" ? null : authUser?[1];
+      middle_name = authUser?[2] == "" ? null : authUser?[2];
+      email = authUser?[3] == "" ? null : authUser?[3];
+      token = authUser?[4] == "" ? null : authUser?[4];
+      userId = authUser?[8] == "" ? null : authUser?[8];
     });
   }
 
-  Future<void> saveNotifications(
-      List<VehicleEntity> geofenceVehicles,
-      List<VehicleEntity> speedLimitVehicles,
-      ) async {
-    final dbHelper = DatabaseHelper();
 
-    // Save geofence notifications
-    for (var v in geofenceVehicles) {
-      await dbHelper.insertGeofenceNotification({
-        'vin': v.locationInfo.vin,
-        'brand': v.locationInfo.brand,
-        'model': v.locationInfo.model,
-        'numberPlate': v.locationInfo.numberPlate,
-        'createdAt': v.locationInfo.createdAt,
-      });
-    }
+  Future<void> pickAndSaveProfilePicture(int userId) async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
 
-    // Save speed limit notifications
-    for (var v in speedLimitVehicles) {
-      await dbHelper.insertSpeedLimitNotification({
-        'vin': v.locationInfo.vin,
-        'brand': v.locationInfo.brand,
-        'model': v.locationInfo.model,
-        'numberPlate': v.locationInfo.numberPlate,
-        'speedLimit': v.locationInfo.speedLimit,
-        'createdAt': v.locationInfo.createdAt,
+    if (pickedFile != null) {
+      final filePath = pickedFile.path;
+      final uploadedAt = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
+
+      print('userId: $userId');
+
+      // Save to the database
+      final dbHelper = DatabaseHelper();
+      await dbHelper.insertProfilePicture({
+        'userId': userId,
+        'filePath': filePath,
+        'uploadedAt': uploadedAt,
       });
+
+      print('Profile picture saved: $filePath');
+      // Update the state
+      setState(() {
+        _image = File(filePath); // Update the in-memory image file
+      });
+    } else {
+      print('No image selected.');
     }
   }
-  Future<List<NotificationItem>> fetchCombinedNotifications() async {
+
+  Future<void> pickAndUpdateProfilePicture(int userId) async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      final filePath = pickedFile.path;
+      final uploadedAt = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
+
+      print('UserId: $userId');
+
+      // Save to the database
       final dbHelper = DatabaseHelper();
 
-      final geofenceData = await dbHelper.fetchGeofenceNotifications();
-      final speedLimitData = await dbHelper.fetchSpeedLimitNotifications();
+      // Update the profile picture for the given userId
+      await dbHelper.updateProfilePicture(userId, {
+        'filePath': filePath,
+        'uploadedAt': uploadedAt,
+      });
 
-    // Convert to respective objects
-    List<NotificationItem> geofenceItems =
-    geofenceData.map((row) => GeofenceNotificationItem.fromJson(row)).toList();
-    List<NotificationItem> speedLimitItems =
-    speedLimitData.map((row) => SpeedLimitNotificationItem.fromJson(row)).toList();
+      print('Profile picture updated: $filePath');
 
-    // Combine lists
-    List<NotificationItem> allNotifications = [...geofenceItems, ...speedLimitItems];
-
-    return allNotifications;
+      // Update the UI
+      setState(() {
+        _image = File(filePath);
+      });
+    } else {
+      print('No image selected.');
+    }
   }
 
 
-  ///
+  Future<String?> fetchUserProfilePicture(int userId) async {
+    final dbHelper = DatabaseHelper();
+    final picture = await dbHelper.fetchLatestProfilePicture(userId); // Fetch the latest picture as a single map
 
-  // Future<List<NotificationItem>> fetchCombinedNotifications() async {
-  //   final dbHelper = DatabaseHelper();
-  //
-  //   final geofenceData = await dbHelper.fetchGeofenceNotifications();
-  //   final speedLimitData = await dbHelper.fetchSpeedLimitNotifications();
-  //
-  //   final geofenceNotifications = geofenceData.map((e) => GeofenceNotificationItem.fromJson(e)).toList();
-  //   final speedLimitNotifications = speedLimitData.map((e) => SpeedLimitNotificationItem.fromJson(e)).toList();
-  //
-  //   final combinedNotifications = <NotificationItem>[];
-  //     combinedNotifications.addAll(geofenceNotifications as Iterable<NotificationItem>);
-  //     combinedNotifications.addAll(speedLimitNotifications as Iterable<NotificationItem>);
-  //
-  //  return combinedNotifications;
-  //
-  //   // return [...geofenceNotifications, ...speedLimitNotifications];
-  // }
+    if (picture != null) {
+      return picture['filePath'] as String?; // Return the file path if available
+    }
 
-///
-  // Future<List<NotificationItem>> fetchCombinedNotifications() async {
-  //   final dbHelper = DatabaseHelper();
-  //
-  //   final geofenceData = await dbHelper.fetchGeofenceNotifications();
-  //   final speedLimitData = await dbHelper.fetchSpeedLimitNotifications();
-  //
-  //   final geofenceNotifications = geofenceData.map((e) => GeofenceNotificationItem.fromJson(e)).toList();
-  //   final speedLimitNotifications = speedLimitData.map((e) => SpeedLimitNotificationItem.fromJson(e)).toList();
-  //
-  //
-  //   // Combine the notifications from both sources
-  //   // final combinedNotifications = <NotificationItem>[];
-  //   //
-  //   // combinedNotifications.addAll(geofenceNotifications);
-  //   // combinedNotifications.addAll(speedLimitNotifications);
-  //   //
-  //   // return combinedNotifications;
-  //     return [...geofenceNotifications, ...speedLimitNotifications];
-  // }
-///----
-
-  // Future<List<NotificationItem>> fetchCombinedNotifications() async {
-  //   final dbHelper = DatabaseHelper();
-  //
-  //   final geofenceData = await dbHelper.fetchGeofenceNotifications();
-  //   final speedLimitData = await dbHelper.fetchSpeedLimitNotifications();
-  //
-  //   final geofenceNotifications = geofenceData.map((e) => GeofenceNotificationItem.fromJson(e)).toList();
-  //   final speedLimitNotifications = speedLimitData.map((e) => SpeedLimitNotificationItem.fromJson(e)).toList();
-  //
-  //
-  //   // Combine the notifications from both sources
-  //   final combinedNotifications = <NotificationItem>[];
-  //
-  //   combinedNotifications.addAll(geofenceNotifications);
-  //   combinedNotifications.addAll(speedLimitNotifications);
-  //
-  //   return combinedNotifications;
-  // }
-
-  ///----
-
-  // void saveNotifications(List<VehicleEntity> vehicleNotifications, List<VehicleEntity> speedLimitNotifications) async {
-  //   final dbHelper = DatabaseHelper();
-  //
-  //   for (var vehicle in vehicleNotifications) {
-  //     final notification = NotificationItem(
-  //       vin: vehicle.locationInfo.vin,
-  //       brand: vehicle.locationInfo.brand,
-  //       model: vehicle.locationInfo.model,
-  //       numberPlate: vehicle.locationInfo.numberPlate,
-  //       geofence: vehicle.locationInfo.withinGeofence?.isInGeofence ?? false,
-  //       createdAt: vehicle.locationInfo.createdAt,
-  //       updatedAt: vehicle.locationInfo.updatedAt,
-  //     );
-  //
-  //     // Insert into the database
-  //     await dbHelper.insertNotification(notification.toMap());
-  //   }
-  // }
-
-  // Future<List<NotificationItem>> fetchSavedNotifications() async {
-  //   final dbHelper = DatabaseHelper();
-  //   final notifications = await dbHelper.fetchNotifications();
-  //   return notifications
-  //       .map((notification) => NotificationItem.fromMap(notification))
-  //       .toList();
-  // }
+    return null; // Return null if no picture is found
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -220,10 +157,33 @@ class _SettingState extends State<Setting> {
                   padding: const EdgeInsets.all(10.0),
                   child: Row(
                     children: [
-                      const CircleAvatar(
-                        radius: 25,
-                        child: Icon(Icons.person_outline),
+
+                      InkWell(
+                        onTap: (){
+                          pickAndUpdateProfilePicture(int.parse(userId!));
+                        },
+                        child: FutureBuilder<String?>(
+                          future: fetchUserProfilePicture(int.parse(userId ?? '0')),
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState == ConnectionState.waiting) {
+                              return const CircularProgressIndicator(); // Loading indicator
+                            } else if (snapshot.hasError) {
+                              return const Icon(Icons.error, color: Colors.red); // Error state
+                            } else if (!snapshot.hasData || snapshot.data == null) {
+                              return const CircleAvatar(
+                                radius: 50,
+                                backgroundImage: AssetImage("assets/images/avatar.jpeg"), // Default avatar
+                              );
+                            } else {
+                              return CircleAvatar(
+                                radius: 30,
+                                backgroundImage: FileImage(File(snapshot.data!)), // Fetched image
+                              );
+                            }
+                          },
+                        ),
                       ),
+
                       const SizedBox(
                         width: 10.0,
                       ),
@@ -244,7 +204,7 @@ class _SettingState extends State<Setting> {
                             return InkWell(
                               onTap: () async {
                                 final savedNotifications =
-                                    await fetchCombinedNotifications();
+                                    await db_notification.fetchCombinedNotifications();
                                 Navigator.push(
                                     context,
                                     MaterialPageRoute(
@@ -270,11 +230,11 @@ class _SettingState extends State<Setting> {
                             return vehicleSpeed > speedLimit;
                           }).toList();
 
-                          saveNotifications(geofenceNotifications, speedLimitNotifications);
+                          db_notification.saveNotifications(geofenceNotifications, speedLimitNotifications);
                           
                           return InkWell(
                             onTap: () async {
-                              final savedNotifications = await fetchCombinedNotifications();
+                              final savedNotifications = await db_notification.fetchCombinedNotifications();
                               Navigator.push(
                                   context,
                                   MaterialPageRoute(
@@ -836,4 +796,26 @@ class _SettingState extends State<Setting> {
       ),
     );
   }
+
+
 }
+
+
+
+
+// final ImagePicker _picker = ImagePicker();
+//
+// // Function to pick an image from the gallery
+// Future<void> _pickImage() async {
+//   // Pick an image from the gallery
+//   final XFile? pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+//
+//   // Check if an image was selected
+//   if (pickedFile != null) {
+//     setState(() {
+//       _image = File(pickedFile.path); // Store the selected image
+//     });
+//   }
+// }
+
+

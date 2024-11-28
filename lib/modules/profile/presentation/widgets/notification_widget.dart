@@ -16,6 +16,7 @@ class NotificationWidget extends StatefulWidget {
 
 class _NotificationWidgetState extends State<NotificationWidget> {
   late List<NotificationItem> _notifications;
+  DB_notification db_notification =DB_notification();
 
   @override
   void initState() {

@@ -32,7 +32,7 @@ class _LoginPageState extends State<LoginPage> {
       String token,
       String phone,
       String status,
-      String user_type) async {
+      String user_type, int id) async {
     // SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefUtils.setStringList('auth_user', <String>[
       first_name,
@@ -42,7 +42,8 @@ class _LoginPageState extends State<LoginPage> {
       token,
       phone,
       status,
-      user_type
+      user_type,
+      id.toString()
     ]);
   }
 
@@ -187,6 +188,7 @@ class _LoginPageState extends State<LoginPage> {
                     state.resp.user.phone,
                     state.resp.user.status,
                     state.resp.user.user_type,
+                    state.resp.user.id,
                   );
                   Navigator.pushNamedAndRemoveUntil(
                     context,

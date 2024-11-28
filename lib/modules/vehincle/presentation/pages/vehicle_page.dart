@@ -1068,7 +1068,7 @@ class VehicleUpdateListener extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10.0),
       child: SizedBox(
-        height: 500,
+        height: 600,
         child: ListView.builder(
           padding: EdgeInsets.zero,
           itemCount: itemCount,
@@ -1302,7 +1302,7 @@ class _VehicleIdleItemState extends State<VehicleIdleItem> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10.0),
       child: Container(
-        height: 500,
+        height: 600,
         child: ListView.builder(
           shrinkWrap: true, // Prevents ListView from expanding infinitely
           padding: EdgeInsets.zero,
@@ -1510,7 +1510,7 @@ class _VehicleParkedState extends State<VehicleParked> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10.0),
       child: Container(
-        height: 500,
+        height: 600,
         child: ListView.builder(
           shrinkWrap: true, // Prevents ListView from expanding infinitely
           padding: EdgeInsets.zero,
@@ -2113,7 +2113,7 @@ class _VehicleOfflineState extends State<VehicleOffline> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10.0),
       child: Container(
-        height: 500,
+        height: 600,
         child: ListView.builder(
           shrinkWrap: true, // Prevents ListView from expanding infinitely
           padding: EdgeInsets.zero,

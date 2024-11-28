@@ -251,7 +251,10 @@ class VehicleToolTipDialog {
                                                             number_plate:
                                                                 number_plate,
                                                             vin: vin!,
-                                                            token: token!);
+                                                            token: token!,
+                                                          brand: brand!,
+                                                            model: model!
+                                                        );
                                                       });
                                                 },
                                                 child: const Icon(CupertinoIcons
