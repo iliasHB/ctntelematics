@@ -314,6 +314,8 @@ class _VehicleRouteLastLocationAndUpdateState
                 voltage_level: widget.voltage_level,
                 gsm_signal_strength: widget.gsm_signal_strength,
                 real_time_gps: widget.real_time_gps,
+                brand: widget.brand,
+                model: widget.model,
               ),
             ),
           ),

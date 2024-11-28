@@ -5,6 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/usecase/databse_helper.dart';
 import '../../../../core/widgets/appBar.dart';
 import '../../../../service_locator.dart';
 import '../../domain/entitties/req_entities/token_req_entity.dart';
@@ -59,7 +60,10 @@ class _EshopPageState extends State<EshopPage> {
           const SizedBox(
             width: 10,
           ),
-          Text("All Categories", style: AppStyle.cardfooter.copyWith(fontSize: 14),)
+          Text(
+            "All Categories",
+            style: AppStyle.cardfooter.copyWith(fontSize: 14),
+          )
         ],
       ),
       Row(
@@ -68,17 +72,22 @@ class _EshopPageState extends State<EshopPage> {
           const SizedBox(
             width: 10,
           ),
-          Text("All Product", style: AppStyle.cardfooter.copyWith(fontSize: 14),)
+          Text(
+            "All Product",
+            style: AppStyle.cardfooter.copyWith(fontSize: 14),
+          )
         ],
       ),
-
       Row(
         children: [
           const Icon(CupertinoIcons.cart_badge_plus),
           const SizedBox(
             width: 10,
           ),
-          Text("Cart", style: AppStyle.cardfooter.copyWith(fontSize: 14),)
+          Text(
+            "Cart",
+            style: AppStyle.cardfooter.copyWith(fontSize: 14),
+          )
         ],
       ),
     ];
@@ -192,14 +201,16 @@ class _EshopPageState extends State<EshopPage> {
             _selectedTabIndex == 0
                 ? Column(
                     children: [
-                      _buildListSection("Engine Oil"),
+                      _buildListSection("Filters"),
                       const SizedBox(height: 10),
                       // _buildListSection("Oil Filter"),
                       // const SizedBox(height: 10),
                       // _buildListSection("Air Filter"),
                     ],
                   )
-                : _buildGridSection(),
+                : _selectedTabIndex == 1
+                    ? _buildGridSection()
+                    : _buildUserCartSection(),
           ],
         ),
       ),
@@ -370,9 +381,56 @@ class _EshopPageState extends State<EshopPage> {
       ),
     );
   }
+
+  Widget _buildUserCartSection() {
+    return FutureBuilder<List<CartProducts>>(
+      future: _fetchCartItems(), // Fetch cart items from the database
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (snapshot.hasError) {
+          return Center(child: Text('Error: ${snapshot.error}'));
+        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return const Center(child: Text('Your cart is empty'));
+        } else {
+          final cartItems = snapshot.data!;
+          return GridView.builder(
+            shrinkWrap: true,
+            padding: EdgeInsets.zero,
+            itemCount: cartItems.length,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2, // Number of columns
+              childAspectRatio: 1.1, // Adjust for width-to-height ratio
+              mainAxisSpacing: 0, // Removes vertical spacing
+              crossAxisSpacing: 0, // Removes horizontal spacing
+            ),
+            itemBuilder: (context, index) {
+              final item = cartItems[index];
+              return AllCartProduct(
+                productName: item.name!,
+                productImage: item.image!,
+                price: item.price!,
+                onAddToCart: () {},
+                onFavorite: () {},
+                categoryId: item.category_id.toString(),
+                description: item.description!,
+                token: token!,
+                productId: item.productId!,
+              );
+            },
+          );
+        }
+      },
+    );
+  }
+
+  Future<List<CartProducts>> _fetchCartItems() async {
+    final dbCart = DB_cart();
+    return await dbCart.fetchUserCart();
+  }
 }
 
-class AllCategory extends StatelessWidget {
+class AllCategory extends StatefulWidget {
   final String productName;
   final String productImage;
   final String price;
@@ -383,7 +441,7 @@ class AllCategory extends StatelessWidget {
   final String? token;
   final int productId;
 
-  const AllCategory({
+  AllCategory({
     super.key,
     required this.productName,
     required this.productImage,
@@ -395,6 +453,13 @@ class AllCategory extends StatelessWidget {
     required this.token,
     required this.productId,
   });
+
+  @override
+  State<AllCategory> createState() => _AllCategoryState();
+}
+
+class _AllCategoryState extends State<AllCategory> {
+  DB_cart db_cart = DB_cart();
 
   @override
   Widget build(BuildContext context) {
@@ -410,13 +475,13 @@ class AllCategory extends StatelessWidget {
                       context,
                       MaterialPageRoute(
                           builder: (_) => ProductReview(
-                              productName: productName,
-                              productImage: productImage,
-                              price: price,
-                              categoryId: categoryId,
-                              description: description,
-                              token: token!,
-                              productId: productId)));
+                              productName: widget.productName,
+                              productImage: widget.productImage,
+                              price: widget.price,
+                              categoryId: widget.categoryId,
+                              description: widget.description,
+                              token: widget.token!,
+                              productId: widget.productId)));
                 },
                 child: Container(
                   margin:
@@ -433,7 +498,7 @@ class AllCategory extends StatelessWidget {
                       children: [
                         Center(
                           child: Image.network(
-                            'https://ecom.verifycentre.com$productImage',
+                            'https://ecom.verifycentre.com${widget.productImage}',
                             height: 100,
                             width: 100,
                             loadingBuilder: (BuildContext context, Widget child,
@@ -469,7 +534,7 @@ class AllCategory extends StatelessWidget {
                         // ),
                         Center(
                           child: Text(
-                            productName,
+                            widget.productName,
                             style: AppStyle.cardfooter
                                 .copyWith(fontWeight: FontWeight.bold),
                             textAlign: TextAlign.center,
@@ -481,8 +546,12 @@ class AllCategory extends StatelessWidget {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Image.asset("assets/images/naira.png", height: 20, width: 20,),
-                            Text(price,
+                            Image.asset(
+                              "assets/images/naira.png",
+                              height: 20,
+                              width: 20,
+                            ),
+                            Text(widget.price,
                                 style: AppStyle.cardSubtitle.copyWith(
                                     fontWeight: FontWeight.w500,
                                     color: Colors.green[800])),
@@ -498,16 +567,33 @@ class AllCategory extends StatelessWidget {
                   right: 15,
                   child: Column(
                     children: [
-                      Container(
-                        decoration: BoxDecoration(
-                            border: Border.all(width: 1, color: Colors.white),
-                            borderRadius: BorderRadius.circular(50)),
-                        child: CircleAvatar(
-                          radius: 15,
-                          backgroundColor: Colors.green[700],
-                          child: const Icon(
-                            Icons.shopping_cart_outlined, color: Colors.white,
-                            size: 15,
+                      InkWell(
+                        onTap: () {
+                          print("I am saving here");
+                          saveProductToCart(
+                            widget.productName,
+                            widget.productImage,
+                            widget.price,
+                            widget.categoryId,
+                            widget.description,
+                            widget.productId,
+                          );
+                          // db_cart.saveProducts(
+                          //
+                          // );
+                        },
+                        child: Container(
+                          decoration: BoxDecoration(
+                              border: Border.all(width: 1, color: Colors.white),
+                              borderRadius: BorderRadius.circular(50)),
+                          child: CircleAvatar(
+                            radius: 15,
+                            backgroundColor: Colors.green[700],
+                            child: const Icon(
+                              Icons.shopping_cart_outlined,
+                              color: Colors.white,
+                              size: 15,
+                            ),
                           ),
                         ),
                       ),
@@ -535,9 +621,33 @@ class AllCategory extends StatelessWidget {
       ),
     );
   }
+
+  saveProductToCart(String productName, String productImage, String price,
+      String categoryId, String description, int productId) async {
+    bool isSaved = await db_cart.saveProducts(
+        productName, productImage, price, categoryId, description, productId);
+
+    if (isSaved) {
+      // Show success feedback
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Product added to cart successfully!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } else {
+      // Show failure feedback
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Failed to add product to cart.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
 }
 
-class AllProduct extends StatelessWidget {
+class AllProduct extends StatefulWidget {
   final String productName;
   final String productImage;
   final String price;
@@ -560,6 +670,13 @@ class AllProduct extends StatelessWidget {
   });
 
   @override
+  State<AllProduct> createState() => _AllProductState();
+}
+
+class _AllProductState extends State<AllProduct> {
+
+  DB_cart db_cart = DB_cart();
+  @override
   Widget build(BuildContext context) {
     return SizedBox(
       width: double.infinity,
@@ -573,13 +690,13 @@ class AllProduct extends StatelessWidget {
                       context,
                       MaterialPageRoute(
                           builder: (_) => ProductReview(
-                              productName: productName,
-                              productImage: productImage,
-                              price: price,
-                              categoryId: categoryId,
-                              description: description,
-                              token: token,
-                              productId: productId)));
+                              productName: widget.productName,
+                              productImage: widget.productImage,
+                              price: widget.price,
+                              categoryId: widget.categoryId,
+                              description: widget.description,
+                              token: widget.token,
+                              productId: widget.productId)));
 
                   // Navigator.pushNamed(context, "/productReview", arguments: {
                   //   'productName': productName,
@@ -605,8 +722,8 @@ class AllProduct extends StatelessWidget {
                       children: [
                         Center(
                           child: Image.network(
-                            'https://ecom.verifycentre.com$productImage',
-                            headers: {'Authorization': token},
+                            'https://ecom.verifycentre.com${widget.productImage}',
+                            headers: {'Authorization': widget.token},
                             height: 100,
                             width: 100,
                             loadingBuilder: (BuildContext context, Widget child,
@@ -642,7 +759,7 @@ class AllProduct extends StatelessWidget {
                         // ),
                         Center(
                           child: Text(
-                            productName,
+                            widget.productName,
                             style: AppStyle.cardfooter
                                 .copyWith(fontWeight: FontWeight.bold),
                             textAlign: TextAlign.center,
@@ -654,8 +771,12 @@ class AllProduct extends StatelessWidget {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Image.asset("assets/images/naira.png", height: 20, width: 20,),
-                            Text(price,
+                            Image.asset(
+                              "assets/images/naira.png",
+                              height: 20,
+                              width: 20,
+                            ),
+                            Text(widget.price,
                                 style: AppStyle.cardSubtitle.copyWith(
                                     fontWeight: FontWeight.w500,
                                     color: Colors.green[800])),
@@ -671,35 +792,33 @@ class AllProduct extends StatelessWidget {
                   right: 15,
                   child: Column(
                     children: [
-                      Container(
-                        decoration: BoxDecoration(
-                            border: Border.all(width: 1, color: Colors.white),
-                            borderRadius: BorderRadius.circular(50)),
-                        child: CircleAvatar(
-                          radius: 15,
-                          backgroundColor: Colors.green[700],
-                          child: const Icon(
-                            Icons.shopping_cart_outlined, color: Colors.white,
-                            size: 15,
+                      InkWell(
+                        onTap: (){
+                          saveProductToCart(
+                            widget.productName,
+                            widget.productImage,
+                            widget.price,
+                            widget.categoryId,
+                            widget.description,
+                            widget.productId,
+                          );
+                        },
+                        child: Container(
+                          decoration: BoxDecoration(
+                              border: Border.all(width: 1, color: Colors.white),
+                              borderRadius: BorderRadius.circular(50)),
+                          child: CircleAvatar(
+                            radius: 15,
+                            backgroundColor: Colors.green[700],
+                            child: const Icon(
+                              Icons.shopping_cart_outlined,
+                              color: Colors.white,
+                              size: 15,
+                            ),
                           ),
                         ),
                       ),
-                      // const SizedBox(
-                      //   height: 5,
-                      // ),
-                      // Container(
-                      //   decoration: BoxDecoration(
-                      //       border: Border.all(width: 1, color: Colors.grey),
-                      //       borderRadius: BorderRadius.circular(50)),
-                      //   child: const CircleAvatar(
-                      //     radius: 15,
-                      //     backgroundColor: Colors.white,
-                      //     child: Icon(
-                      //       Icons.favorite_border,
-                      //       size: 15,
-                      //     ),
-                      //   ),
-                      // )
+
                     ],
                   ))
             ],
@@ -708,4 +827,224 @@ class AllProduct extends StatelessWidget {
       ),
     );
   }
+  saveProductToCart(String productName, String productImage, String price,
+      String categoryId, String description, int productId) async {
+    bool isSaved = await db_cart.saveProducts(
+        productName, productImage, price, categoryId, description, productId);
+
+    if (isSaved) {
+      // Show success feedback
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Product added to cart successfully!', style: AppStyle.cardfooter,),
+          backgroundColor: Colors.black,
+        ),
+      );
+    } else {
+      // Show failure feedback
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to add product to cart.', style: AppStyle.cardfooter,),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+}
+
+
+
+class AllCartProduct extends StatefulWidget {
+  final String productName;
+  final String productImage;
+  final String price;
+  final VoidCallback onAddToCart;
+  final VoidCallback onFavorite;
+  final String categoryId, description, token;
+  final int productId;
+
+  const AllCartProduct({
+    super.key,
+    required this.productName,
+    required this.productImage,
+    required this.price,
+    required this.onAddToCart,
+    required this.onFavorite,
+    required this.categoryId,
+    required this.description,
+    required this.token,
+    required this.productId,
+  });
+
+  @override
+  State<AllCartProduct> createState() => _AllCartProductState();
+}
+
+class _AllCartProductState extends State<AllCartProduct> {
+
+  DB_cart db_cart = DB_cart();
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      child: Column(
+        children: [
+          Stack(
+            children: [
+              InkWell(
+                onTap: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => ProductReview(
+                              productName: widget.productName,
+                              productImage: widget.productImage,
+                              price: widget.price,
+                              categoryId: widget.categoryId,
+                              description: widget.description,
+                              token: widget.token,
+                              productId: widget.productId)));
+
+                },
+                child: Container(
+                  margin:
+                  const EdgeInsets.symmetric(horizontal: 5.0, vertical: 10),
+                  decoration: BoxDecoration(
+                      color: Colors.green.shade50,
+                      borderRadius: BorderRadius.circular(10)),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 5.0, vertical: 5),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Center(
+                          child: Image.network(
+                            'https://ecom.verifycentre.com${widget.productImage}',
+                            headers: {'Authorization': widget.token},
+                            height: 100,
+                            width: 100,
+                            loadingBuilder: (BuildContext context, Widget child,
+                                ImageChunkEvent? loadingProgress) {
+                              if (loadingProgress == null) {
+                                return child;
+                              }
+                              return Center(
+                                child: CircularProgressIndicator(
+                                  value: loadingProgress.expectedTotalBytes !=
+                                      null
+                                      ? loadingProgress.cumulativeBytesLoaded /
+                                      (loadingProgress.expectedTotalBytes ??
+                                          1)
+                                      : null,
+                                ),
+                              );
+                            },
+                            errorBuilder: (BuildContext context, Object error,
+                                StackTrace? stackTrace) {
+                              return const Icon(
+                                Icons.error,
+                                size: 50,
+                                color: Colors.red,
+                              );
+                            },
+                          ),
+                        ),
+                        // Image.asset(
+                        //   productImage,
+                        //   height: 100,
+                        //   width: 100,
+                        // ),
+                        Center(
+                          child: Text(
+                            widget.productName,
+                            style: AppStyle.cardfooter
+                                .copyWith(fontWeight: FontWeight.bold),
+                            textAlign: TextAlign.center,
+                            softWrap: true,
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 3,
+                          ),
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Image.asset(
+                              "assets/images/naira.png",
+                              height: 20,
+                              width: 20,
+                            ),
+                            Text(widget.price,
+                                style: AppStyle.cardSubtitle.copyWith(
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.green[800])),
+                          ],
+                        )
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
+
+              Positioned(
+                  top: 20,
+                  right: 15,
+                  child: Column(
+                    children: [
+                      InkWell(
+                        onTap: (){
+                          deleteCartProduct(
+                            context,
+                            widget.productId,
+                          );
+                        },
+                        child: Container(
+                          decoration: BoxDecoration(
+                              border: Border.all(width: 1, color: Colors.white),
+                              borderRadius: BorderRadius.circular(50)),
+                          child: CircleAvatar(
+                            radius: 15,
+                            backgroundColor: Colors.red[500],
+                            child: const Icon(
+                              Icons.delete,
+                              color: Colors.white,
+                              size: 15,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ))
+            ],
+          )
+        ],
+      ),
+    );
+  }
+
+
+  Future<void> deleteCartProduct(BuildContext context, int productId) async {
+    bool isDeleted = await db_cart.deleteProduct(productId);
+
+    if (isDeleted) {
+      // Show success feedback
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Product removed from cart successfully!', style: AppStyle.cardfooter,),
+          backgroundColor: Colors.black,
+        ),
+      );
+    } else {
+      // Show failure feedback
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to remove product from cart.', style: AppStyle.cardfooter,),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
 }

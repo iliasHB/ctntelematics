@@ -13,24 +13,34 @@ import '../pages/vehicle_quick_setting.dart';
 class VehicleOperations extends StatefulWidget {
   final VoidCallback onClose;
   final String token, vin;
-  final String voltage_level, speed, latitude, longitude, status, updated_at, number_plate, gsm_signal_strength;
+  final String voltage_level,
+      speed,
+      latitude,
+      longitude,
+      status,
+      updated_at,
+      number_plate,
+      gsm_signal_strength,
+      brand,
+      model;
   final bool real_time_gps;
 
-  const VehicleOperations({
-    super.key,
-    required this.onClose,
-    required this.token,
-    required this.vin,
-    required this.status,
-    required this.updated_at,
-    required this.longitude,
-    required this.latitude,
-    required this.speed,
-    required this.number_plate,
-    required this.voltage_level,
-    required this.gsm_signal_strength,
-    required this.real_time_gps
-  });
+  const VehicleOperations(
+      {super.key,
+      required this.onClose,
+      required this.token,
+      required this.vin,
+      required this.status,
+      required this.updated_at,
+      required this.longitude,
+      required this.latitude,
+      required this.speed,
+      required this.number_plate,
+      required this.voltage_level,
+      required this.gsm_signal_strength,
+      required this.real_time_gps,
+      required this.brand,
+      required this.model});
 
   @override
   State<VehicleOperations> createState() => _VehicleOperationsState();
@@ -130,6 +140,8 @@ class _VehicleOperationsState extends State<VehicleOperations> {
                             gsm_signal_strength: widget.gsm_signal_strength,
                             updated_at: widget.updated_at,
                             number_plate: widget.number_plate,
+                            brand: widget.brand,
+                            model: widget.model
                           ),
                         ));
                       },
@@ -152,6 +164,8 @@ class _VehicleOperationsState extends State<VehicleOperations> {
                     ),
                     InkWell(
                       onTap: () {
+
+
                         Navigator.of(context).push(MaterialPageRoute(
                           builder: (context) => const VehicleAlertPage(),
                         ));

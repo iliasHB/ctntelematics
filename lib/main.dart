@@ -5,6 +5,8 @@ import 'package:ctntelematics/service_locator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:sqflite/sqflite.dart';
+import 'package:path/path.dart';
 
 import 'config/routes/app_routes.dart';
 import 'core/usecase/databse_helper.dart';
@@ -14,15 +16,59 @@ import 'modules/map/presentation/bloc/map_bloc.dart';
 import 'modules/profile/presentation/bloc/profile_bloc.dart';
 import 'modules/websocket/presentation/bloc/vehicle_location_bloc.dart';
 
+// void main() async {
+//   WidgetsFlutterBinding.ensureInitialized();
+//   await DatabaseHelper().database; // Force database creation
+//   await SystemChrome.setPreferredOrientations([
+//     DeviceOrientation.portraitUp,
+//   ]);
+//
+//   final dbHelper = DatabaseHelper();
+//
+//   // Print all tables in the database
+//   await dbHelper.printTables();
+//   // Initialize the database
+//   // await _initializeDatabase();
+//   // Database db = await _initDatabase();
+//   initializeDependencies();
+//   await checkDatabaseFile();
+//   // Initialize the database and check the tables
+//
+//   // await printTables(db);
+//
+//   runApp(
+//     MultiProvider(
+//       providers: [
+//         ChangeNotifierProvider(create: (_) => GeofenceProvider()),
+//         ChangeNotifierProvider(create: (_) => ShopNowProvider()),
+//         ChangeNotifierProvider(create: (_) => MaintenanceReminderProvider()),
+//         ChangeNotifierProvider(create: (_) => VehicleTripProvider()),
+//       ],
+//       child: const MyApp(),
+//     ),
+//   );
+// }
+
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await DatabaseHelper().database; // Force database creation
+
+  // Force database creation and initialize tables
+  final dbHelper = DatabaseHelper();
+  await dbHelper.database; // Ensure database is initialized
+
+  // Print all tables in the database for debugging
+  await dbHelper.printTables();
+
+  // Lock orientation to portrait
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
   ]);
-  // Initialize the database
-  // await _initializeDatabase();
+
+  // Initialize dependencies if any (e.g., Dependency Injection)
   initializeDependencies();
+
+  // Run the app with state management
   runApp(
     MultiProvider(
       providers: [
@@ -37,6 +83,24 @@ void main() async {
 }
 
 
+Future<void> checkDatabaseFile() async {
+  String databasePath = await getDatabasesPath();
+  String path = join(databasePath, 'notifications.db');
+
+  print('Database path: $path'); // This will print the path in the debug console
+}
+
+Future<void> printTables(Database db) async {
+  // Query the sqlite_master table to get all table names
+  List<Map<String, dynamic>> tables = await db.rawQuery(
+      "SELECT name FROM sqlite_master WHERE type='table';"
+  );
+
+  print('Tables in the database:');
+  for (var table in tables) {
+    print('- ${table['name']}');
+  }
+}
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});

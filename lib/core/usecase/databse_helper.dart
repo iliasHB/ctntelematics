@@ -1,5 +1,9 @@
+import 'dart:ui';
+
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+
+import '../../modules/websocket/domain/entitties/resp_entities/vehicle_entity.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper _instance = DatabaseHelper._();
@@ -21,7 +25,7 @@ class DatabaseHelper {
 
     return openDatabase(
       path,
-      version: 1,
+      version: 3,
       onCreate: (db, version) async {
         // Create the general notifications table
         await db.execute('''
@@ -49,20 +53,86 @@ class DatabaseHelper {
             updatedAt TEXT
           )
         ''');
+
+        // Create the user cart table
+        await db.execute('''
+          CREATE TABLE user_carts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            productId INTEGER,
+            name TEXT,
+            description TEXT,
+            price TEXT,
+            stock_quantity TEXT,
+            sku TEXT,
+            image TEXT,
+            category_id INTEGER,
+            is_active INTEGER,
+            createdAt TEXT,
+            updatedAt TEXT
+          )
+        ''');
+
+        await db.execute('''
+          CREATE TABLE profile_picture (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            userId INTEGER NOT NULL,
+            filePath TEXT NOT NULL,
+            uploadedAt TEXT NOT NULL 
+          )
+        ''');
+
+      },
+      onUpgrade: (db, oldVersion, newVersion) async {
+        if (oldVersion < 3) {
+
+          // Create the profile pictures table
+          await db.execute('''
+          CREATE TABLE profile_picture (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            userId INTEGER NOT NULL,
+            filePath TEXT NOT NULL,
+            uploadedAt TEXT NOT NULL
+          )
+        ''');
+
+        }
       },
     );
   }
 
+  // Print all tables in the database
+  Future<void> printTables() async {
+    final db = await database;
+
+    // Query the sqlite_master table for table names
+    List<Map<String, dynamic>> tables = await db.rawQuery(
+        "SELECT name FROM sqlite_master WHERE type='table';"
+    );
+
+    print('Tables in the database:');
+    for (var table in tables) {
+      print('- ${table['name']}');
+    }
+  }
+
   // Insert into general notifications table
-  Future<int> insertGeofenceNotification(Map<String, dynamic> notification) async {
+  Future<int> insertGeofenceNotification(
+      Map<String, dynamic> notification) async {
     final db = await database;
     return db.insert('notifications', notification);
   }
 
   // Insert into speed limit notifications table
-  Future<int> insertSpeedLimitNotification(Map<String, dynamic> notification) async {
+  Future<int> insertSpeedLimitNotification(
+      Map<String, dynamic> notification) async {
     final db = await database;
     return db.insert('speed_limit_notifications', notification);
+  }
+
+  // Insert into user cart table
+  Future<int> insertUserCart(Map<String, dynamic> cart) async {
+    final db = await database;
+    return db.insert('user_carts', cart);
   }
 
   // Fetch notifications from the general table
@@ -71,11 +141,16 @@ class DatabaseHelper {
     return await db.query('notifications', orderBy: 'createdAt DESC');
   }
 
-
   // Fetch notifications from the speed limit table
   Future<List<Map<String, dynamic>>> fetchSpeedLimitNotifications() async {
     final db = await database;
     return db.query('speed_limit_notifications', orderBy: 'createdAt DESC');
+  }
+
+  // Fetch user cart from the general table
+  Future<List<Map<String, dynamic>>> fetchUserCart() async {
+    final db = await database;
+    return await db.query('user_carts', orderBy: 'createdAt DESC');
   }
 
   // Delete notification by ID from the general table
@@ -87,7 +162,14 @@ class DatabaseHelper {
   // Delete notification by ID from the speed limit table
   Future<int> deleteSpeedLimitNotification(int id) async {
     final db = await database;
-    return db.delete('speed_limit_notifications', where: 'id = ?', whereArgs: [id]);
+    return db
+        .delete('speed_limit_notifications', where: 'id = ?', whereArgs: [id]);
+  }
+
+  // Delete notification by ID from the speed limit table
+  Future<int> deleteUserCart(int id) async {
+    final db = await database;
+    return db.delete('user_carts', where: 'id = ?', whereArgs: [id]);
   }
 
   // Clear all general notifications
@@ -101,72 +183,191 @@ class DatabaseHelper {
     final db = await database;
     await db.delete('speed_limit_notifications');
   }
+
+  // Clear all user carts
+  Future<void> clearAllUserCart() async {
+    final db = await database;
+    await db.delete('user_carts');
+  }
+
+  // Insert a profile picture
+  Future<int> insertProfilePicture(Map<String, dynamic> picture) async {
+    final db = await database;
+    return db.insert('profile_picture', picture);
+  }
+
+  // // Fetch profile pictures by userId
+  Future<Map<String, dynamic>?> fetchLatestProfilePicture(int userId) async {
+    final db = await database;
+    final results = await db.query(
+      'profile_picture',
+      where: 'userId = ?',
+      whereArgs: [userId],
+      orderBy: 'uploadedAt DESC',
+      limit: 1,
+    );
+    return results.isNotEmpty ? results.first : null;
+  }
+
+  //Update profile pictures by userId
+  Future<void> updateProfilePicture(int userId, Map<String, dynamic> data) async {
+    final db = await database;
+
+    // Check if a record exists for the user
+    final existingPictures = await db.query(
+      'profile_picture',
+      where: 'userId = ?',
+      whereArgs: [userId],
+    );
+
+    if (existingPictures.isNotEmpty) {
+      // Update the existing record
+      await db.update(
+        'profile_picture',
+        data,
+        where: 'userId = ?',
+        whereArgs: [userId],
+      );
+    } else {
+      // Insert a new record if none exists
+      await db.insert('profile_picture', data);
+    }
+  }
+
+
+
+  // // Fetch profile pictures by userId
+  // Future<List<Map<String, dynamic>>> fetchProfilePictures(int userId) async {
+  //   final db = await database;
+  //   return db.query('profile_picture',
+  //       where: 'userId = ?', whereArgs: [userId], orderBy: 'uploadedAt DESC');
+  // }
+
+  // Delete a profile picture by ID
+  Future<int> deleteProfilePicture(int id) async {
+    final db = await database;
+    return db.delete('profile_picture', where: 'id = ?', whereArgs: [id]);
+  }
+
+  // Clear all profile pictures (optional)
+  Future<void> clearAllProfilePictures() async {
+    final db = await database;
+    await db.delete('profile_picture');
+  }
 }
 
+class DB_notification {
+  Future<void> saveNotifications(
+    List<VehicleEntity> geofenceVehicles,
+    List<VehicleEntity> speedLimitVehicles,
+  ) async {
+    final dbHelper = DatabaseHelper();
 
-// class DatabaseHelper {
-//   static final DatabaseHelper _instance = DatabaseHelper._internal();
-//
-//   factory DatabaseHelper() => _instance;
-//
-//   DatabaseHelper._internal();
-//
-//   static Database? _database;
-//
-//   Future<Database> get database async {
-//     if (_database != null) return _database!;
-//     _database = await _initDatabase();
-//     return _database!;
-//   }
-//
-//   Future<Database> _initDatabase() async {
-//     final dbPath = await getDatabasesPath();
-//     final path = join(dbPath, 'notifications.db');
-//
-//     return openDatabase(
-//       path,
-//       version: 1,
-//       onCreate: (db, version) {
-//         return db.execute('''
-//           CREATE TABLE notifications (
-//             id INTEGER PRIMARY KEY AUTOINCREMENT,
-//             vin TEXT,
-//             brand TEXT,
-//             model TEXT,
-//             numberPlate TEXT,
-//             speedLimit TEXT,
-//             createdAt TEXT,
-//             updatedAt TEXT,
-//           )
-//         ''');
-//
-//
-//       },
-//     );
-//   }
-//
-//   Future<int> insertNotification(Map<String, dynamic> notification) async {
-//     final db = await database;
-//     return await db.insert('notifications', notification);
-//   }
-//
-//   Future<List<Map<String, dynamic>>> fetchNotifications() async {
-//     final db = await database;
-//     return await db.query('notifications');
-//   }
-//
-//   Future<int> deleteAllNotifications() async {
-//     final db = await database;
-//     return await db.delete('notifications');
-//   }
-//
-//   Future<int> deleteNotification(int id) async {
-//     final db = await database;
-//     return await db.delete('notifications', where: 'id = ?', whereArgs: [id],);
-//   }
-//
-// }
+    // Save geofence notifications
+    for (var v in geofenceVehicles) {
+      await dbHelper.insertGeofenceNotification({
+        'vin': v.locationInfo.vin,
+        'brand': v.locationInfo.brand,
+        'model': v.locationInfo.model,
+        'numberPlate': v.locationInfo.numberPlate,
+        'createdAt': v.locationInfo.createdAt,
+      });
+    }
 
+    // Save speed limit notifications
+    for (var v in speedLimitVehicles) {
+      await dbHelper.insertSpeedLimitNotification({
+        'vin': v.locationInfo.vin,
+        'brand': v.locationInfo.brand,
+        'model': v.locationInfo.model,
+        'numberPlate': v.locationInfo.numberPlate,
+        'speedLimit': v.locationInfo.speedLimit,
+        'createdAt': v.locationInfo.createdAt,
+      });
+    }
+  }
+
+  Future<List<NotificationItem>> fetchCombinedNotifications() async {
+    final dbHelper = DatabaseHelper();
+
+    final geofenceData = await dbHelper.fetchGeofenceNotifications();
+    final speedLimitData = await dbHelper.fetchSpeedLimitNotifications();
+
+    // Convert to respective objects
+    List<NotificationItem> geofenceItems = geofenceData
+        .map((row) => GeofenceNotificationItem.fromJson(row))
+        .toList();
+    List<NotificationItem> speedLimitItems = speedLimitData
+        .map((row) => SpeedLimitNotificationItem.fromJson(row))
+        .toList();
+
+    // Combine lists
+    List<NotificationItem> allNotifications = [
+      ...geofenceItems,
+      ...speedLimitItems
+    ];
+
+    return allNotifications;
+  }
+}
+
+class DB_cart {
+  Future<bool> saveProducts(
+    String productName,
+    String productImage,
+    String price,
+    String categoryId,
+    String description,
+    int productId,
+  ) async {
+    final dbHelper = DatabaseHelper();
+
+// Insert the item into the user_cart table
+    int result = await dbHelper.insertUserCart({
+      'productId': productId,
+      'name': productName,
+      'description': description,
+      'price': price,
+      'stock_quantity': '',
+      'sku': '',
+      'image': productImage,
+      'category_id': categoryId,
+      'is_active': 1,
+      'createdAt': DateTime.now().toString(),
+      'updatedAt': ''
+    });
+    // Check the result
+    return result > 0; // Returns true if successfully inserted
+  }
+
+  Future<List<CartProducts>> fetchUserCart() async {
+    final dbHelper = DatabaseHelper();
+
+    final userCartItem = await dbHelper.fetchUserCart();
+
+    // Convert to respective objects
+    List<CartProducts> userCartItems =
+        userCartItem.map((row) => CartProducts.fromJson(row)).toList();
+
+    // Combine lists
+    List<CartProducts> allUserCarts = userCartItems;
+
+    return allUserCarts;
+  }
+
+  // Method to delete a specific product from the cart
+  Future<bool> deleteProduct(int productId) async {
+    final dbHelper = DatabaseHelper();
+
+    try {
+      int rowsAffected = await dbHelper.deleteUserCart(productId);
+      return rowsAffected > 0; // Return true if deletion was successful
+    } catch (e) {
+      print('Error deleting product from cart: $e');
+      return false; // Return false if there was an error
+    }
+  }
+}
 
 abstract class NotificationItem {
   String? get vin;
@@ -221,8 +422,6 @@ class GeofenceNotificationItem implements NotificationItem {
   }
 }
 
-
-
 class SpeedLimitNotificationItem implements NotificationItem {
   final int? id;
   final String? vin;
@@ -265,6 +464,72 @@ class SpeedLimitNotificationItem implements NotificationItem {
       model: map['model'],
       numberPlate: map['numberPlate'],
       speedLimit: map['speedLimit'],
+      createdAt: map['createdAt'] ?? '',
+      updatedAt: map['updatedAt'] ?? '',
+    );
+  }
+}
+
+class CartProducts {
+  final int? id;
+  final int? productId;
+  final String? name;
+  final String? description;
+  final String? price;
+  final String? stock_quantity;
+  final String? image;
+  final String? sku;
+  final int? category_id;
+  final int? is_active;
+  final String? createdAt;
+  final String? updatedAt;
+
+  CartProducts({
+    this.id,
+    this.productId,
+    this.name,
+    this.description,
+    this.price,
+    this.stock_quantity,
+    this.image,
+    this.sku,
+    this.category_id,
+    this.is_active,
+    this.createdAt,
+    this.updatedAt,
+  });
+
+  /// Converts the CartProducts object into a JSON map
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'productId': productId,
+      'name': name, // Changed to match the database key
+      'description': description,
+      'price': price,
+      'stock_quantity': stock_quantity,
+      'sku': sku,
+      'image': image,
+      'category_id': category_id,
+      'is_active': is_active,
+      'createdAt': createdAt,
+      'updatedAt': updatedAt,
+    };
+  }
+
+  /// Creates a CartProducts object from a JSON map
+  factory CartProducts.fromJson(Map<String, dynamic> map) {
+    return CartProducts(
+      id: map['id'],
+      productId: map['productId'],
+      name: map['name'], // Matches the database key
+      description: map['description'],
+      price: map['price'],
+      stock_quantity: map['stock_quantity'],
+      sku: map['sku'],
+      image: map['image'],
+      category_id: map['category_id'],
+      is_active: map['is_active'],
       createdAt: map['createdAt'] ?? '',
       updatedAt: map['updatedAt'] ?? '',
     );
@@ -421,4 +686,3 @@ class SpeedLimitNotificationItem implements NotificationItem {
 //   }
 //
 // }
-

@@ -1,8 +1,14 @@
+import 'dart:io';
+
 import 'package:ctntelematics/config/theme/app_style.dart';
+import 'package:ctntelematics/core/utils/app_export_util.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../usecase/databse_helper.dart';
 import '../usecase/provider_usecase.dart';
 
 class AnimatedAppBar extends StatefulWidget implements PreferredSizeWidget {
@@ -36,6 +42,7 @@ class _AnimatedAppBarState extends State<AnimatedAppBar>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<Offset> _slideAnimation;
+  PrefUtils prefUtils = PrefUtils();
   bool vehiclePerformance = false;
   bool mileage = false;
   bool odometer = false;
@@ -43,10 +50,14 @@ class _AnimatedAppBarState extends State<AnimatedAppBar>
   bool faultCodes = false;
   bool shopNow = false;
   bool quickLink = false;
+  File? _image;
+  String? token;
+  String? userId;
 
   @override
   void initState() {
     super.initState();
+    _getAuthUser();
     _controller = AnimationController(
       duration: const Duration(milliseconds: 500),
       vsync: this,
@@ -60,13 +71,96 @@ class _AnimatedAppBarState extends State<AnimatedAppBar>
       curve: Curves.easeInOut,
     ));
 
-    _controller.forward(); // Start the animation
+    _controller.forward();
+    // Start the animation
   }
 
   @override
   void dispose() {
     _controller.dispose();
     super.dispose();
+  }
+
+  _getAuthUser() async {
+    List<String>? authUser = await prefUtils.getStringList('auth_user');
+    setState(() {
+      // first_name = authUser![0] == "" ? null : authUser[0];
+      // last_name = authUser[1] == "" ? null : authUser[1];
+      // middle_name = authUser[2] == "" ? null : authUser[2];
+      // email = authUser[3] == "" ? null : authUser[3];
+      token = authUser?[4] == "" ? null : authUser?[4];
+      userId = authUser?[8] == "" ? null : authUser?[8];
+    });
+  }
+
+  Future<void> pickAndSaveProfilePicture(int userId) async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      final filePath = pickedFile.path;
+      final uploadedAt = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
+
+      print('userId: $userId');
+
+      // Save to the database
+      final dbHelper = DatabaseHelper();
+      await dbHelper.insertProfilePicture({
+        'userId': userId,
+        'filePath': filePath,
+        'uploadedAt': uploadedAt,
+      });
+
+      print('Profile picture saved: $filePath');
+      // Update the state
+      setState(() {
+        _image = File(filePath); // Update the in-memory image file
+      });
+    } else {
+      print('No image selected.');
+    }
+  }
+
+  Future<void> pickAndUpdateProfilePicture(int userId) async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      final filePath = pickedFile.path;
+      final uploadedAt = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
+
+      print('UserId: $userId');
+
+      // Save to the database
+      final dbHelper = DatabaseHelper();
+
+      // Update the profile picture for the given userId
+      await dbHelper.updateProfilePicture(userId, {
+        'filePath': filePath,
+        'uploadedAt': uploadedAt,
+      });
+
+      print('Profile picture updated: $filePath');
+
+      // Update the UI
+      setState(() {
+        _image = File(filePath);
+      });
+    } else {
+      print('No image selected.');
+    }
+  }
+
+
+  Future<String?> fetchUserProfilePicture(int userId) async {
+    final dbHelper = DatabaseHelper();
+    final picture = await dbHelper.fetchLatestProfilePicture(userId); // Fetch the latest picture as a single map
+
+    if (picture != null) {
+      return picture['filePath'] as String?; // Return the file path if available
+    }
+
+    return null; // Return null if no picture is found
   }
 
   @override
@@ -90,7 +184,31 @@ class _AnimatedAppBarState extends State<AnimatedAppBar>
                 ),
                 child: Row(
                   children: [
-                    const CircleAvatar(),
+                    InkWell(
+                      onTap: (){
+                        pickAndUpdateProfilePicture(int.parse(userId!));
+                      },
+                      child: FutureBuilder<String?>(
+                        future: fetchUserProfilePicture(int.parse(userId!)),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState == ConnectionState.waiting) {
+                            return const CircularProgressIndicator(); // Loading indicator
+                          } else if (snapshot.hasError) {
+                            return const Icon(Icons.error, color: Colors.red); // Error state
+                          } else if (!snapshot.hasData || snapshot.data == null) {
+                            return const CircleAvatar(
+                              radius: 50,
+                              backgroundImage: AssetImage("assets/images/avatar.jpeg"), // Default avatar
+                            );
+                          } else {
+                            return CircleAvatar(
+                              radius: 30,
+                              backgroundImage: FileImage(File(snapshot.data!)), // Fetched image
+                            );
+                          }
+                        },
+                      ),
+                    ),
                     const SizedBox(width: 10),
                     Text(
                       "Welcome, ${widget.firstname}",

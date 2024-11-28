@@ -28,6 +28,7 @@ class LoginRespModel extends LoginRespEntity {
 class UserModel extends UserEntity{
 
   UserModel({
+    required super.id,
     required super.first_name,
     required super.last_name,
     required super.middle_name,
@@ -41,6 +42,7 @@ class UserModel extends UserEntity{
   });
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
+      id: json['id'] ?? 0,
       first_name: json['first_name'] ?? "",
       last_name: json['last_name'] ?? "",
       middle_name: json['middle_name'] ?? "",
@@ -56,6 +58,7 @@ class UserModel extends UserEntity{
 
   Map<String, dynamic> toJson() {
     return {
+      'id': id,
       'first_name': first_name,
       'last_name': last_name,
       'middle_name': middle_name,
