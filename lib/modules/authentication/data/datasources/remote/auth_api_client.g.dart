@@ -165,7 +165,6 @@ class _AuthApiClient implements AuthApiClient {
     final _result = await _dio.fetch<Map<String, dynamic>>(_options);
     late AuthRespModel _value;
       _value = AuthRespModel.fromJson(_result.data!);
-
     return _value;
   }
 

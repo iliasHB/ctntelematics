@@ -11,7 +11,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
+import '../../../../service_locator.dart';
 import '../../domain/entitties/req_entities/initiate_payment_req_entity.dart';
+import '../../domain/entitties/req_entities/token_req_entity.dart';
 import '../bloc/eshop_bloc.dart';
 
 class Checkout extends StatefulWidget {
@@ -42,6 +44,7 @@ class _CheckoutState extends State<Checkout> {
   String? _selectedOption = "Delivery";
   PrefUtils prefUtils = PrefUtils();
   String? email;
+  String? _selectedVendor;
 
   @override
   void initState() {
@@ -188,6 +191,80 @@ class _CheckoutState extends State<Checkout> {
                           }
                           return null;
                         },
+                      ),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      BlocProvider(
+                        create: (_) => sl<DeliveryLocationBloc>()
+                          ..add(DeliveryLocationEvent(EshopTokenReqEntity())),
+                        child: BlocConsumer<DeliveryLocationBloc, EshopState>(
+                          builder: (context, state) {
+                            if (state is EshopLoading) {
+                              return const Center(
+                                child: Padding(
+                                  padding: EdgeInsets.only(top: 10.0),
+                                  child: CircularProgressIndicator(strokeWidth: 2.0),
+                                ),
+                              );
+                            } else if (state is DeliveryLocationDone) {
+                              // Check if vehicle data is null or empty
+                              if (state.resp.data == null ||
+                                  state.resp.data!.isEmpty) {
+                                return Center(
+                                  child: Text(
+                                    'No location available',
+                                    style: AppStyle.cardfooter,
+                                  ),
+                                );
+                              }
+
+                              return DropdownButtonFormField<String>(
+                                value: _selectedVendor ??=
+                                    (state.resp.data!.first.id.toString() ?? "Unknown Location") ,  // Default to the first VIN
+                                items: state.resp.data!
+                                    .map<DropdownMenuItem<String>>((location) {
+                                  return DropdownMenuItem<String>(
+                                    value: location.id.toString(), // Pass the VIN to the API
+                                    child: Text(
+                                      location.name ?? "Unknown location", // Display the brand
+                                      style:
+                                      AppStyle.cardfooter.copyWith(fontSize: 12),
+                                    ),
+                                  );
+                                }).toList(),
+                                onChanged: (value) {
+                                  setState(() {
+                                    _selectedVendor = value; // Update selected VIN
+                                  });
+                                },
+                                decoration: InputDecoration(
+                                  labelText: 'Choose location',
+                                  labelStyle: AppStyle.cardfooter,
+                                  filled: true,
+                                  fillColor: Colors.grey[200],
+                                  border: const OutlineInputBorder(
+                                      borderSide: BorderSide.none),
+                                ),
+                              );
+                            } else {
+                              return Center(
+                                child: Text(
+                                  'No records found',
+                                  style: AppStyle.cardfooter,
+                                ),
+                              );
+                            }
+                          },
+                          listener: (context, state) {
+                            if (state is EshopFailure) {
+                              Navigator.pushNamed(context, "/login");
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text(state.message)),
+                              );
+                            }
+                          },
+                        ),
                       ),
                       const SizedBox(
                         height: 10,

@@ -5,7 +5,7 @@ import 'package:flutter/cupertino.dart';
 class GetScheduleRespEntity extends Equatable{
 final dynamic current_page;
 final List<DatumEntity> data;
-final dynamic? first_page_url;
+final dynamic first_page_url;
 final dynamic from;
 final dynamic last_page;
 final dynamic last_page_url;
@@ -65,11 +65,11 @@ final dynamic user_id;
 final dynamic vehicle_owner_id;
 final dynamic created_at;
 final dynamic updated_at;
-final DriverEntity driver;
+final DriverEntity? driver;
 final List<MaintenanceEntity> maintenance;
-final OwnerEntity owner;
-final TrackerEntity tracker;
-final LastLocationEntity last_location;
+final OwnerEntity? owner;
+final TrackerEntity? tracker;
+final LastLocationEntity? last_location;
 
 DatumEntity({
 required this.id,

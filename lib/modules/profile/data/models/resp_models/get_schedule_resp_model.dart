@@ -116,11 +116,26 @@ class Datum extends DatumEntity{
     vehicle_owner_id: json["vehicle_owner_id"],
     created_at: json["created_at"],
     updated_at: json["updated_at"],
-    driver: Driver.fromMap(json["driver"]),
-    maintenance: List<Maintenance>.from(json["maintenance"].map((x) => Maintenance.fromMap(x))),
-    owner: Owner.fromMap(json["owner"]),
-    tracker: Tracker.fromMap(json["tracker"]),
-    last_location: LastLocation.fromMap(json["last_location"]),
+    driver: json["driver"] is Map<String, dynamic>
+        ? Driver.fromMap(json["driver"])
+        : null,
+    maintenance:
+    // json["maintenance"] is List<Map<String, dynamic>>
+    //     ? List<Maintenance>.from(json['maintenance'].map((e) => Maintenance.fromMap(e)))
+    //     : null,
+    List<Maintenance>.from(json["maintenance"].map((x) => Maintenance.fromMap(x))),
+    owner: json["owner"] is Map<String, dynamic>
+        ? Owner.fromMap(json["owner"])
+        : null,
+    //Owner.fromMap(json["owner"]),
+    tracker: json["tracker"] is Map<String, dynamic>
+        ? Tracker.fromMap(json["tracker"])
+        : null,
+    // Tracker.fromMap(json["tracker"]),
+    last_location: json["last_location"] is Map<String, dynamic>
+        ? LastLocation.fromMap(json["last_location"])
+        : null,
+    // LastLocation.fromMap(json["last_location"]),
   );
 
   Map<String, dynamic> toMap() => {

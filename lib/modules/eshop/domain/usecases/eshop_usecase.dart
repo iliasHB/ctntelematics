@@ -1,5 +1,7 @@
 import 'package:ctntelematics/modules/eshop/domain/entitties/req_entities/initiate_payment_req_entity.dart';
 import 'package:ctntelematics/modules/eshop/domain/entitties/req_entities/token_req_entity.dart';
+import 'package:ctntelematics/modules/eshop/domain/entitties/resp_entities/confirm_payment_entity.dart';
+import 'package:ctntelematics/modules/eshop/domain/entitties/resp_entities/delivery_location_resp_entity.dart';
 import 'package:ctntelematics/modules/eshop/domain/entitties/resp_entities/get_category_entity.dart';
 import 'package:ctntelematics/modules/eshop/domain/entitties/resp_entities/get_payment_resp_entity.dart';
 
@@ -52,3 +54,26 @@ class InitiatePaymentUseCase extends UseCase<void, InitiatePaymentReqEntity> {
     return repository.onInitiatePayment(params);
   }
 }
+
+class DeliveryLocationUseCase extends UseCase<void, EshopTokenReqEntity> {
+  final EshopRepository repository;
+  DeliveryLocationUseCase(this.repository);
+
+  @override
+  Future<DeliveryLocationRespEntity> call(EshopTokenReqEntity params) {
+    // TODO: implement call
+    return repository.onDeliveryLocation();
+  }
+}
+
+class ConfirmPaymentUseCase extends UseCase<void, EshopTokenReqEntity> {
+  final EshopRepository repository;
+  ConfirmPaymentUseCase(this.repository);
+
+  @override
+  Future<ConfirmPaymentRespEntity> call(EshopTokenReqEntity params) {
+    // TODO: implement call
+    return repository.onConfirmPayment(params);
+  }
+}
+

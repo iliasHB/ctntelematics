@@ -86,6 +86,8 @@ Future<void> initializeDependencies() async {
   sl.registerFactory<GetProductUseCase>(() => GetProductUseCase(sl()));
   sl.registerFactory<TripsUseCase>(() => TripsUseCase(sl()));
   sl.registerFactory<InitiatePaymentUseCase>(() => InitiatePaymentUseCase(sl()));
+  sl.registerFactory<ConfirmPaymentUseCase>(() => ConfirmPaymentUseCase(sl()));
+  sl.registerFactory<DeliveryLocationUseCase>(() => DeliveryLocationUseCase(sl()));
 
   // Register Bloc
   sl.registerFactory(() => LoginBloc(sl()));
@@ -111,6 +113,8 @@ Future<void> initializeDependencies() async {
   sl.registerFactory(() => EshopGetProductBloc(sl()));
   sl.registerFactory(() => VehicleTripBloc(sl()));
   sl.registerFactory(() => InitiatePaymentBloc(sl()));
+  sl.registerFactory(() => ConfirmPaymentBloc(sl()));
+  sl.registerFactory(() => DeliveryLocationBloc(sl()));
 
 
 }

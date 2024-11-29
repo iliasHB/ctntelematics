@@ -2,7 +2,8 @@ import 'package:equatable/equatable.dart';
 
 class InitiatePaymentReqModel extends Equatable {
   final String email, contact_phone, delivery_address;
-  final String quantity, product_id, location_id, token;
+  final String quantity, product_id, location_id;
+      // token;
 
   const InitiatePaymentReqModel(
       {required this.email,
@@ -11,7 +12,8 @@ class InitiatePaymentReqModel extends Equatable {
       required this.delivery_address,
       required this.location_id,
       required this.product_id,
-      required this.token});
+      // required this.token
+      });
 
   factory InitiatePaymentReqModel.fromJson(Map<String, dynamic> json) {
     return InitiatePaymentReqModel(
@@ -20,8 +22,8 @@ class InitiatePaymentReqModel extends Equatable {
         contact_phone: json['contact_phone'] ?? "",
         delivery_address: json['delivery_address'] ?? "",
         product_id: json['product_id'] ?? "",
-        location_id: json['location_id'] ?? "",
-        token: json['location_id'] ?? "");
+        location_id: json['location_id'] ?? "");
+        // token: json['location_id'] ?? "");
   }
 
   Map<String, dynamic> toJson() => {

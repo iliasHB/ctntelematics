@@ -373,8 +373,7 @@ class PaymentMethod extends StatelessWidget {
                                     contact_phone: contact,
                                     delivery_address: address,
                                     location_id: locationId,
-                                    product_id: productId,
-                                    token: token);
+                                    product_id: productId,);
                                 context
                                     .read<InitiatePaymentBloc>()
                                     .add(InitiatePaymentEvent(loginReqEntity));

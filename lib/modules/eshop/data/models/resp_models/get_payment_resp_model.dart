@@ -10,17 +10,20 @@ class GetPaymentRespModel extends GetPaymentRespEntity{
     required super.success,
     required super.authorization_url,
     required super.access_code,
+    required super.reference,
   });
 
   factory GetPaymentRespModel.fromJson(Map<String, dynamic> json) => GetPaymentRespModel(
     success: json["success"],
     authorization_url: json["authorization_url"],
     access_code: json["access_code"],
+    reference: json["reference"],
   );
 
   Map<String, dynamic> toJson() => {
     "success": success,
     "authorization_url": authorization_url,
     "access_code": access_code,
+    "reference": reference
   };
 }

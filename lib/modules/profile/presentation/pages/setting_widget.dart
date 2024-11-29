@@ -166,7 +166,13 @@ class _SettingState extends State<Setting> {
                           future: fetchUserProfilePicture(int.parse(userId ?? '0')),
                           builder: (context, snapshot) {
                             if (snapshot.connectionState == ConnectionState.waiting) {
-                              return const CircularProgressIndicator(); // Loading indicator
+                              return Container(
+                                height: 20.0,
+                                width: 20.0,
+                                child: const CircularProgressIndicator(
+                                  strokeWidth: 2.0,
+                                ),
+                              ); // Loading indicator
                             } else if (snapshot.hasError) {
                               return const Icon(Icons.error, color: Colors.red); // Error state
                             } else if (!snapshot.hasData || snapshot.data == null) {

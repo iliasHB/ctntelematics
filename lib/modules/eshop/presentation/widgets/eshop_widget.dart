@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../config/theme/app_style.dart';
+import '../../../../core/usecase/databse_helper.dart';
 import '../../../../core/widgets/advert.dart';
 import '../../../../service_locator.dart';
 import '../../domain/entitties/req_entities/token_req_entity.dart';
@@ -18,6 +19,7 @@ class EshopWidget extends StatefulWidget {
 }
 
 bool viewAdvert = false;
+DB_cart db_cart = DB_cart();
 
 class _EshopWidgetState extends State<EshopWidget> {
   @override
@@ -165,5 +167,29 @@ class _EshopWidgetState extends State<EshopWidget> {
             ),
           ],
         ));
+  }
+
+  saveProductToCart(String productName, String productImage, String price,
+      String categoryId, String description, int productId) async {
+    bool isSaved = await db_cart.saveProducts(
+        productName, productImage, price, categoryId, description, productId);
+
+    if (isSaved) {
+      // Show success feedback
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Product added to cart successfully!', style: AppStyle.cardfooter,),
+          backgroundColor: Colors.black,
+        ),
+      );
+    } else {
+      // Show failure feedback
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to add product to cart.', style: AppStyle.cardfooter,),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 }

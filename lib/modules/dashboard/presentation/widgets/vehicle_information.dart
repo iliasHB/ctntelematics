@@ -74,7 +74,7 @@ class _VehicleInformationState extends State<VehicleInformation> {
 
             Container(
               padding: const EdgeInsets.all(8.0),
-              margin: EdgeInsets.symmetric(horizontal: 20),
+              margin: const EdgeInsets.symmetric(horizontal: 20),
               decoration: BoxDecoration(
                 color: Colors.green.shade200,
                 borderRadius: BorderRadius.circular(12),

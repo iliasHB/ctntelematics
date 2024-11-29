@@ -1,4 +1,6 @@
 import 'package:ctntelematics/core/constant/constant.dart';
+import 'package:ctntelematics/modules/eshop/data/models/resp_models/confirm_payment_resp_model.dart';
+import 'package:ctntelematics/modules/eshop/data/models/resp_models/delivery_location_resp_model.dart';
 import 'package:ctntelematics/modules/eshop/data/models/resp_models/get_all_product_model.dart';
 import 'package:ctntelematics/modules/eshop/data/models/resp_models/get_payment_resp_model.dart';
 import 'package:dio/dio.dart';
@@ -36,7 +38,19 @@ abstract class EshopApiClient {
     @Field('quantity') String quantity,
     @Field('product_id') String product_id,
     @Field('location_id') String location_id,
-    @Header('Authorization') String token,
+    // @Header('Authorization') String token,
     @Header('source_code') String sourceCode,
   );
+
+  @POST("/payment/confirm")
+  @FormUrlEncoded()
+  Future<ConfirmPaymentRespModel> confirmPayment(
+      @Field('reference') String reference,
+      // @Header("Authorization") String token,
+      @Header("source_code") String sourceCode,);
+
+  @GET("/delivery/location")
+  Future<DeliveryLocationRespModel> getDeliveryLocation(
+      @Header("source_code") String sourceCode,);
+
 }

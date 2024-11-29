@@ -3,7 +3,6 @@ import 'package:ctntelematics/modules/vehincle/domain/entities/req_entities/vehi
 import 'package:ctntelematics/modules/vehincle/domain/entities/resp_entities/vehicle_resp_entity.dart';
 import 'package:ctntelematics/modules/vehincle/presentation/bloc/vehicle_bloc.dart';
 import 'package:ctntelematics/modules/vehincle/presentation/widgets/vehicle_last_location.dart';
-import 'package:ctntelematics/modules/websocket/data/datasources/pusher_service.dart';
 import 'package:ctntelematics/modules/websocket/domain/entitties/resp_entities/vehicle_entity.dart';
 import 'package:ctntelematics/modules/websocket/presentation/bloc/vehicle_location_bloc.dart';
 import 'package:flutter/cupertino.dart';
@@ -271,7 +270,7 @@ class _VehiclePageState extends State<VehiclePage> {
                                   offlineLength - onlineVehicles.length;
 
                               //List<VehicleEntity> displayedVehicles =_filterVehicles(vehicles);
-                              _updateVehicleCounts(vehicles);
+                              // _updateVehicleCounts(vehicles);
                               return Container();
                             },
                           ),

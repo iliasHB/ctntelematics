@@ -133,6 +133,8 @@ class MyApp extends StatelessWidget {
         Provider<EshopGetProductBloc>(create: (_) => sl<EshopGetProductBloc>()),
         Provider<VehicleTripBloc>(create: (_) => sl<VehicleTripBloc>()),
         Provider<InitiatePaymentBloc>(create: (_) => sl<InitiatePaymentBloc>()),
+        Provider<DeliveryLocationBloc>(create: (_) => sl<DeliveryLocationBloc>()),
+        Provider<ConfirmPaymentBloc>(create: (_) => sl<ConfirmPaymentBloc>()),
       ],
       child: MaterialApp(
         title: 'CTN Telematics',

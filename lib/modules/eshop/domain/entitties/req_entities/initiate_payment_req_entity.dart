@@ -2,7 +2,8 @@ import 'package:equatable/equatable.dart';
 
 class InitiatePaymentReqEntity extends Equatable {
   final String email, contact_phone, delivery_address;
-  final String quantity, product_id, location_id, token;
+  final String quantity, product_id, location_id;
+  // token;
 
   const InitiatePaymentReqEntity(
       {required this.email,
@@ -10,7 +11,9 @@ class InitiatePaymentReqEntity extends Equatable {
       required this.contact_phone,
       required this.delivery_address,
       required this.location_id,
-      required this.product_id, required this.token});
+      required this.product_id,
+        // required this.token
+      });
 
   @override
   // TODO: implement props
@@ -21,6 +24,6 @@ class InitiatePaymentReqEntity extends Equatable {
         quantity,
         product_id,
         location_id,
-    token
+    // token
       ];
 }

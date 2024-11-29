@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/usecase/databse_helper.dart';
 import '../../../../service_locator.dart';
 import '../../domain/entitties/req_entities/token_req_entity.dart';
 import '../bloc/eshop_bloc.dart';
@@ -47,7 +48,7 @@ class _ProductReviewState extends State<ProductReview> {
   // double? unitPrice; // Store the original price as a double
   // double totalPrice = 0.0; // Store the total price dynamically
 
-  double priceValue = 0.0;  // Store the numeric price
+  double priceValue = 0.0; // Store the numeric price
 
   @override
   void initState() {
@@ -93,7 +94,6 @@ class _ProductReviewState extends State<ProductReview> {
   // }
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       appBar: AppBar(),
       body: Padding(
@@ -169,19 +169,23 @@ class _ProductReviewState extends State<ProductReview> {
               ),
               Align(
                 alignment: Alignment.topLeft,
-                child:
-                    Row(
-                      children: [
-
-                        Text('Price: ',  style: AppStyle.cardSubtitle.copyWith(fontSize: 14)),
-                        Image.asset('assets/images/naira.png', height: 20, width: 20,),
-                        // Text(price.toString(), style: AppStyle.cardSubtitle.copyWith(color: Colors.green),),
-                        Text(
-                          getTotalPrice().toStringAsFixed(2), // Display total price
-                          style: AppStyle.cardSubtitle.copyWith(color: Colors.green),
-                        ),
-                      ],
+                child: Row(
+                  children: [
+                    Text('Price: ',
+                        style: AppStyle.cardSubtitle.copyWith(fontSize: 14)),
+                    Image.asset(
+                      'assets/images/naira.png',
+                      height: 20,
+                      width: 20,
                     ),
+                    // Text(price.toString(), style: AppStyle.cardSubtitle.copyWith(color: Colors.green),),
+                    Text(
+                      getTotalPrice().toStringAsFixed(2), // Display total price
+                      style:
+                          AppStyle.cardSubtitle.copyWith(color: Colors.green),
+                    ),
+                  ],
+                ),
               ),
 
               const SizedBox(
@@ -253,8 +257,7 @@ class _ProductReviewState extends State<ProductReview> {
                         child: CustomPrimaryButton(
                         label: 'Add to Cart',
                         onPressed: _addToCart,
-                      )
-                        )
+                      ))
                     : ElevatedButton(
                         onPressed: () {
                           setState(() {
@@ -283,7 +286,8 @@ class _ProductReviewState extends State<ProductReview> {
                               builder: (_) => Checkout(
                                     productName: productName!,
                                     productImage: productImage!,
-                                    price: getTotalPrice().toString(),//priceValue.toString(),
+                                    price: getTotalPrice()
+                                        .toString(), //priceValue.toString(),
                                     categoryId: categoryId!,
                                     description: description!,
                                     token: widget.token,
@@ -342,22 +346,25 @@ class _ProductReviewState extends State<ProductReview> {
                               crossAxisSpacing: 0, // Removes horizontal spacing
                             ),
                             itemBuilder: (BuildContext context, int index) {
-                              var product = state.resp.similar_goods.data[index];
+                              var product =
+                                  state.resp.similar_goods.data[index];
                               return CategoryItem(
-                                productName: product.name,
-                                productImage: product.image,
-                                price: product.price.toString(),
-                                token: widget.token,
-                                productId: product.id,
-                                onProductSelected: () => onProductSelected(
-                                  newProductName: product.name,
-                                  newProductImage: product.image,
-                                  newPrice: product.price.toString(),
-                                  newCategoryId: product.category_id.toString(),
-                                  newDescription: product.description,
-                                  newProductId: product.id,
-                                ),
-                              );
+                                  productName: product.name,
+                                  productImage: product.image,
+                                  price: product.price.toString(),
+                                  token: widget.token,
+                                  productId: product.id,
+                                  onProductSelected: () => onProductSelected(
+                                        newProductName: product.name,
+                                        newProductImage: product.image,
+                                        newPrice: product.price.toString(),
+                                        newCategoryId:
+                                            product.category_id.toString(),
+                                        newDescription: product.description,
+                                        newProductId: product.id,
+                                      ),
+                                  categoryId: widget.categoryId,
+                                  description: widget.description);
                             },
                           )
                         ],
@@ -396,41 +403,54 @@ class _ProductReviewState extends State<ProductReview> {
   }
 }
 
-class CategoryItem extends StatelessWidget {
-  final String productImage, productName, price, token;
+class CategoryItem extends StatefulWidget {
+  final String productImage, productName, price, token, categoryId, description;
   final int productId;
   final VoidCallback onProductSelected;
-  const CategoryItem(
-      {super.key,
-      required this.productImage,
-      required this.productName,
-      required this.price,
-      required this.token,
-      required this.productId, required this.onProductSelected,});
+  CategoryItem({
+    super.key,
+    required this.productImage,
+    required this.productName,
+    required this.price,
+    required this.token,
+    required this.productId,
+    required this.onProductSelected,
+    required this.categoryId,
+    required this.description,
+  });
+
+  @override
+  State<CategoryItem> createState() => _CategoryItemState();
+}
+
+class _CategoryItemState extends State<CategoryItem> {
+  DB_cart db_cart = DB_cart();
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onProductSelected,
+      onTap: widget.onProductSelected,
       child: Column(
         children: [
           Stack(
             children: [
               Container(
-                margin: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 10),
+                margin:
+                    const EdgeInsets.symmetric(horizontal: 5.0, vertical: 10),
                 decoration: BoxDecoration(
                     color: Colors.green.shade50,
                     borderRadius: BorderRadius.circular(10)),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 5),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 5.0, vertical: 5),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.start,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Center(
                         child: Image.network(
-                          'https://ecom.verifycentre.com$productImage',
-                          headers: {'Authorization': token},
+                          'https://ecom.verifycentre.com${widget.productImage}',
+                          headers: {'Authorization': widget.token},
                           height: 100,
                           width: 100,
                           loadingBuilder: (BuildContext context, Widget child,
@@ -440,9 +460,11 @@ class CategoryItem extends StatelessWidget {
                             }
                             return Center(
                               child: CircularProgressIndicator(
-                                value: loadingProgress.expectedTotalBytes != null
+                                value: loadingProgress.expectedTotalBytes !=
+                                        null
                                     ? loadingProgress.cumulativeBytesLoaded /
-                                        (loadingProgress.expectedTotalBytes ?? 1)
+                                        (loadingProgress.expectedTotalBytes ??
+                                            1)
                                     : null,
                               ),
                             );
@@ -459,7 +481,7 @@ class CategoryItem extends StatelessWidget {
                       ),
                       Center(
                         child: Text(
-                          productName,
+                          widget.productName,
                           style: AppStyle.cardfooter,
                           textAlign: TextAlign.center,
                           softWrap: true,
@@ -470,9 +492,13 @@ class CategoryItem extends StatelessWidget {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Image.asset('assets/images/naira.png', height: 20, width: 20,),
+                          Image.asset(
+                            'assets/images/naira.png',
+                            height: 20,
+                            width: 20,
+                          ),
                           Text(
-                            price,
+                            widget.price,
                             style: TextStyle(
                                 color: Colors.green.shade900,
                                 fontSize: 18,
@@ -489,16 +515,29 @@ class CategoryItem extends StatelessWidget {
                   right: 15,
                   child: Column(
                     children: [
-                      Container(
-                        decoration: BoxDecoration(
-                            border: Border.all(width: 1, color: Colors.white),
-                            borderRadius: BorderRadius.circular(50)),
-                        child: CircleAvatar(
-                          radius: 15,
-                          backgroundColor: Colors.green[700],
-                          child: const Icon(
-                            Icons.shopping_cart_outlined, color: Colors.white,
-                            size: 15,
+                      InkWell(
+                        onTap: () {
+                          saveProductToCart(
+                            widget.productName,
+                            widget.productImage,
+                            widget.price,
+                            widget.categoryId,
+                            widget.description,
+                            widget.productId,
+                          );
+                        },
+                        child: Container(
+                          decoration: BoxDecoration(
+                              border: Border.all(width: 1, color: Colors.white),
+                              borderRadius: BorderRadius.circular(50)),
+                          child: CircleAvatar(
+                            radius: 15,
+                            backgroundColor: Colors.green[700],
+                            child: const Icon(
+                              Icons.shopping_cart_outlined,
+                              color: Colors.white,
+                              size: 15,
+                            ),
                           ),
                         ),
                       ),
@@ -525,5 +564,35 @@ class CategoryItem extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  saveProductToCart(String productName, String productImage, String price,
+      String categoryId, String description, int productId) async {
+    bool isSaved = await db_cart.saveProducts(
+        productName, productImage, price, categoryId, description, productId);
+
+    if (isSaved) {
+      // Show success feedback
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Product added to cart successfully!',
+            style: AppStyle.cardfooter,
+          ),
+          backgroundColor: Colors.black,
+        ),
+      );
+    } else {
+      // Show failure feedback
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Failed to add product to cart.',
+            style: AppStyle.cardfooter,
+          ),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 }

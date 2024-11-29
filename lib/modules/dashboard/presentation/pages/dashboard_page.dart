@@ -3,9 +3,11 @@ import 'dart:async';
 import 'package:ctntelematics/core/utils/app_export_util.dart';
 // import 'package:ctntelematics/core/widgets/advert.dart';
 import 'package:ctntelematics/core/widgets/appBar.dart';
+import 'package:ctntelematics/core/widgets/custom_button.dart';
 import 'package:ctntelematics/modules/eshop/presentation/widgets/eshop_widget.dart';
 import 'package:ctntelematics/modules/profile/presentation/widgets/maintenance.dart';
 import 'package:ctntelematics/modules/websocket/domain/entitties/resp_entities/vehicle_entity.dart';
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart';
@@ -49,6 +51,15 @@ class _DashboardPageState extends State<DashboardPage> {
   bool faultCodes = false;
   bool shopNow = false;
   bool quickLink = false;
+
+  int vehicleCount = 0;
+  int onlineCount = 0;
+  int idleCount = 0;
+  int offlineLength = 0;
+  int offlineCount = 0;
+  int packedCount = 0;
+
+  // final  onlineVehicles = 0;
   @override
   void initState() {
     super.initState();
@@ -213,6 +224,16 @@ class _DashboardPageState extends State<DashboardPage> {
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: DashboardComponentTitle(
+                                logo: CircleAvatar(
+                                  backgroundColor: Colors.white,
+                                  // backgroundImage: AssetImage("assets/images/traffic_light.jpg",),
+                                  child: ClipOval(
+                                    child: Image.asset("assets/images/traffic_light.jpg",
+                                        height: 30,
+                                        width: 30,
+                                    ),
+                                  )
+                                ),
                                 title: 'Vehicle Status',
                                 subTitle: 'Vehicle real-time update',
                               )),
@@ -221,7 +242,7 @@ class _DashboardPageState extends State<DashboardPage> {
                           ),
 
                           SizedBox(
-                            height: getVerticalSize(180),
+                            height: getVerticalSize(280),
                             child: BlocProvider(
                               create: (_) => sl<DashVehiclesBloc>()
                                 ..add(DashVehicleEvent(dashVehicleReqEntity)),
@@ -237,335 +258,730 @@ class _DashboardPageState extends State<DashboardPage> {
                                     physics:
                                         const NeverScrollableScrollPhysics(),
                                     children: [
-                                      VehicleStatusCard(
-                                          status: 'Moving',
-                                          count: Text(
-                                            '0',
-                                            style: AppStyle.cardfooter.copyWith(
-                                                fontWeight: FontWeight.w300),
-                                            maxLines:
-                                                1, // Restrict to a single line for count as well
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                          color: Colors.green,
-                                          icon: const Icon(
-                                              CupertinoIcons.graph_circle_fill,
-                                              color: Colors.white)),
-                                      const VehicleStatusCard(
-                                          status: 'Offline',
-                                          count: SizedBox(
-                                            height: 15,
-                                            width: 15,
-                                            child: CircularProgressIndicator(
-                                              strokeWidth: 2.0,
-                                            ),
-                                          ),
-                                          color: Colors.red,
-                                          icon: Icon(
-                                            CupertinoIcons.square_fill,
-                                            color: Colors.white,
-                                          )),
-                                      const VehicleStatusCard(
-                                          status: 'Idling',
-                                          count: SizedBox(
-                                            height: 15,
-                                            width: 15,
-                                            child: CircularProgressIndicator(
-                                              strokeWidth: 2.0,
-                                            ),
-                                          ),
-                                          color: Colors.yellow,
-                                          icon: Icon(
-                                              CupertinoIcons
-                                                  .square_split_2x1_fill,
-                                              color: Colors.white)),
-                                      const VehicleStatusCard(
-                                        status: 'Parked',
-                                        count: SizedBox(
-                                          height: 15,
-                                          width: 15,
-                                          child: CircularProgressIndicator(
-                                            strokeWidth: 2.0,
-                                          ),
-                                        ),
-                                        color: Colors.black,
-                                        icon: Icon(CupertinoIcons.wifi_slash,
-                                            color: Colors.white),
+                                      const VehicleStatusPieChart(
+                                        onlineCount: 0,
+                                        offlineCount: 0,
+                                        idlingCount: 0,
+                                        parkedCount: 0,
                                       ),
+                                      const SizedBox(
+                                        height: 10,
+                                      ),
+                                      Container(
+                                          height: 80,
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 10, vertical: 10),
+                                          decoration: BoxDecoration(
+                                            borderRadius:
+                                            BorderRadius.circular(10),
+                                            color: Colors.white,
+                                          ),
+                                          child: ListView(
+                                            scrollDirection: Axis.horizontal,
+                                            children: const [
+                                              _BuildVehicleStatus(
+                                                  title: "Online",
+                                                      count: SizedBox(
+                                                        height: 15,
+                                                        width: 15,
+                                                        child: CircularProgressIndicator()),
+                                                  symbol: CircleAvatar(
+                                                    backgroundColor:
+                                                    Colors.green,
+                                                    radius: 8,
+                                                  )),
+                                              _BuildVehicleStatus(
+                                                  title: "Offline",
+                                                  count: SizedBox(
+                                                      height: 15,
+                                                      width: 15,
+                                                      child: CircularProgressIndicator()),
+                                                  symbol: CircleAvatar(
+                                                    backgroundColor:
+                                                    Colors.red,
+                                                    radius: 8,
+                                                  )),
+                                              _BuildVehicleStatus(
+                                                  title: "Idling",
+                                                  count: SizedBox(
+                                                      height: 15,
+                                                      width: 15,
+                                                      child: CircularProgressIndicator()),
+                                                  symbol: CircleAvatar(
+                                                    backgroundColor:
+                                                    Colors.yellow,
+                                                    radius: 8,
+                                                  )),
+                                              _BuildVehicleStatus(
+                                                  title: "Parking",
+                                                  count: SizedBox(
+                                                      height: 15,
+                                                      width: 15,
+                                                      child: CircularProgressIndicator()),
+                                                  symbol: CircleAvatar(
+                                                    backgroundColor:
+                                                    Colors.blueGrey,
+                                                    radius: 8,
+                                                  ))
+                                            ],
+                                          ))
+                                      // VehicleStatusCard(
+                                      //     status: 'Moving',
+                                      //     count: Text(
+                                      //       '0',
+                                      //       style: AppStyle.cardfooter.copyWith(
+                                      //           fontWeight: FontWeight.w300),
+                                      //       maxLines:
+                                      //           1, // Restrict to a single line for count as well
+                                      //       overflow: TextOverflow.ellipsis,
+                                      //     ),
+                                      //     color: Colors.green,
+                                      //     icon: const Icon(
+                                      //         CupertinoIcons.graph_circle_fill,
+                                      //         color: Colors.white)),
+                                      // const VehicleStatusCard(
+                                      //     status: 'Offline',
+                                      //     count: SizedBox(
+                                      //       height: 15,
+                                      //       width: 15,
+                                      //       child: CircularProgressIndicator(
+                                      //         strokeWidth: 2.0,
+                                      //       ),
+                                      //     ),
+                                      //     color: Colors.red,
+                                      //     icon: Icon(
+                                      //       CupertinoIcons.square_fill,
+                                      //       color: Colors.white,
+                                      //     )),
+                                      // const VehicleStatusCard(
+                                      //     status: 'Idling',
+                                      //     count: SizedBox(
+                                      //       height: 15,
+                                      //       width: 15,
+                                      //       child: CircularProgressIndicator(
+                                      //         strokeWidth: 2.0,
+                                      //       ),
+                                      //     ),
+                                      //     color: Colors.yellow,
+                                      //     icon: Icon(
+                                      //         CupertinoIcons
+                                      //             .square_split_2x1_fill,
+                                      //         color: Colors.white)),
+                                      // const VehicleStatusCard(
+                                      //   status: 'Parked',
+                                      //   count: SizedBox(
+                                      //     height: 15,
+                                      //     width: 15,
+                                      //     child: CircularProgressIndicator(
+                                      //       strokeWidth: 2.0,
+                                      //     ),
+                                      //   ),
+                                      //   color: Colors.black,
+                                      //   icon: Icon(CupertinoIcons.wifi_slash,
+                                      //       color: Colors.white),
+                                      // ),
                                     ],
                                   );
-                                  // const Center(
-                                  //   child: Padding(
-                                  //     padding: EdgeInsets.only(top: 10.0),
-                                  //     child: CircularProgressIndicator(
-                                  //       strokeWidth: 2.0,
-                                  //     ),
-                                  //   ));
                                 } else if (state is DashboardDone) {
-                                  return GridView.count(
-                                    crossAxisCount: 2,
-                                    mainAxisSpacing:
-                                        10, // Adjust spacing between grid items
-                                    crossAxisSpacing: 10,
-                                    childAspectRatio: 1.9, //
-                                    physics:
-                                        const NeverScrollableScrollPhysics(),
+                                  final vehiclesData = state.resp.data ?? [];
+
+                                  vehicleCount = state.resp.data?.length ?? 0;
+
+                                  offlineLength = state.resp.data
+                                      ?.where((vehicle) =>
+                                  vehicle.last_location?.status ==
+                                      'offline' ||
+                                      vehicle.last_location?.status != "online")
+                                      .length ??
+                                      0;
+
+                                  packedCount = vehicleCount;
+
+                                  // idleCount = state.resp.data?.where((vehicle) => vehicle.status == 'Idle').length ?? 0;
+                                  // packedCount = state.resp.data?.where((vehicle) => vehicle.status == 'Parked').length ?? 0;
+
+                                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                                    setState(() {
+                                      vehicleCount;
+                                    });
+                                  });
+
+                                  return Column(
                                     children: [
-                                      VehicleStatusCard(
-                                          status: 'Moving',
-                                          count: BlocListener<
-                                              VehicleLocationBloc,
-                                              List<VehicleEntity>>(
-                                            listener: (context, vehicles) {
-                                              // _updateVehicleCounts(vehicles);
-                                              setState(() {
-                                                vehicles;
-                                              });
-                                            },
-                                            child: BlocBuilder<
-                                                VehicleLocationBloc,
-                                                List<VehicleEntity>>(
-                                              builder: (context, vehicles) {
-                                                if (vehicles.isEmpty) {
-                                                  return Text(
-                                                    '0',
-                                                    style: AppStyle.cardfooter
-                                                        .copyWith(
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .w300),
-                                                    maxLines:
-                                                        1, // Restrict to a single line for count as well
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
-                                                  );
-                                                }
 
-                                                final movingVehicles =
-                                                    vehicles.where((v) {
-                                                  return v.locationInfo
-                                                          .vehicleStatus ==
-                                                      "Moving";
-                                                }).toList();
-
-                                                //List<VehicleEntity> displayedVehicles = _filterVehicles(vehicles);
-                                                return Text(
-                                                  movingVehicles.length
-                                                      .toString(),
-                                                  style: AppStyle.cardfooter
-                                                      .copyWith(
-                                                          fontWeight:
-                                                              FontWeight.w300),
-                                                  maxLines:
-                                                      1, // Restrict to a single line for count as well
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                );
-                                              },
-                                            ),
-                                          ),
-                                          color: Colors.green,
-                                          icon: const Icon(
-                                              CupertinoIcons.graph_circle_fill,
-                                              color: Colors.white)),
-                                      VehicleStatusCard(
-                                          status: 'offline',
-                                          count: BlocListener<
-                                              VehicleLocationBloc,
-                                              List<VehicleEntity>>(
-                                            listener: (context, vehicles) {
-                                              // _updateVehicleCounts(vehicles);
-                                              setState(() {
-                                                vehicles;
-                                              });
-                                            },
-                                            child: BlocBuilder<
-                                                VehicleLocationBloc,
-                                                List<VehicleEntity>>(
-                                              builder: (context, vehicles) {
-                                                int offlineLength = state
-                                                        .resp.data
-                                                        ?.where((vehicle) =>
-                                                            vehicle.last_location
-                                                                    ?.status ==
-                                                                'offline' ||
-                                                            vehicle.last_location
-                                                                    ?.status !=
-                                                                "online")
-                                                        .length ??
-                                                    0;
-
-                                                if (vehicles.isEmpty) {
-                                                  return Text(
-                                                    offlineLength.toString(),
-                                                    // state.resp.data!.length
-                                                    //     .toString(),
-                                                    style: AppStyle.cardfooter
-                                                        .copyWith(
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .w300),
-                                                    maxLines:
-                                                        1, // Restrict to a single line for count as well
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
-                                                  );
-                                                }
-
-                                                final onlineVehicles =
-                                                    vehicles.where((v) {
-                                                  return v.locationInfo.tracker!
-                                                          .status ==
-                                                      "online";
-                                                }).toList();
-
-                                                //List<VehicleEntity> displayedVehicles = _filterVehicles(vehicles);
-                                                return Text(
-                                                  '${state.resp.data!.length - onlineVehicles.length}',
-                                                  style: AppStyle.cardfooter
-                                                      .copyWith(
-                                                          fontWeight:
-                                                              FontWeight.w300),
-                                                  maxLines:
-                                                      1, // Restrict to a single line for count as well
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                );
-                                              },
-                                            ),
-                                          ),
-
-                                          // Text(
-                                          //   state.resp.data!.length.toString(),
-                                          //   style: AppStyle.cardfooter.copyWith(
-                                          //       fontWeight: FontWeight.w300),
-                                          //   maxLines:
-                                          //       1, // Restrict to a single line for count as well
-                                          //   overflow: TextOverflow.ellipsis,
-                                          // ),
-                                          color: Colors.red,
-                                          icon: const Icon(
-                                            CupertinoIcons.square_fill,
-                                            color: Colors.white,
-                                          )),
-                                      VehicleStatusCard(
-                                          status: 'Idling',
-                                          count: BlocBuilder<
-                                              VehicleLocationBloc,
-                                              List<VehicleEntity>>(
-                                            builder: (context, vehicles) {
-                                              if (vehicles.isEmpty) {
-                                                return Text(
-                                                  '0',
-                                                  style: AppStyle.cardfooter
-                                                      .copyWith(
-                                                          fontWeight:
-                                                              FontWeight.w300),
-                                                  maxLines:
-                                                      1, // Restrict to a single line for count as well
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                );
-                                              }
-
-                                              final idlingVehicles =
-                                                  vehicles.where((v) {
-                                                return v.locationInfo
-                                                        .vehicleStatus ==
-                                                    "Idling";
-                                                // && v.locationInfo.tracker?.position?.ignition == "on";
-                                              }).toList();
-
-                                              //List<VehicleEntity> displayedVehicles = _filterVehicles(vehicles);
-                                              return Text(
-                                                '${idlingVehicles.length}',
-                                                style: AppStyle.cardfooter
-                                                    .copyWith(
-                                                        fontWeight:
-                                                            FontWeight.w300),
-                                                maxLines:
-                                                    1, // Restrict to a single line for count as well
-                                                overflow: TextOverflow.ellipsis,
-                                              );
-                                            },
-                                          ),
-
-                                          // Text(
-                                          //   state.resp.data!.length.toString(),
-                                          //   style: AppStyle.cardfooter.copyWith(
-                                          //       fontWeight: FontWeight.w300),
-                                          //   maxLines: 1, // Restrict to a single line for count as well
-                                          //   overflow: TextOverflow.ellipsis,
-                                          // ),
-
-                                          color: Colors.yellow,
-                                          icon: const Icon(
-                                              CupertinoIcons
-                                                  .square_split_2x1_fill,
-                                              color: Colors.white)),
-                                      VehicleStatusCard(
-                                        status: 'Parked',
-                                        count: BlocBuilder<VehicleLocationBloc,
+                                      BlocListener<
+                                          VehicleLocationBloc,
+                                          List<VehicleEntity>>(
+                                        listener: (context, vehicles) {
+                                          // _updateVehicleCounts(vehicles);
+                                          setState(() {
+                                            vehicles;
+                                          });
+                                        },
+                                        child: BlocBuilder<
+                                            VehicleLocationBloc,
                                             List<VehicleEntity>>(
                                           builder: (context, vehicles) {
-                                            String packedLength = state
-                                                .resp.data!.length.toString();
-
                                             if (vehicles.isEmpty) {
-                                              return Text(
-                                                packedLength,
-                                                style: AppStyle.cardfooter
-                                                    .copyWith(
-                                                        fontWeight:
-                                                            FontWeight.w300),
-                                                maxLines:
-                                                    1, // Restrict to a single line for count as well
-                                                overflow: TextOverflow.ellipsis,
+                                              return  VehicleStatusPieChart(
+                                                onlineCount: 0,
+                                                offlineCount: vehiclesData.length,
+                                                idlingCount: 0,
+                                                parkedCount: vehiclesData.length,
                                               );
                                             }
 
-                                            final parkedVehicles =
-                                                vehicles.where((v) {
-                                              return v.locationInfo
-                                                          .vehicleStatus ==
-                                                      "Parked" ||
-                                                  v.locationInfo.vehicleStatus == "Stopped";
+                                            final movingVehicles = vehicles
+                                                .where((v) =>
+                                            v.locationInfo.vehicleStatus == "Moving")
+                                                .toList();
+                                            final parkedVehicles = vehicles.where((v) {
+                                              return v.locationInfo.vehicleStatus ==
+                                                  "Parked" ||
+                                                  v.locationInfo.vehicleStatus == "Stopped" &&
+                                                      v.locationInfo.tracker?.status ==
+                                                          "online";
                                             }).toList();
 
-                                            final movingVehicles =
-                                            vehicles.where((v) {
-                                              return v.locationInfo.vehicleStatus == "Moving";
+                                            final idlingVehicles = vehicles.where((v) {
+                                              return v.locationInfo.vehicleStatus == "Idling";
+                                              //&& v.locationInfo.tracker?.position?.ignition == "on";
                                             }).toList();
+
+
+                                            final onlineVehicles = vehicles.where((v) {
+                                              return v.locationInfo.tracker?.status ==
+                                                  "online";
+                                            }).toList();
+
+                                             onlineCount == onlineVehicles.length;
+                                             packedCount =
+                                                vehicleCount - movingVehicles.length;
+                                            idleCount = idlingVehicles.length;
+                                            offlineCount = offlineLength - onlineVehicles.length;
 
                                             //List<VehicleEntity> displayedVehicles = _filterVehicles(vehicles);
-                                            return Text(
-                                              '${state.resp.data!.length - movingVehicles.length}',
-                                              style: AppStyle.cardfooter
-                                                  .copyWith(
-                                                      fontWeight:
-                                                          FontWeight.w300),
-                                              maxLines:
-                                                  1, // Restrict to a single line for count as well
-                                              overflow: TextOverflow.ellipsis,
+                                            return VehicleStatusPieChart(
+                                              onlineCount: onlineCount,
+                                              offlineCount: offlineCount,
+                                              idlingCount: idleCount,
+                                              parkedCount: vehicles.length,
                                             );
                                           },
                                         ),
-                                        // Text(
-                                        //   state.resp.data!.length.toString(),
-                                        //   style: AppStyle.cardfooter.copyWith(
-                                        //       fontWeight: FontWeight.w300),
-                                        //   maxLines:
-                                        //       1, // Restrict to a single line for count as well
-                                        //   overflow: TextOverflow.ellipsis,
-                                        // ),
-                                        color: Colors.black,
-                                        icon: const Icon(
-                                            CupertinoIcons.wifi_slash,
-                                            color: Colors.white),
                                       ),
+
+                                      const SizedBox(
+                                        height: 10,
+                                      ),
+                                      Container(
+                                          height: 80,
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 10, vertical: 10),
+                                          decoration: BoxDecoration(
+                                            borderRadius:
+                                                BorderRadius.circular(10),
+                                            color: Colors.white,
+                                          ),
+                                          child: ListView(
+                                            scrollDirection: Axis.horizontal,
+                                            children: [
+
+                                              _BuildVehicleStatus(
+                                                  title: "Online",
+                                                  count: BlocListener<
+                                                      VehicleLocationBloc,
+                                                      List<VehicleEntity>>(
+                                                    listener: (context, vehicles) {
+                                                      // _updateVehicleCounts(vehicles);
+                                                      setState(() {
+                                                        vehicles;
+                                                      });
+                                                    },
+                                                    child: BlocBuilder<
+                                                        VehicleLocationBloc,
+                                                        List<VehicleEntity>>(
+                                                      builder: (context, vehicles) {
+                                                        if (vehicles.isEmpty) {
+                                                          return Text(
+                                                            '0',
+                                                            style: AppStyle.cardfooter
+                                                                .copyWith(
+                                                                fontWeight:
+                                                                FontWeight.w300),
+                                                            maxLines: 1, // Restrict to a single line for count as well
+                                                            overflow:
+                                                            TextOverflow.ellipsis,
+                                                          );
+                                                        }
+
+                                                        final onlineVehicles =
+                                                        vehicles.where((v) {
+                                                          return v.locationInfo
+                                                              .tracker?.status ==
+                                                              "online";
+                                                        }).toList();
+
+                                                        //List<VehicleEntity> displayedVehicles = _filterVehicles(vehicles);
+                                                        return Text(
+                                                          onlineVehicles.length
+                                                              .toString(),
+                                                          style: AppStyle.cardfooter
+                                                              .copyWith(
+                                                              fontWeight:
+                                                              FontWeight.w300),
+                                                          maxLines: 1, // Restrict to a single line for count as well
+                                                          overflow:
+                                                          TextOverflow.ellipsis,
+                                                        );
+                                                      },
+                                                    ),
+                                                  ),
+                                                  symbol: const CircleAvatar(
+                                                    backgroundColor:
+                                                        Colors.green,
+                                                    radius: 8,
+                                                  )),
+
+
+
+
+                                              _BuildVehicleStatus(
+                                                  title: "Offline",
+                                                  count: BlocListener<
+                                                      VehicleLocationBloc,
+                                                      List<VehicleEntity>>(
+                                                    listener: (context, vehicles) {
+                                                      // _updateVehicleCounts(vehicles);
+                                                      setState(() {
+                                                        vehicles;
+                                                      });
+                                                    },
+                                                    child: BlocBuilder<
+                                                        VehicleLocationBloc,
+                                                        List<VehicleEntity>>(
+                                                      builder: (context, vehicles) {
+                                                        int offlineLength = state
+                                                            .resp.data
+                                                            ?.where((vehicle) =>
+                                                        vehicle.last_location
+                                                            ?.status ==
+                                                            'offline' ||
+                                                            vehicle.last_location
+                                                                ?.status !=
+                                                                "online")
+                                                            .length ??
+                                                            0;
+
+                                                        if (vehicles.isEmpty) {
+                                                          return Text(
+                                                            offlineLength.toString(),
+                                                            // state.resp.data!.length
+                                                            //     .toString(),
+                                                            style: AppStyle.cardfooter
+                                                                .copyWith(
+                                                                fontWeight:
+                                                                FontWeight
+                                                                    .w300),
+                                                            maxLines:
+                                                            1, // Restrict to a single line for count as well
+                                                            overflow:
+                                                            TextOverflow.ellipsis,
+                                                          );
+                                                        }
+
+                                                        final onlineVehicles =
+                                                        vehicles.where((v) {
+                                                          return v.locationInfo.tracker!.status ==
+                                                              "online";
+                                                        }).toList();
+
+                                                        //List<VehicleEntity> displayedVehicles = _filterVehicles(vehicles);
+                                                        return Text(
+                                                          '${state.resp.data!.length - onlineVehicles.length}',
+                                                          style: AppStyle.cardfooter
+                                                              .copyWith(
+                                                              fontWeight:
+                                                              FontWeight.w300),
+                                                          maxLines:
+                                                          1, // Restrict to a single line for count as well
+                                                          overflow:
+                                                          TextOverflow.ellipsis,
+                                                        );
+                                                      },
+                                                    ),
+                                                  ),
+                                                  symbol: const CircleAvatar(
+                                                    backgroundColor:
+                                                        Colors.red,
+                                                    radius: 8,
+                                                  )),
+
+                                              _BuildVehicleStatus(
+                                                  title: "Idling",
+                                                  count: BlocBuilder<
+                                                      VehicleLocationBloc,
+                                                      List<VehicleEntity>>(
+                                                    builder: (context, vehicles) {
+                                                      if (vehicles.isEmpty) {
+                                                        return Text(
+                                                          '0',
+                                                          style: AppStyle.cardfooter
+                                                              .copyWith(
+                                                              fontWeight:
+                                                              FontWeight.w300),
+                                                          maxLines:
+                                                          1, // Restrict to a single line for count as well
+                                                          overflow:
+                                                          TextOverflow.ellipsis,
+                                                        );
+                                                      }
+
+                                                      final idlingVehicles =
+                                                      vehicles.where((v) {
+                                                        return v.locationInfo
+                                                            .vehicleStatus ==
+                                                            "Idling";
+                                                        // && v.locationInfo.tracker?.position?.ignition == "on";
+                                                      }).toList();
+
+                                                      //List<VehicleEntity> displayedVehicles = _filterVehicles(vehicles);
+                                                      return Text(
+                                                        '${idlingVehicles.length}',
+                                                        style: AppStyle.cardfooter
+                                                            .copyWith(
+                                                            fontWeight:
+                                                            FontWeight.w300),
+                                                        maxLines:
+                                                        1, // Restrict to a single line for count as well
+                                                        overflow: TextOverflow.ellipsis,
+                                                      );
+                                                    },
+                                                  ),
+                                                  symbol: const CircleAvatar(
+                                                    backgroundColor:
+                                                    Colors.yellow,
+                                                    radius: 8,
+                                                  )),
+
+
+
+
+                                              _BuildVehicleStatus(
+                                                  title: "Parking",
+                                                  count: BlocBuilder<VehicleLocationBloc,
+                                                      List<VehicleEntity>>(
+                                                    builder: (context, vehicles) {
+                                                      String packedLength = state
+                                                          .resp.data!.length.toString();
+
+                                                      if (vehicles.isEmpty) {
+                                                        return Text(
+                                                          packedLength,
+                                                          style: AppStyle.cardfooter
+                                                              .copyWith(
+                                                              fontWeight:
+                                                              FontWeight.w300),
+                                                          maxLines:
+                                                          1, // Restrict to a single line for count as well
+                                                          overflow: TextOverflow.ellipsis,
+                                                        );
+                                                      }
+
+                                                      final parkedVehicles =
+                                                      vehicles.where((v) {
+                                                        return v.locationInfo
+                                                            .vehicleStatus ==
+                                                            "Parked" ||
+                                                            v.locationInfo.vehicleStatus == "Stopped";
+                                                      }).toList();
+
+                                                      final movingVehicles =
+                                                      vehicles.where((v) {
+                                                        return v.locationInfo.vehicleStatus == "Moving";
+                                                      }).toList();
+
+                                                      //List<VehicleEntity> displayedVehicles = _filterVehicles(vehicles);
+                                                      return Text(
+                                                        '${state.resp.data!.length - movingVehicles.length}',
+                                                        style: AppStyle.cardfooter
+                                                            .copyWith(
+                                                            fontWeight:
+                                                            FontWeight.w300),
+                                                        maxLines:
+                                                        1, // Restrict to a single line for count as well
+                                                        overflow: TextOverflow.ellipsis,
+                                                      );
+                                                    },
+                                                  ),
+                                                  symbol: const CircleAvatar(
+                                                    backgroundColor:
+                                                    Colors.blueGrey,
+                                                    radius: 8,
+                                                  ))
+                                            ],
+                                          ))
                                     ],
                                   );
+
+                                  ///------------------
+                                  // GridView.count(
+                                  //   crossAxisCount: 2,
+                                  //   mainAxisSpacing:
+                                  //       10, // Adjust spacing between grid items
+                                  //   crossAxisSpacing: 10,
+                                  //   childAspectRatio: 1.9, //
+                                  //   physics:
+                                  //       const NeverScrollableScrollPhysics(),
+                                  //   children: [
+                                  //     VehicleStatusCard(
+                                  //         status: 'Moving',
+                                  //         count: BlocListener<
+                                  //             VehicleLocationBloc,
+                                  //             List<VehicleEntity>>(
+                                  //           listener: (context, vehicles) {
+                                  //             // _updateVehicleCounts(vehicles);
+                                  //             setState(() {
+                                  //               vehicles;
+                                  //             });
+                                  //           },
+                                  //           child: BlocBuilder<
+                                  //               VehicleLocationBloc,
+                                  //               List<VehicleEntity>>(
+                                  //             builder: (context, vehicles) {
+                                  //               if (vehicles.isEmpty) {
+                                  //                 return Text(
+                                  //                   '0',
+                                  //                   style: AppStyle.cardfooter
+                                  //                       .copyWith(
+                                  //                           fontWeight:
+                                  //                               FontWeight
+                                  //                                   .w300),
+                                  //                   maxLines:
+                                  //                       1, // Restrict to a single line for count as well
+                                  //                   overflow:
+                                  //                       TextOverflow.ellipsis,
+                                  //                 );
+                                  //               }
+                                  //
+                                  //               final movingVehicles =
+                                  //                   vehicles.where((v) {
+                                  //                 return v.locationInfo
+                                  //                         .vehicleStatus ==
+                                  //                     "Moving";
+                                  //               }).toList();
+                                  //
+                                  //               //List<VehicleEntity> displayedVehicles = _filterVehicles(vehicles);
+                                  //               return Text(
+                                  //                 movingVehicles.length
+                                  //                     .toString(),
+                                  //                 style: AppStyle.cardfooter
+                                  //                     .copyWith(
+                                  //                         fontWeight:
+                                  //                             FontWeight.w300),
+                                  //                 maxLines:
+                                  //                     1, // Restrict to a single line for count as well
+                                  //                 overflow:
+                                  //                     TextOverflow.ellipsis,
+                                  //               );
+                                  //             },
+                                  //           ),
+                                  //         ),
+                                  //         color: Colors.green,
+                                  //         icon: const Icon(
+                                  //             CupertinoIcons.graph_circle_fill,
+                                  //             color: Colors.white)),
+                                  //     VehicleStatusCard(
+                                  //         status: 'offline',
+                                  //         count: BlocListener<
+                                  //             VehicleLocationBloc,
+                                  //             List<VehicleEntity>>(
+                                  //           listener: (context, vehicles) {
+                                  //             // _updateVehicleCounts(vehicles);
+                                  //             setState(() {
+                                  //               vehicles;
+                                  //             });
+                                  //           },
+                                  //           child: BlocBuilder<
+                                  //               VehicleLocationBloc,
+                                  //               List<VehicleEntity>>(
+                                  //             builder: (context, vehicles) {
+                                  //               int offlineLength = state
+                                  //                       .resp.data
+                                  //                       ?.where((vehicle) =>
+                                  //                           vehicle.last_location
+                                  //                                   ?.status ==
+                                  //                               'offline' ||
+                                  //                           vehicle.last_location
+                                  //                                   ?.status !=
+                                  //                               "online")
+                                  //                       .length ??
+                                  //                   0;
+                                  //
+                                  //               if (vehicles.isEmpty) {
+                                  //                 return Text(
+                                  //                   offlineLength.toString(),
+                                  //                   // state.resp.data!.length
+                                  //                   //     .toString(),
+                                  //                   style: AppStyle.cardfooter
+                                  //                       .copyWith(
+                                  //                           fontWeight:
+                                  //                               FontWeight
+                                  //                                   .w300),
+                                  //                   maxLines:
+                                  //                       1, // Restrict to a single line for count as well
+                                  //                   overflow:
+                                  //                       TextOverflow.ellipsis,
+                                  //                 );
+                                  //               }
+                                  //
+                                  //               final onlineVehicles =
+                                  //                   vehicles.where((v) {
+                                  //                 return v.locationInfo.tracker!
+                                  //                         .status ==
+                                  //                     "online";
+                                  //               }).toList();
+                                  //
+                                  //               //List<VehicleEntity> displayedVehicles = _filterVehicles(vehicles);
+                                  //               return Text(
+                                  //                 '${state.resp.data!.length - onlineVehicles.length}',
+                                  //                 style: AppStyle.cardfooter
+                                  //                     .copyWith(
+                                  //                         fontWeight:
+                                  //                             FontWeight.w300),
+                                  //                 maxLines:
+                                  //                     1, // Restrict to a single line for count as well
+                                  //                 overflow:
+                                  //                     TextOverflow.ellipsis,
+                                  //               );
+                                  //             },
+                                  //           ),
+                                  //         ),
+                                  //
+                                  //         color: Colors.red,
+                                  //         icon: const Icon(
+                                  //           CupertinoIcons.square_fill,
+                                  //           color: Colors.white,
+                                  //         )),
+                                  //     VehicleStatusCard(
+                                  //         status: 'Idling',
+                                  //         count: BlocBuilder<
+                                  //             VehicleLocationBloc,
+                                  //             List<VehicleEntity>>(
+                                  //           builder: (context, vehicles) {
+                                  //             if (vehicles.isEmpty) {
+                                  //               return Text(
+                                  //                 '0',
+                                  //                 style: AppStyle.cardfooter
+                                  //                     .copyWith(
+                                  //                         fontWeight:
+                                  //                             FontWeight.w300),
+                                  //                 maxLines:
+                                  //                     1, // Restrict to a single line for count as well
+                                  //                 overflow:
+                                  //                     TextOverflow.ellipsis,
+                                  //               );
+                                  //             }
+                                  //
+                                  //             final idlingVehicles =
+                                  //                 vehicles.where((v) {
+                                  //               return v.locationInfo
+                                  //                       .vehicleStatus ==
+                                  //                   "Idling";
+                                  //               // && v.locationInfo.tracker?.position?.ignition == "on";
+                                  //             }).toList();
+                                  //
+                                  //             //List<VehicleEntity> displayedVehicles = _filterVehicles(vehicles);
+                                  //             return Text(
+                                  //               '${idlingVehicles.length}',
+                                  //               style: AppStyle.cardfooter
+                                  //                   .copyWith(
+                                  //                       fontWeight:
+                                  //                           FontWeight.w300),
+                                  //               maxLines:
+                                  //                   1, // Restrict to a single line for count as well
+                                  //               overflow: TextOverflow.ellipsis,
+                                  //             );
+                                  //           },
+                                  //         ),
+                                  //
+                                  //         // Text(
+                                  //         //   state.resp.data!.length.toString(),
+                                  //         //   style: AppStyle.cardfooter.copyWith(
+                                  //         //       fontWeight: FontWeight.w300),
+                                  //         //   maxLines: 1, // Restrict to a single line for count as well
+                                  //         //   overflow: TextOverflow.ellipsis,
+                                  //         // ),
+                                  //
+                                  //         color: Colors.yellow,
+                                  //         icon: const Icon(
+                                  //             CupertinoIcons
+                                  //                 .square_split_2x1_fill,
+                                  //             color: Colors.white)),
+                                  //     VehicleStatusCard(
+                                  //       status: 'Parked',
+                                  //       count: BlocBuilder<VehicleLocationBloc,
+                                  //           List<VehicleEntity>>(
+                                  //         builder: (context, vehicles) {
+                                  //           String packedLength = state
+                                  //               .resp.data!.length.toString();
+                                  //
+                                  //           if (vehicles.isEmpty) {
+                                  //             return Text(
+                                  //               packedLength,
+                                  //               style: AppStyle.cardfooter
+                                  //                   .copyWith(
+                                  //                       fontWeight:
+                                  //                           FontWeight.w300),
+                                  //               maxLines:
+                                  //                   1, // Restrict to a single line for count as well
+                                  //               overflow: TextOverflow.ellipsis,
+                                  //             );
+                                  //           }
+                                  //
+                                  //           final parkedVehicles =
+                                  //               vehicles.where((v) {
+                                  //             return v.locationInfo
+                                  //                         .vehicleStatus ==
+                                  //                     "Parked" ||
+                                  //                 v.locationInfo.vehicleStatus == "Stopped";
+                                  //           }).toList();
+                                  //
+                                  //           final movingVehicles =
+                                  //           vehicles.where((v) {
+                                  //             return v.locationInfo.vehicleStatus == "Moving";
+                                  //           }).toList();
+                                  //
+                                  //           //List<VehicleEntity> displayedVehicles = _filterVehicles(vehicles);
+                                  //           return Text(
+                                  //             '${state.resp.data!.length - movingVehicles.length}',
+                                  //             style: AppStyle.cardfooter
+                                  //                 .copyWith(
+                                  //                     fontWeight:
+                                  //                         FontWeight.w300),
+                                  //             maxLines:
+                                  //                 1, // Restrict to a single line for count as well
+                                  //             overflow: TextOverflow.ellipsis,
+                                  //           );
+                                  //         },
+                                  //       ),
+                                  //       // Text(
+                                  //       //   state.resp.data!.length.toString(),
+                                  //       //   style: AppStyle.cardfooter.copyWith(
+                                  //       //       fontWeight: FontWeight.w300),
+                                  //       //   maxLines:
+                                  //       //       1, // Restrict to a single line for count as well
+                                  //       //   overflow: TextOverflow.ellipsis,
+                                  //       // ),
+                                  //       color: Colors.black,
+                                  //       icon: const Icon(
+                                  //           CupertinoIcons.wifi_slash,
+                                  //           color: Colors.white),
+                                  //     ),
+                                  //   ],
+                                  // );
                                 } else {
+                                  print("iiiii777777------------777777777");
                                   return const Center(
                                       child: Text('No records found'));
                                 }
@@ -582,7 +998,7 @@ class _DashboardPageState extends State<DashboardPage> {
                             ),
                           ),
 
-                          //
+                          ///------------
                           // BlocListener<VehicleLocationBloc,
                           //     List<VehicleEntity>>(
                           //   listener: (context, vehicles) {
@@ -795,48 +1211,6 @@ class _DashboardPageState extends State<DashboardPage> {
                           //               }
                           //             }),
                           //           ),
-                          //
-                          //           // GridView.count(
-                          //           //   crossAxisCount: 2,
-                          //           //   mainAxisSpacing: 10, // Adjust spacing between grid items
-                          //           //   crossAxisSpacing: 10,
-                          //           //   childAspectRatio: 1.9, //
-                          //           //   physics:
-                          //           //       const NeverScrollableScrollPhysics(),
-                          //           //   children: const [
-                          //           //     VehicleStatusCard(
-                          //           //         status: 'Moving',
-                          //           //         count: '0',
-                          //           //         color: Colors.green,
-                          //           //         icon: Icon(
-                          //           //             CupertinoIcons
-                          //           //                 .graph_circle_fill,
-                          //           //             color: Colors.white)),
-                          //           //     VehicleStatusCard(
-                          //           //         status: 'Stopped',
-                          //           //         count: '0',
-                          //           //         color: Colors.red,
-                          //           //         icon: Icon(
-                          //           //           CupertinoIcons.square_fill,
-                          //           //           color: Colors.white,
-                          //           //         )),
-                          //           //     VehicleStatusCard(
-                          //           //         status: 'Idling',
-                          //           //         count: '0',
-                          //           //         color: Colors.yellow,
-                          //           //         icon: Icon(
-                          //           //             CupertinoIcons
-                          //           //                 .square_split_2x1_fill,
-                          //           //             color: Colors.white)),
-                          //           //     VehicleStatusCard(
-                          //           //       status: 'Parked',
-                          //           //       count: '0',
-                          //           //       color: Colors.black,
-                          //           //       icon: Icon(CupertinoIcons.wifi_slash,
-                          //           //           color: Colors.white),
-                          //           //     ),
-                          //           //   ],
-                          //           // ),
                           //         );
                           //       }
                           //       // final movingVehicles = vehicles
@@ -952,12 +1326,16 @@ class _DashboardPageState extends State<DashboardPage> {
                           children: [
                             Row(
                               children: [
-                                const CircleAvatar(
+                                CircleAvatar(
+                                  radius: 25,
                                   backgroundColor: Colors.white,
-                                  child: Icon(
-                                    CupertinoIcons.checkmark_alt_circle,
-                                    size: 30,
-                                    color: Colors.green,
+                                  child: ClipOval(
+                                    child: Image.asset(
+                                      "assets/images/car.png",
+                                      // fit: BoxFit.cover, // Ensures the image scales properly
+                                      width: 40,        // Adjust image width
+                                      height: 40,       // Adjust image height
+                                    ),
                                   ),
                                 ),
                                 const SizedBox(
@@ -1011,6 +1389,14 @@ class _DashboardPageState extends State<DashboardPage> {
                                       borderRadius: BorderRadius.circular(12),
                                     ),
                                     child: DashboardComponentTitle(
+                                      logo: const CircleAvatar(
+                                        backgroundColor: Colors.white,
+                                        child: Icon(
+                                          CupertinoIcons.cart,
+                                          size: 25,
+                                          color: Colors.green,
+                                        ),
+                                      ),
                                       title: 'Shop Now',
                                       subTitle: 'Get your equipment',
                                     )),
@@ -1135,18 +1521,28 @@ class _DashboardPageState extends State<DashboardPage> {
                                                       //     });
                                                     },
                                                     child: Container(
-                                                      decoration:
-                                                          const BoxDecoration(
-                                                              //border: Border.all(width: 1),
-                                                              ),
+                                                      decoration: BoxDecoration(
+                                                        color: Colors.white, // Background color
+                                                        borderRadius: BorderRadius.circular(8.0), // Rounded corners
+                                                        boxShadow: [
+                                                          BoxShadow(
+                                                            color: Colors.grey.withOpacity(0.5), // Shadow color
+                                                            spreadRadius: 1, // How far the shadow spreads
+                                                            blurRadius: 5, // Softness of the shadow
+                                                            offset: const Offset(0, 3), // Position of the shadow (x, y)
+                                                          ),
+                                                        ],
+                                                      ),
+                                                      padding: const EdgeInsets.all(8.0),
                                                       child: Column(
+                                                        // mainAxisSize: MainAxisSize.min,
                                                         children: [
                                                           Center(
                                                             child:
                                                                 Image.network(
                                                               'https://ecom.verifycentre.com${state.resp.products.data[index].image}',
-                                                              height: 80,
-                                                              width: 80,
+                                                              height: 60,
+                                                              width: 60,
                                                               loadingBuilder:
                                                                   (BuildContext
                                                                           context,
@@ -1217,6 +1613,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                               children: [
                                                 Container(),
                                                 const Spacer(),
+                                                // CustomSecondaryButton(label: label, onPressed: onPressed)
                                                 OutlinedButton.icon(
                                                   onPressed: () {
                                                     Navigator.push(
@@ -1227,17 +1624,25 @@ class _DashboardPageState extends State<DashboardPage> {
                                                                     token:
                                                                         token)));
                                                   },
+                                                  style: ElevatedButton.styleFrom(
+                                                    backgroundColor: Colors.green[500], // Default here
+                                                    padding: const EdgeInsets.symmetric(vertical: 0.0),
+                                                    shape: RoundedRectangleBorder(
+                                                      side: const BorderSide(color: Colors.white),
+                                                      borderRadius: BorderRadius.circular(10),
+                                                    ),
+                                                  ),
                                                   label: Row(
                                                     children: [
                                                       Text(
-                                                        'more',
+                                                        'More',
                                                         style:
-                                                            AppStyle.cardfooter,
+                                                            AppStyle.cardSubtitle.copyWith(fontSize: 12,color: Colors.black),
                                                       ),
-                                                      Icon(
+                                                      const Icon(
                                                         Icons.arrow_forward,
                                                         color:
-                                                            Colors.green[500],
+                                                            Colors.black,
                                                         size: 18,
                                                       )
                                                     ],
@@ -1463,9 +1868,17 @@ class _DashboardPageState extends State<DashboardPage> {
                                       borderRadius: BorderRadius.circular(12),
                                     ),
                                     child: DashboardComponentTitle(
+                                      logo: const CircleAvatar(
+                                        backgroundColor: Colors.white,
+                                        child: Icon(
+                                          CupertinoIcons.rocket,
+                                          size: 25,
+                                          color: Colors.green,
+                                        ),
+                                      ),
                                       title: 'Maintenance Reminder',
                                       subTitle:
-                                          'Get your vehicle documents at a stand',
+                                          'Vehicle maintenance reminder',
                                     )),
                                 const SizedBox(
                                   height: 10,
@@ -1513,6 +1926,14 @@ class _DashboardPageState extends State<DashboardPage> {
                                       borderRadius: BorderRadius.circular(12),
                                     ),
                                     child: DashboardComponentTitle(
+                                      logo: const CircleAvatar(
+                                        backgroundColor: Colors.white,
+                                        child: Icon(
+                                          Icons.roundabout_right_outlined,
+                                          size: 25,
+                                          color: Colors.green,
+                                        ),
+                                      ),
                                       title: 'Vehicle Trips',
                                       subTitle: "Recent Status",
                                     )),
@@ -1575,17 +1996,10 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   Widget DashboardComponentTitle(
-      {required String title, required String subTitle}) {
+      {required String title, required String subTitle, required CircleAvatar logo}) {
     return Row(
       children: [
-        const CircleAvatar(
-          backgroundColor: Colors.white,
-          child: Icon(
-            CupertinoIcons.checkmark_alt_circle,
-            size: 30,
-            color: Colors.green,
-          ),
-        ),
+        logo,
         const SizedBox(
           width: 10,
         ),
@@ -1653,190 +2067,6 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  Widget _buildMaintenanceCard() {
-    return Container(
-      padding: const EdgeInsets.all(16.0),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12.0),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.2),
-            blurRadius: 6,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            "Engine Oil Filter - Air Filter Change",
-            style: AppStyle.cardSubtitle.copyWith(fontSize: 12),
-            maxLines: 1,
-            overflow:
-                TextOverflow.ellipsis, // Ensures text truncates if too long
-          ),
-          const SizedBox(height: 4), // Added spacing between lines
-          Text(
-            "DM-GA-16-9495",
-            style: AppStyle.cardfooter.copyWith(fontSize: 12),
-            maxLines: 1,
-            overflow:
-                TextOverflow.ellipsis, // Ensures text truncates if too long
-          ),
-          const SizedBox(height: 12),
-          Container(
-            padding: const EdgeInsets.all(12.0),
-            decoration: BoxDecoration(
-              color: Colors.green.shade100,
-              borderRadius: BorderRadius.circular(8.0),
-            ),
-            child: Row(
-              children: [
-                const Flexible(
-                  flex: 3,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(Icons.hourglass_bottom,
-                              size: 18, color: Colors.black87),
-                          SizedBox(width: 8),
-                          Flexible(
-                            child: Text(
-                              "10000KM",
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              overflow:
-                                  TextOverflow.ellipsis, // Handles long text
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 8),
-                      Text(
-                        "Expired (4000KM)",
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.red,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis, // Truncate text
-                      ),
-                    ],
-                  ),
-                ),
-                const Spacer(),
-                Flexible(
-                  flex: 4,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      const Row(
-                        children: [
-                          Icon(Icons.schedule, size: 18, color: Colors.black87),
-                          SizedBox(width: 8),
-                          Flexible(
-                            child: Text(
-                              "200 Days",
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              overflow:
-                                  TextOverflow.ellipsis, // Handles long text
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        "Expired Days Left (50 days)",
-                        style: AppStyle.cardfooter
-                            .copyWith(color: Colors.red, fontSize: 12),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis, // Truncate text
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Widget _buildOdometerList() {
-  //   final data = [
-  //     {"name": "OBD Plug and Play", "value": 2894368940},
-  //     {"name": "CM-U-11-0654-Y", "value": 216774},
-  //     {"name": "DM-GA327615", "value": 56127},
-  //     {"name": "Motor Sheild", "value": 56127},
-  //     {"name": "DM-GA-39-3528-Arra", "value": 56127},
-  //     {"name": "DM-GHA-171796", "value": 56127},
-  //   ];
-  //
-  //   return Padding(
-  //     padding: EdgeInsets.zero,
-  //     child: ListView.separated(
-  //       shrinkWrap: true, // Prevents ListView from expanding infinitely
-  //       padding: EdgeInsets.zero,
-  //       itemCount: data.length,
-  //       separatorBuilder: (_, __) => const SizedBox(height: 8),
-  //       itemBuilder: (context, index) {
-  //         final item = data[index];
-  //         return _buildOdometerRow(
-  //             item["name"] as String, item["value"] as int);
-  //       },
-  //     ),
-  //   );
-  // }
-  ///
-  // Widget _buildOdometerRow(String name, int value) {
-  //   return Row(
-  //     children: [
-  //       Expanded(
-  //         flex: 4,
-  //         child:
-  //             Text(name, style: AppStyle.cardSubtitle.copyWith(fontSize: 12)),
-  //       ),
-  //       Expanded(
-  //         flex: 6,
-  //         child: Stack(
-  //           children: [
-  //             const Divider(
-  //               thickness: 1,
-  //               color: Colors.grey,
-  //               endIndent: 0,
-  //             ),
-  //             Positioned(
-  //               right: 0,
-  //               bottom: 0,
-  //               // top: 0,
-  //               child: Container(
-  //                 // height: 100,
-  //                 padding:
-  //                     const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
-  //                 decoration: BoxDecoration(
-  //                   color: Colors.green.shade300,
-  //                   borderRadius: BorderRadius.circular(4.0),
-  //                 ),
-  //                 child: Text(value.toString(),
-  //                     style: AppStyle.cardfooter.copyWith(fontSize: 12)),
-  //               ),
-  //             ),
-  //           ],
-  //         ),
-  //       ),
-  //     ],
-  //   );
-  // }
 }
 
 class VehicleStatusCard extends StatelessWidget {
@@ -2049,3 +2279,289 @@ class _DetailItem extends StatelessWidget {
     );
   }
 }
+
+class VehicleStatusPieChart extends StatelessWidget {
+  final int onlineCount;
+  final int offlineCount;
+  final int idlingCount;
+  final int parkedCount;
+
+  const VehicleStatusPieChart({
+    Key? key,
+    required this.onlineCount,
+    required this.offlineCount,
+    required this.idlingCount,
+    required this.parkedCount,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final total = onlineCount + offlineCount + idlingCount + parkedCount;
+    if (total == 0) {
+      return const Center(child: Text('No data available'));
+    }
+
+    return SizedBox(
+      height: 200,
+      child: PieChart(
+        PieChartData(
+          sections: [
+            PieChartSectionData(
+              value: onlineCount.toDouble(),
+              color: Colors.green,
+              title: '',
+              //title: '${(movingCount / total * 100).toStringAsFixed(1)}%',
+              radius: 50,
+            ),
+            PieChartSectionData(
+              value: offlineCount.toDouble(),
+              color: Colors.red,
+              title: '',
+              radius: 50,
+            ),
+            PieChartSectionData(
+              value: idlingCount.toDouble(),
+              color: Colors.yellow,
+              title: '',
+              //title: '${(idlingCount / total * 100).toStringAsFixed(1)}%',
+              radius: 50,
+            ),
+            PieChartSectionData(
+              value: parkedCount.toDouble(),
+              color: Colors.blueGrey[800],
+              title: '',
+              //title: '${(parkedCount / total * 100).toStringAsFixed(1)}%',
+              radius: 50,
+            ),
+          ],
+          sectionsSpace: 2,
+          centerSpaceRadius: 40,
+        ),
+      ),
+    );
+  }
+}
+
+class _BuildVehicleStatus extends StatelessWidget {
+  final String title;
+  final dynamic count;
+  final CircleAvatar symbol;
+  const _BuildVehicleStatus(
+      {super.key,
+      required this.title,
+      required this.count,
+      required this.symbol});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Text(title, style: AppStyle.cardSubtitle.copyWith(fontSize: 12)),
+          const SizedBox(height: 5,),
+          Row(
+            children: [
+                count,
+                // style: AppStyle.cardfooter,
+              const SizedBox(
+                width: 5,
+              ),
+             symbol
+            ],
+          )
+        ],
+      ),
+    );
+  }
+}
+
+
+
+
+// Widget _buildMaintenanceCard() {
+//   return Container(
+//     padding: const EdgeInsets.all(16.0),
+//     decoration: BoxDecoration(
+//       color: Colors.white,
+//       borderRadius: BorderRadius.circular(12.0),
+//       boxShadow: [
+//         BoxShadow(
+//           color: Colors.grey.withOpacity(0.2),
+//           blurRadius: 6,
+//           offset: const Offset(0, 3),
+//         ),
+//       ],
+//     ),
+//     child: Column(
+//       crossAxisAlignment: CrossAxisAlignment.start,
+//       children: [
+//         Text(
+//           "Engine Oil Filter - Air Filter Change",
+//           style: AppStyle.cardSubtitle.copyWith(fontSize: 12),
+//           maxLines: 1,
+//           overflow:
+//               TextOverflow.ellipsis, // Ensures text truncates if too long
+//         ),
+//         const SizedBox(height: 4), // Added spacing between lines
+//         Text(
+//           "DM-GA-16-9495",
+//           style: AppStyle.cardfooter.copyWith(fontSize: 12),
+//           maxLines: 1,
+//           overflow:
+//               TextOverflow.ellipsis, // Ensures text truncates if too long
+//         ),
+//         const SizedBox(height: 12),
+//         Container(
+//           padding: const EdgeInsets.all(12.0),
+//           decoration: BoxDecoration(
+//             color: Colors.green.shade100,
+//             borderRadius: BorderRadius.circular(8.0),
+//           ),
+//           child: Row(
+//             children: [
+//               const Flexible(
+//                 flex: 3,
+//                 child: Column(
+//                   crossAxisAlignment: CrossAxisAlignment.start,
+//                   children: [
+//                     Row(
+//                       children: [
+//                         Icon(Icons.hourglass_bottom,
+//                             size: 18, color: Colors.black87),
+//                         SizedBox(width: 8),
+//                         Flexible(
+//                           child: Text(
+//                             "10000KM",
+//                             style: TextStyle(
+//                               fontSize: 14,
+//                               fontWeight: FontWeight.bold,
+//                             ),
+//                             overflow:
+//                                 TextOverflow.ellipsis, // Handles long text
+//                           ),
+//                         ),
+//                       ],
+//                     ),
+//                     SizedBox(height: 8),
+//                     Text(
+//                       "Expired (4000KM)",
+//                       style: TextStyle(
+//                         fontSize: 12,
+//                         color: Colors.red,
+//                       ),
+//                       maxLines: 2,
+//                       overflow: TextOverflow.ellipsis, // Truncate text
+//                     ),
+//                   ],
+//                 ),
+//               ),
+//               const Spacer(),
+//               Flexible(
+//                 flex: 4,
+//                 child: Column(
+//                   crossAxisAlignment: CrossAxisAlignment.end,
+//                   children: [
+//                     const Row(
+//                       children: [
+//                         Icon(Icons.schedule, size: 18, color: Colors.black87),
+//                         SizedBox(width: 8),
+//                         Flexible(
+//                           child: Text(
+//                             "200 Days",
+//                             style: TextStyle(
+//                               fontSize: 14,
+//                               fontWeight: FontWeight.bold,
+//                             ),
+//                             overflow:
+//                                 TextOverflow.ellipsis, // Handles long text
+//                           ),
+//                         ),
+//                       ],
+//                     ),
+//                     const SizedBox(height: 8),
+//                     Text(
+//                       "Expired Days Left (50 days)",
+//                       style: AppStyle.cardfooter
+//                           .copyWith(color: Colors.red, fontSize: 12),
+//                       maxLines: 2,
+//                       overflow: TextOverflow.ellipsis, // Truncate text
+//                     ),
+//                   ],
+//                 ),
+//               ),
+//             ],
+//           ),
+//         ),
+//       ],
+//     ),
+//   );
+// }
+
+// Widget _buildOdometerList() {
+//   final data = [
+//     {"name": "OBD Plug and Play", "value": 2894368940},
+//     {"name": "CM-U-11-0654-Y", "value": 216774},
+//     {"name": "DM-GA327615", "value": 56127},
+//     {"name": "Motor Sheild", "value": 56127},
+//     {"name": "DM-GA-39-3528-Arra", "value": 56127},
+//     {"name": "DM-GHA-171796", "value": 56127},
+//   ];
+//
+//   return Padding(
+//     padding: EdgeInsets.zero,
+//     child: ListView.separated(
+//       shrinkWrap: true, // Prevents ListView from expanding infinitely
+//       padding: EdgeInsets.zero,
+//       itemCount: data.length,
+//       separatorBuilder: (_, __) => const SizedBox(height: 8),
+//       itemBuilder: (context, index) {
+//         final item = data[index];
+//         return _buildOdometerRow(
+//             item["name"] as String, item["value"] as int);
+//       },
+//     ),
+//   );
+// }
+///
+// Widget _buildOdometerRow(String name, int value) {
+//   return Row(
+//     children: [
+//       Expanded(
+//         flex: 4,
+//         child:
+//             Text(name, style: AppStyle.cardSubtitle.copyWith(fontSize: 12)),
+//       ),
+//       Expanded(
+//         flex: 6,
+//         child: Stack(
+//           children: [
+//             const Divider(
+//               thickness: 1,
+//               color: Colors.grey,
+//               endIndent: 0,
+//             ),
+//             Positioned(
+//               right: 0,
+//               bottom: 0,
+//               // top: 0,
+//               child: Container(
+//                 // height: 100,
+//                 padding:
+//                     const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+//                 decoration: BoxDecoration(
+//                   color: Colors.green.shade300,
+//                   borderRadius: BorderRadius.circular(4.0),
+//                 ),
+//                 child: Text(value.toString(),
+//                     style: AppStyle.cardfooter.copyWith(fontSize: 12)),
+//               ),
+//             ),
+//           ],
+//         ),
+//       ),
+//     ],
+//   );
+// }

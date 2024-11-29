@@ -189,15 +189,21 @@ class _AnimatedAppBarState extends State<AnimatedAppBar>
                         pickAndUpdateProfilePicture(int.parse(userId!));
                       },
                       child: FutureBuilder<String?>(
-                        future: fetchUserProfilePicture(int.parse(userId!)),
+                        future: fetchUserProfilePicture(int.parse(userId ?? '0')),
                         builder: (context, snapshot) {
                           if (snapshot.connectionState == ConnectionState.waiting) {
-                            return const CircularProgressIndicator(); // Loading indicator
+                            return Container(
+                              height: 15,
+                              width: 15,
+                              child: const CircularProgressIndicator(
+                                strokeWidth: 2.0,
+                              ),
+                            ); // Loading indicator
                           } else if (snapshot.hasError) {
                             return const Icon(Icons.error, color: Colors.red); // Error state
                           } else if (!snapshot.hasData || snapshot.data == null) {
                             return const CircleAvatar(
-                              radius: 50,
+                              radius: 45,
                               backgroundImage: AssetImage("assets/images/avatar.jpeg"), // Default avatar
                             );
                           } else {
@@ -302,8 +308,8 @@ class _AnimatedAppBarState extends State<AnimatedAppBar>
                           return Row(
                             children: [
                               const Icon(
-                                CupertinoIcons.checkmark_alt_circle,
-                                size: 30,
+                                CupertinoIcons.cart,
+                                size: 25,
                                 color: Colors.green,
                               ),
                               const SizedBox(
@@ -406,7 +412,7 @@ class _AnimatedAppBarState extends State<AnimatedAppBar>
                           return Row(
                             children: [
                               const Icon(
-                                CupertinoIcons.checkmark_alt_circle,
+                                CupertinoIcons.rocket,
                                 size: 30,
                                 color: Colors.green,
                               ),
@@ -445,8 +451,8 @@ class _AnimatedAppBarState extends State<AnimatedAppBar>
                             return Row(
                               children: [
                                 const Icon(
-                                  CupertinoIcons.checkmark_alt_circle,
-                                  size: 30,
+                                  Icons.roundabout_right_outlined,
+                                  size: 25,
                                   color: Colors.green,
                                 ),
                                 const SizedBox(

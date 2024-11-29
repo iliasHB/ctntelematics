@@ -39,3 +39,20 @@ class InitiatePaymentEvent extends EshopEvent {
   List<Object?> get props => [initiatePaymentReqEntity];
 }
 
+class ConfirmPaymentEvent extends EshopEvent {
+  final EshopTokenReqEntity eshopTokenReqEntity;
+  const ConfirmPaymentEvent(this.eshopTokenReqEntity);
+
+  @override
+  List<Object?> get props => [eshopTokenReqEntity];
+}
+
+
+class DeliveryLocationEvent extends EshopEvent {
+  final EshopTokenReqEntity eshopTokenReqEntity;
+  const DeliveryLocationEvent(this.eshopTokenReqEntity);
+
+  @override
+  List<Object?> get props => [eshopTokenReqEntity];
+}
+

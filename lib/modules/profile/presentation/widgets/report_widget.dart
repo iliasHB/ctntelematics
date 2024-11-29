@@ -10,6 +10,7 @@ import 'package:flutter_datetime_picker_plus/flutter_datetime_picker_plus.dart';
 import '../../../../config/theme/app_style.dart';
 import '../../../../core/utils/math_util.dart';
 import '../../../../core/widgets/alert_message.dart';
+import '../../../../core/widgets/custom_button.dart';
 import '../../../../service_locator.dart';
 import '../../../dashboard/domain/entitties/req_entities/dash_vehicle_req_entity.dart';
 import '../../../vehincle/presentation/bloc/vehicle_bloc.dart';
@@ -245,26 +246,43 @@ class _ReportState extends State<Report> {
                           }
                           return Align(
                             alignment: Alignment.topRight,
-                            child: ElevatedButton(
-                              onPressed: () {
-                                if (_formKey.currentState?.validate() ??
-                                    false) {
-                                  final dashVehicleReqEntity =
-                                      DashVehicleReqEntity(
-                                    token: widget.token ?? "",
-                                    contentType:
-                                        'application/json', // Include the selected VIN
-                                  );
-                                  context.read<VehicleTripBloc>().add(
-                                      DashVehicleEvent(dashVehicleReqEntity));
+                            child: CustomPrimaryButton(
+                                label:  'View Report',
+                                onPressed: (){
+                                  if (_formKey.currentState?.validate() ??
+                                      false) {
+                                    final dashVehicleReqEntity =
+                                    DashVehicleReqEntity(
+                                      token: widget.token ?? "",
+                                      contentType:
+                                      'application/json', // Include the selected VIN
+                                    );
+                                    context.read<VehicleTripBloc>().add(
+                                        DashVehicleEvent(dashVehicleReqEntity));
+                                  }
                                 }
-                              },
-                              child: Text(
-                                'View Report',
-                                style:
-                                    AppStyle.cardfooter.copyWith(fontSize: 14),
-                              ),
-                            ),
+                            )
+
+                            // ElevatedButton(
+                            //   onPressed: () {
+                            //     if (_formKey.currentState?.validate() ??
+                            //         false) {
+                            //       final dashVehicleReqEntity =
+                            //           DashVehicleReqEntity(
+                            //         token: widget.token ?? "",
+                            //         contentType:
+                            //             'application/json', // Include the selected VIN
+                            //       );
+                            //       context.read<VehicleTripBloc>().add(
+                            //           DashVehicleEvent(dashVehicleReqEntity));
+                            //     }
+                            //   },
+                            //   child: Text(
+                            //     'View Report',
+                            //     style:
+                            //         AppStyle.cardfooter.copyWith(fontSize: 14),
+                            //   ),
+                            // ),
                           );
                         },
                       )
@@ -318,27 +336,44 @@ class _ReportState extends State<Report> {
                               }
                               return Align(
                                 alignment: Alignment.topRight,
-                                child: ElevatedButton(
-                                  onPressed: () {
-                                    if (_formKey.currentState?.validate() ??
-                                        false) {
-                                      final getSchedule = TokenReqEntity(
-                                          token: widget.token ?? "");
-                                      // final dashVehicleReqEntity = DashVehicleReqEntity(
-                                      //   token: widget.token ?? "",
-                                      //   contentType: 'application/json',// Include the selected VIN
-                                      // );
-                                      context
-                                          .read<GetScheduleBloc>()
-                                          .add(GetScheduleEvent(getSchedule));
-                                    }
-                                  },
-                                  child: Text(
-                                    'View Report',
-                                    style: AppStyle.cardfooter
-                                        .copyWith(fontSize: 14),
-                                  ),
-                                ),
+                                child: CustomPrimaryButton(
+                                    label: 'View Report',
+                                    onPressed: (){
+                                          if (_formKey.currentState?.validate() ??
+                                              false) {
+                                            final getSchedule = TokenReqEntity(
+                                                token: widget.token ?? "");
+                                            // final dashVehicleReqEntity = DashVehicleReqEntity(
+                                            //   token: widget.token ?? "",
+                                            //   contentType: 'application/json',// Include the selected VIN
+                                            // );
+                                            context
+                                                .read<GetScheduleBloc>()
+                                                .add(GetScheduleEvent(getSchedule));
+                                          }
+                                    })
+
+                                // ElevatedButton(
+                                //   onPressed: () {
+                                //     if (_formKey.currentState?.validate() ??
+                                //         false) {
+                                //       final getSchedule = TokenReqEntity(
+                                //           token: widget.token ?? "");
+                                //       // final dashVehicleReqEntity = DashVehicleReqEntity(
+                                //       //   token: widget.token ?? "",
+                                //       //   contentType: 'application/json',// Include the selected VIN
+                                //       // );
+                                //       context
+                                //           .read<GetScheduleBloc>()
+                                //           .add(GetScheduleEvent(getSchedule));
+                                //     }
+                                //   },
+                                //   child: Text(
+                                //     'View Report',
+                                //     style: AppStyle.cardfooter
+                                //         .copyWith(fontSize: 14),
+                                //   ),
+                                // ),
                               );
                             },
                           )
@@ -533,25 +568,41 @@ class _DateTimeRangePickerState extends State<DateTimeRangePicker> {
               }
               return Align(
                 alignment: Alignment.topRight,
-                child: ElevatedButton(
-                  onPressed: () {
-                    // if (_formKey.currentState?.validate() ?? false) {
-                    final vehicleRouteHistory = VehicleRouteHistoryReqEntity(
-                        vehicle_vin: widget.vin!,
-                        time_from:
-                            fromDate.toString().split('.').first ?? "N/A",
-                        time_to: toDate.toString().split('.').first ?? "N/A",
-                        token: widget.token!);
-                    context
-                        .read<VehicleRouteHistoryBloc>()
-                        .add(VehicleRouteHistoryEvent(vehicleRouteHistory));
-                    // }
-                  },
-                  child: Text(
-                    'View Report',
-                    style: AppStyle.cardfooter.copyWith(fontSize: 14),
-                  ),
-                ),
+                child: CustomPrimaryButton(
+                    label:  'View Report',
+                    onPressed: (){
+                      // if (_formKey.currentState?.validate() ?? false) {
+                      final vehicleRouteHistory = VehicleRouteHistoryReqEntity(
+                          vehicle_vin: widget.vin!,
+                          time_from:
+                          fromDate.toString().split('.').first ?? "N/A",
+                          time_to: toDate.toString().split('.').first ?? "N/A",
+                          token: widget.token!);
+                      context
+                          .read<VehicleRouteHistoryBloc>()
+                          .add(VehicleRouteHistoryEvent(vehicleRouteHistory));
+                      // }
+                    })
+
+                // ElevatedButton(
+                //   onPressed: () {
+                //     // if (_formKey.currentState?.validate() ?? false) {
+                //     final vehicleRouteHistory = VehicleRouteHistoryReqEntity(
+                //         vehicle_vin: widget.vin!,
+                //         time_from:
+                //             fromDate.toString().split('.').first ?? "N/A",
+                //         time_to: toDate.toString().split('.').first ?? "N/A",
+                //         token: widget.token!);
+                //     context
+                //         .read<VehicleRouteHistoryBloc>()
+                //         .add(VehicleRouteHistoryEvent(vehicleRouteHistory));
+                //     // }
+                //   },
+                //   child: Text(
+                //     'View Report',
+                //     style: AppStyle.cardfooter.copyWith(fontSize: 14),
+                //   ),
+                // ),
               );
             },
           )

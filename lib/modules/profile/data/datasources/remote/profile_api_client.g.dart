@@ -128,7 +128,6 @@ class _ProfileApiClient implements ProfileApiClient {
     final _result = await _dio.fetch<Map<String, dynamic>>(_options);
     late ProfileRespModel _value;
       _value = ProfileRespModel.fromJson(_result.data!);
-
     return _value;
   }
 

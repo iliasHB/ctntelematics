@@ -1,3 +1,4 @@
+import 'package:ctntelematics/core/widgets/custom_button.dart';
 import 'package:ctntelematics/modules/profile/domain/entitties/req_entities/token_req_entity.dart';
 import 'package:ctntelematics/modules/profile/domain/entitties/resp_entities/get_schedule_resp_entity.dart';
 import 'package:ctntelematics/modules/profile/presentation/bloc/profile_bloc.dart';
@@ -109,30 +110,41 @@ class _MaintenanceState extends State<Maintenance> {
                   itemBuilder: (context, index) {
                     return Row(
                       children: [
-                        OutlinedButton(
-                            onPressed: () {
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (_) => CreateScheduleWidget(token: widget.token)));
-                              // showModalBottomSheet(
-                              //     context: context,
-                              //     isDismissible: false,
-                              //     isScrollControlled: true,
-                              //     //useSafeArea: true,
-                              //     shape: const RoundedRectangleBorder(
-                              //       borderRadius: BorderRadius.only(
-                              //           topLeft: Radius.circular(20),
-                              //           topRight: Radius.circular(20)),
-                              //     ),
-                              //     builder: (BuildContext context) {
-                              //       return CreateScheduleWidget();
-                              //     });
-                            },
-                            child: Text(
-                              "Create Schedule",
-                              style: AppStyle.cardfooter,
-                            )),
+                        CustomSecondaryButton(
+                          label: "Create Schedule",
+                          onPressed: () {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (_) => CreateScheduleWidget(
+                                        token: widget.token)));
+
+                            // OutlinedButton(
+                            //                         onPressed: () {
+                            //                           Navigator.push(
+                            //                               context,
+                            //                               MaterialPageRoute(
+                            //                                   builder: (_) => CreateScheduleWidget(token: widget.token)));
+                            ///----
+                            // showModalBottomSheet(
+                            //     context: context,
+                            //     isDismissible: false,
+                            //     isScrollControlled: true,
+                            //     //useSafeArea: true,
+                            //     shape: const RoundedRectangleBorder(
+                            //       borderRadius: BorderRadius.only(
+                            //           topLeft: Radius.circular(20),
+                            //           topRight: Radius.circular(20)),
+                            //     ),
+                            //     builder: (BuildContext context) {
+                            //       return CreateScheduleWidget();
+                            //     });
+                          },
+                          // child: Text(
+                          //   "Create Schedule",
+                          //   style: AppStyle.cardfooter,
+                          // )
+                        ),
                         const SizedBox(
                           width: 10,
                         ),
@@ -277,135 +289,235 @@ class _MaintenanceState extends State<Maintenance> {
                             children: [
                               Expanded(
                                 child: ListView.builder(
-                                  shrinkWrap: true, // This prevents the ListView from taking infinite height
-                                  physics: const NeverScrollableScrollPhysics(), // Disables scrolling if ListView is nested
+                                  shrinkWrap:
+                                      true, // This prevents the ListView from taking infinite height
+                                  physics:
+                                      const NeverScrollableScrollPhysics(), // Disables scrolling if ListView is nested
                                   itemCount: state.resp.data.length,
                                   itemBuilder: (context, index) {
                                     return state.resp.data.isNotEmpty
                                         ? Container(
-                                      margin: const EdgeInsets.symmetric(vertical: 8.0),
-                                      padding: const EdgeInsets.all(10.0),
-                                      decoration: state.resp.data[index].maintenance.isEmpty ? const BoxDecoration() : BoxDecoration(
-                                        borderRadius: BorderRadius.circular(5),
-                                        color: Colors.grey.shade200,
-                                      ),
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          state.resp.data[index].maintenance.isEmpty ? Container() : Row(
-                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Column(
-                                                crossAxisAlignment: CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    'Title',
-                                                    style: AppStyle.cardSubtitle.copyWith(fontSize: 14),
+                                            margin: const EdgeInsets.symmetric(
+                                                vertical: 8.0),
+                                            padding: const EdgeInsets.all(10.0),
+                                            decoration: state.resp.data[index]
+                                                    .maintenance!.isEmpty
+                                                ? const BoxDecoration()
+                                                : BoxDecoration(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            5),
+                                                    color: Colors.grey.shade200,
                                                   ),
-                                                  const SizedBox(height: 10),
-                                                  Text(
-                                                    'Vehicle Number',
-                                                    style: AppStyle.cardfooter,
-                                                  ),
-                                                  const SizedBox(height: 10),
-                                                  Text(
-                                                    'Service Task',
-                                                    style: AppStyle.cardfooter,
-                                                  ),
-                                                  const SizedBox(height: 10),
-                                                  Text(
-                                                    'Status',
-                                                    style: AppStyle.cardfooter,
-                                                  ),
-                                                  const SizedBox(height: 10),
-                                                  Text(
-                                                    'Date',
-                                                    style: AppStyle.cardfooter,
-                                                  ),
-                                                ],
-                                              ),
-                                              Column(
-                                                crossAxisAlignment: CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    state.resp.data[index].maintenance.isNotEmpty
-                                                        ? state.resp.data[index].maintenance[0].schedule_type
-                                                        : "N/A",
-                                                    style: AppStyle.cardSubtitle.copyWith(fontSize: 14),
-                                                  ),
-                                                  const SizedBox(height: 10),
-                                                  Text(
-                                                    state.resp.data[index].number_plate ?? "N/A",
-                                                    style: AppStyle.cardfooter,
-                                                  ),
-                                                  const SizedBox(height: 10),
-                                                  Text(
-                                                    state.resp.data[index].maintenance.isNotEmpty
-                                                        ? state.resp.data[index].maintenance.length.toString()
-                                                        : "N/A",
-                                                    style: AppStyle.cardfooter,
-                                                  ),
-                                                  const SizedBox(height: 10),
-                                                  Text(
-                                                    'Overdue',
-                                                    style: AppStyle.cardfooter.copyWith(
-                                                      color: Colors.redAccent,
-                                                    ),
-                                                  ),
-                                                  const SizedBox(height: 10),
-                                                  Text(
-                                                    state.resp.data[index].maintenance.isNotEmpty
-                                                        ? state.resp.data[index].maintenance[0].start_date ?? "N/A"
-                                                        : "N/A", // Fallback value
-                                                    style: AppStyle.cardfooter,
-                                                  ),
-                                                ],
-                                              ),
-                                            ],
-                                          ),
-                                          const SizedBox(height: 20),
-                                          state.resp.data[index].maintenance.isEmpty ? Container() : Row(
-                                            children: [
-                                              Expanded(
-                                                child: OutlinedButton(
-                                                  onPressed: () {
-                                                    Navigator.push(
-                                                      context,
-                                                      MaterialPageRoute(
-                                                        builder: (_) => const ViewDetails(),
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                state.resp.data[index]
+                                                        .maintenance!.isEmpty
+                                                    ? Container()
+                                                    : Row(
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .spaceBetween,
+                                                        children: [
+                                                          Column(
+                                                            crossAxisAlignment:
+                                                                CrossAxisAlignment
+                                                                    .start,
+                                                            children: [
+                                                              Text(
+                                                                'Title',
+                                                                style: AppStyle
+                                                                    .cardSubtitle
+                                                                    .copyWith(
+                                                                        fontSize:
+                                                                            14),
+                                                              ),
+                                                              const SizedBox(
+                                                                  height: 10),
+                                                              Text(
+                                                                'Vehicle Number',
+                                                                style: AppStyle
+                                                                    .cardfooter,
+                                                              ),
+                                                              const SizedBox(
+                                                                  height: 10),
+                                                              Text(
+                                                                'Service Task',
+                                                                style: AppStyle
+                                                                    .cardfooter,
+                                                              ),
+                                                              const SizedBox(
+                                                                  height: 10),
+                                                              Text(
+                                                                'Status',
+                                                                style: AppStyle
+                                                                    .cardfooter,
+                                                              ),
+                                                              const SizedBox(
+                                                                  height: 10),
+                                                              Text(
+                                                                'Date',
+                                                                style: AppStyle
+                                                                    .cardfooter,
+                                                              ),
+                                                            ],
+                                                          ),
+                                                          Column(
+                                                            crossAxisAlignment:
+                                                                CrossAxisAlignment
+                                                                    .start,
+                                                            children: [
+                                                              Text(
+                                                                state
+                                                                        .resp
+                                                                        .data[
+                                                                            index]
+                                                                        .maintenance!
+                                                                        .isNotEmpty
+                                                                    ? state
+                                                                        .resp
+                                                                        .data[
+                                                                            index]
+                                                                        .maintenance![
+                                                                            0]
+                                                                        .schedule_type
+                                                                    : "N/A",
+                                                                style: AppStyle
+                                                                    .cardSubtitle
+                                                                    .copyWith(
+                                                                        fontSize:
+                                                                            14),
+                                                              ),
+                                                              const SizedBox(
+                                                                  height: 10),
+                                                              Text(
+                                                                state
+                                                                        .resp
+                                                                        .data[
+                                                                            index]
+                                                                        .number_plate ??
+                                                                    "N/A",
+                                                                style: AppStyle
+                                                                    .cardfooter,
+                                                              ),
+                                                              const SizedBox(
+                                                                  height: 10),
+                                                              Text(
+                                                                state
+                                                                        .resp
+                                                                        .data[
+                                                                            index]
+                                                                        .maintenance!
+                                                                        .isNotEmpty
+                                                                    ? state
+                                                                        .resp
+                                                                        .data[
+                                                                            index]
+                                                                        .maintenance!
+                                                                        .length
+                                                                        .toString()
+                                                                    : "N/A",
+                                                                style: AppStyle
+                                                                    .cardfooter,
+                                                              ),
+                                                              const SizedBox(
+                                                                  height: 10),
+                                                              Text(
+                                                                'Overdue',
+                                                                style: AppStyle
+                                                                    .cardfooter
+                                                                    .copyWith(
+                                                                  color: Colors
+                                                                      .redAccent,
+                                                                ),
+                                                              ),
+                                                              const SizedBox(
+                                                                  height: 10),
+                                                              Text(
+                                                                state
+                                                                        .resp
+                                                                        .data[
+                                                                            index]
+                                                                        .maintenance!
+                                                                        .isNotEmpty
+                                                                    ? state
+                                                                            .resp
+                                                                            .data[index]
+                                                                            .maintenance![0]
+                                                                            .start_date ??
+                                                                        "N/A"
+                                                                    : "N/A", // Fallback value
+                                                                style: AppStyle
+                                                                    .cardfooter,
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ],
                                                       ),
-                                                    );
-                                                  },
-                                                  child: Text(
-                                                    'View details',
-                                                    style: AppStyle.cardSubtitle.copyWith(fontSize: 14),
-                                                  ),
-                                                ),
-                                              ),
-                                              const SizedBox(width: 20),
-                                              Expanded(
-                                                child: OutlinedButton(
-                                                  onPressed: () {
-                                                    Navigator.push(context, MaterialPageRoute(builder: (_) => ViewSchedule(state: state.resp.data[index],)));
-                                                  },
-                                                  child: Text(
-                                                    'View Schedule',
-                                                    style: AppStyle.cardSubtitle.copyWith(fontSize: 14),
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                    )
+                                                const SizedBox(height: 20),
+                                                state.resp.data[index]
+                                                        .maintenance!.isEmpty
+                                                    ? Container()
+                                                    : Row(
+                                                        children: [
+                                                          Container(),
+                                                          // Expanded(
+                                                          //   child: OutlinedButton(
+                                                          //     onPressed: () {
+                                                          //       Navigator.push(
+                                                          //         context,
+                                                          //         MaterialPageRoute(
+                                                          //           builder: (_) => const ViewDetails(),
+                                                          //         ),
+                                                          //       );
+                                                          //     },
+                                                          //     child: Text(
+                                                          //       'View details',
+                                                          //       style: AppStyle.cardSubtitle.copyWith(fontSize: 14),
+                                                          //     ),
+                                                          //   ),
+                                                          // ),
+                                                          const SizedBox(
+                                                              width: 20),
+                                                          Expanded(
+                                                              child:
+                                                                  CustomSecondaryButton(
+                                                                      label:
+                                                                          'View Schedule',
+                                                                      onPressed:
+                                                                          () {
+                                                                        Navigator.push(
+                                                                            context,
+                                                                            MaterialPageRoute(
+                                                                                builder: (_) => ViewSchedule(
+                                                                                      state: state.resp.data[index],
+                                                                                    )));
+                                                                      })
+                                                              // OutlinedButton(
+                                                              //   onPressed: () {
+                                                              //     Navigator.push(context, MaterialPageRoute(builder: (_) => ViewSchedule(state: state.resp.data[index],)));
+                                                              //   },
+                                                              //   child: Text(
+                                                              //     'View Schedule',
+                                                              //     style: AppStyle.cardSubtitle.copyWith(fontSize: 14),
+                                                              //   ),
+                                                              // ),
+                                                              ),
+                                                        ],
+                                                      ),
+                                              ],
+                                            ),
+                                          )
                                         : const Center(
-                                      child: Text(
-                                        "No data available",
-                                        style: TextStyle(fontSize: 16, color: Colors.grey),
-                                      ),
-                                    );
-
+                                            child: Text(
+                                              "No data available",
+                                              style: TextStyle(
+                                                  fontSize: 16,
+                                                  color: Colors.grey),
+                                            ),
+                                          );
                                   },
                                 ),
                               ),
@@ -413,7 +525,6 @@ class _MaintenanceState extends State<Maintenance> {
                           ),
                         ],
                       );
-
                     } else {
                       return Center(
                           child: Text(

@@ -1,6 +1,8 @@
 
 import 'package:ctntelematics/modules/eshop/domain/entitties/req_entities/initiate_payment_req_entity.dart';
 import 'package:ctntelematics/modules/eshop/domain/entitties/req_entities/token_req_entity.dart';
+import 'package:ctntelematics/modules/eshop/domain/entitties/resp_entities/confirm_payment_entity.dart';
+import 'package:ctntelematics/modules/eshop/domain/entitties/resp_entities/delivery_location_resp_entity.dart';
 import 'package:ctntelematics/modules/eshop/domain/entitties/resp_entities/get_all_product_entity.dart';
 import 'package:ctntelematics/modules/eshop/domain/entitties/resp_entities/get_category_entity.dart';
 import 'package:ctntelematics/modules/eshop/domain/entitties/resp_entities/get_payment_resp_entity.dart';
@@ -139,3 +141,66 @@ class InitiatePaymentBloc extends Bloc<EshopEvent, EshopState> {
   }
 }
 
+
+class DeliveryLocationBloc extends Bloc<EshopEvent, EshopState> {
+  final DeliveryLocationUseCase deliveryLocationUseCase;
+
+  DeliveryLocationBloc(this.deliveryLocationUseCase) : super(EshopInitial()) {
+    on<DeliveryLocationEvent>((event, emit) => emit.forEach<EshopState>(
+      mapEventToState(event),
+      onData: (state) => state,
+      onError: (error, stackTrace) =>
+          EshopFailure(error.toString()), // Handle error cases
+    ));
+  }
+
+  Stream<EshopState> mapEventToState(DeliveryLocationEvent event) async* {
+    yield EshopLoading(); // Emit loading state
+    try {
+      // Use yield* to delegate stream handling to loginUseCase
+      final resp = await deliveryLocationUseCase(event.eshopTokenReqEntity);
+      yield DeliveryLocationDone(resp); // Emit success state after getting the user
+    } catch (error) {
+      print(":::::::::: product-error :::::::::: ${error}");
+      // if (error is ApiErrorException) {
+      //   yield ProfileFailure(error.message); // Emit API error message
+      // } else if (error is NetworkException) {
+      //   yield ProfileFailure(error.message); // Emit network failure message
+      // } else {
+      yield const EshopFailure(
+          "An unexpected error occurred. Please try again."); // Emit generic error message
+    }
+  }
+}
+
+
+class ConfirmPaymentBloc extends Bloc<EshopEvent, EshopState> {
+  final ConfirmPaymentUseCase confirmPaymentUseCase;
+
+  ConfirmPaymentBloc(this.confirmPaymentUseCase) : super(EshopInitial()) {
+    on<ConfirmPaymentEvent>((event, emit) => emit.forEach<EshopState>(
+      mapEventToState(event),
+      onData: (state) => state,
+      onError: (error, stackTrace) =>
+          EshopFailure(error.toString()), // Handle error cases
+    ));
+  }
+
+  Stream<EshopState> mapEventToState(ConfirmPaymentEvent event) async* {
+    yield EshopLoading(); // Emit loading state
+    try {
+      // Use yield* to delegate stream handling to loginUseCase
+      final resp = await confirmPaymentUseCase(event.eshopTokenReqEntity);
+      yield ConfirmPaymentDone(resp); // Emit success state after getting the user
+    } catch (error) {
+      print(":::::::::: product-error :::::::::: ${error}");
+      // if (error is ApiErrorException) {
+      //   yield ProfileFailure(error.message); // Emit API error message
+      // } else if (error is NetworkException) {
+      //   yield ProfileFailure(error.message); // Emit network failure message
+      // } else {
+      yield const EshopFailure(
+          "An unexpected error occurred. Please try again."); // Emit generic error message
+    }
+  }
+}

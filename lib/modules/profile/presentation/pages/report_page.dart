@@ -134,7 +134,6 @@ class _DetailItem extends StatelessWidget {
   final String value;
 
   const _DetailItem({
-    super.key,
     required this.title,
     required this.value,
   });
@@ -183,7 +182,7 @@ class MaintenanceReport extends StatelessWidget {
                           ? Container(
                               margin: const EdgeInsets.symmetric(vertical: 8.0),
                               padding: const EdgeInsets.all(10.0),
-                              decoration: report[index].maintenance.isEmpty
+                              decoration: report[index].maintenance!.isEmpty
                                   ? const BoxDecoration()
                                   : BoxDecoration(
                                       borderRadius: BorderRadius.circular(5),
@@ -202,7 +201,7 @@ class MaintenanceReport extends StatelessWidget {
                                         title: 'Maintenance', subTitle: ''),
                                   ),
                                   SizedBox(height: 10,),
-                                  report[index].maintenance.isEmpty
+                                  report[index].maintenance!.isEmpty
                                       ? Center(
                                           child: Text(
                                           "No report found for the vehicle",
