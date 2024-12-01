@@ -1,8 +1,12 @@
 import 'package:ctntelematics/core/utils/app_export_util.dart';
+import 'package:ctntelematics/core/widgets/custom_button.dart';
+import 'package:ctntelematics/core/widgets/format_data.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/widgets/custom_input_decorator.dart';
 import '../../../map/domain/entitties/req_entities/send_location_resp_entity.dart';
 import '../../../map/presentation/bloc/map_bloc.dart';
 
@@ -236,36 +240,58 @@ class VehicleShareRoute extends StatelessWidget {
                     .start, //Adjust height dynamically based on content
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
+                  // Row(
+                  //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  //   children: [
+                  //     Text(
+                  //       'Share Location',
+                  //       style: AppStyle.cardSubtitle,
+                  //     ),
+                  //     // const Spacer(),
+                  //     IconButton(
+                  //         onPressed: () => onClose(),
+                  //         icon: const Icon(Icons.cancel_outlined))
+                  //   ],
+                  // ),
+
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
                         'Share Location',
                         style: AppStyle.cardSubtitle,
+                        softWrap: true,
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 3,
                       ),
-                      // const Spacer(),
+                      const Spacer(),
                       IconButton(
-                          onPressed: () => onClose(),
+                          onPressed: () => Navigator.pop(context),
                           icon: const Icon(Icons.cancel_outlined))
                     ],
                   ),
                   Text(
                     '$brand $model ($vin)',
-                    style: AppStyle.cardSubtitle,
-                    softWrap: true,
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 3,
+                    style: AppStyle.cardSubtitle.copyWith(fontSize: 12),
                   ),
+                  // Text(
+                  //   '$brand $model ($vin)',
+                  //   style: AppStyle.cardSubtitle,
+                  //   softWrap: true,
+                  //   overflow: TextOverflow.ellipsis,
+                  //   maxLines: 3,
+                  // ),
                 ],
               ),
               const SizedBox(height: 10),
               Text(
                 'Share location expiry date',
-                style: AppStyle.cardSubtitle.copyWith(color: Colors.grey[800]),
+                style:
+                AppStyle.cardfooter.copyWith(color: Colors.grey[800]),
               ),
               Text(
-                dateTime.toString(),
-                style: AppStyle.cardSubtitle.copyWith(color: Colors.grey[700]),
+                FormatData.formatTimestamp(dateTime.toString()),
+                style: AppStyle.cardSubtitle
+                    .copyWith(fontSize: 12, color: Colors.grey[700]),
               ),
               const SizedBox(
                 height: 10,
@@ -281,7 +307,7 @@ class VehicleShareRoute extends StatelessWidget {
                     Flexible(
                       child: Text(
                         "https//ctn-frontend.vercel.app/viewCar/?token=$token&lat=$latitude&lon=$longitude",
-                        style: AppStyle.tertiaryText,
+                        style: AppStyle.cardfooter,
                       ),
                     ),
                     IconButton(
@@ -289,7 +315,7 @@ class VehicleShareRoute extends StatelessWidget {
                           // Copy text to clipboard
                           Clipboard.setData(ClipboardData(
                             text:
-                                "https://ctn-frontend.vercel.app/viewCar/?token=$token&lat=$latitude&lon=$longitude",
+                            "https://ctn-frontend.vercel.app/viewCar/?token=$token&lat=$longitude&lon=$longitude",
                           ));
 
                           // Show confirmation SnackBar
@@ -314,16 +340,15 @@ class VehicleShareRoute extends StatelessWidget {
                 children: [
                   Text(
                     'Enter Email Address ',
-                    style:
-                        AppStyle.cardSubtitle.copyWith(color: Colors.grey[800]),
+                    style: AppStyle.cardSubtitle.copyWith(fontSize: 12),
                   ),
                   Badge(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 10, vertical: 3),
                     backgroundColor: Colors.green[800],
                     label: Text(
                       'OPTIONAL',
-                      style: AppStyle.cardSubtitle,
+                      style: AppStyle.cardfooter.copyWith(fontSize: 12),
                     ),
                   )
                 ],
@@ -400,18 +425,21 @@ class _EmailWidgetState extends State<EmailWidget> {
               child: Form(
                 child: TextFormField(
                   controller: _controller,
-                  decoration: InputDecoration(
-                    hintText: 'you@gmail.com',
-                    hintStyle: AppStyle.cardfooter,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide(
-                        width: 1,
-                        color: Colors.grey.shade100,
-                      ),
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 10),
-                  ),
+                    decoration: customInputDecoration(
+                      labelText: '',
+                      hintText: 'abc@gmail.com',)
+                  // decoration: InputDecoration(
+                  //   hintText: 'abc@gmail.com',
+                  //   hintStyle: AppStyle.cardfooter,
+                  //   border: OutlineInputBorder(
+                  //     borderRadius: BorderRadius.circular(10),
+                  //     borderSide: BorderSide(
+                  //       width: 1,
+                  //       color: Colors.grey.shade100,
+                  //     ),
+                  //   ),
+                  //   contentPadding: const EdgeInsets.symmetric(horizontal: 10),
+                  // ),
                 ),
               ),
             ),
@@ -434,7 +462,7 @@ class _EmailWidgetState extends State<EmailWidget> {
                     const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
               ),
               icon: const Icon(Icons.add),
-              label: const Text("Add"),
+              label: Text("Add",  style: AppStyle.cardSubtitle,),
             ),
           ],
         ),
@@ -486,8 +514,8 @@ class _EmailWidgetState extends State<EmailWidget> {
                   ),
                   child: Text(
                     "+${_displayedTexts.length - 1}",
-                    style:
-                        TextStyle(fontSize: 16, color: Colors.green.shade900),
+                    style: AppStyle.cardfooter
+
                   ),
                 ),
               ),
@@ -499,7 +527,7 @@ class _EmailWidgetState extends State<EmailWidget> {
               ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text(state.resp.message.toString())));
             } else if (state is MapFailure) {
-              if (state.message.contains("401")) {
+              if (state.message.contains("Unauthenticated")) {
                 Navigator.pushNamed(context, "/login");
               }
               ScaffoldMessenger.of(context)
@@ -521,48 +549,81 @@ class _EmailWidgetState extends State<EmailWidget> {
               );
             }
 
-            return Align(
-                alignment: Alignment.bottomRight,
-                child: ElevatedButton(
-                  onPressed: () {
-                    for (var email in _displayedTexts) {
-                      final sendLocationReqEntity = SendLocationReqEntity(
-                        email: email,
-                        url: widget.url!,
-                        token: widget.token!,
+            return Padding(
+              padding: const EdgeInsets.only(top: 8.0),
+              child: Align(
+                  alignment: Alignment.bottomRight,
+                  child: CustomPrimaryButton(
+                      label:  'Send Link',
+                    onPressed: () {
+                      for (var email in _displayedTexts) {
+                        final sendLocationReqEntity = SendLocationReqEntity(
+                          email: email,
+                          url: widget.url!,
+                          token: widget.token!,
+                        );
+                        context
+                            .read<SendLocationBloc>()
+                            .add(SendLocationEvent(sendLocationReqEntity));
+                      }
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                            content: Text(
+                                'Sending link to ${_displayedTexts.length} email(s)')),
                       );
-                      context
-                          .read<SendLocationBloc>()
-                          .add(SendLocationEvent(sendLocationReqEntity));
-                    }
 
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                          content: Text(
-                              'Sending link to ${_displayedTexts.length} email(s)')),
-                    );
+                      // if (_formKey.currentState?.validate() ?? false) {
+                      // final sendLocationReqEntity = SendLocationReqEntity(
+                      //   email: _displayedTexts.first,
+                      //   url: "https//ctn-frontend.vercel.app/viewCar/?token=${widget.token}&lat=${widget.latitude}&lon=${widget.longitude}",
+                      //   token: widget.token!,
+                      // );
+                      // context.read<SendLocationBloc>().add(SendLocationEvent(sendLocationReqEntity));
+                    }),
 
-                    // if (_formKey.currentState?.validate() ?? false) {
-                    // final sendLocationReqEntity = SendLocationReqEntity(
-                    //   email: _displayedTexts.first,
-                    //   url: "https//ctn-frontend.vercel.app/viewCar/?token=${widget.token}&lat=${widget.latitude}&lon=${widget.longitude}",
-                    //   token: widget.token!,
-                    // );
-                    // context.read<SendLocationBloc>().add(SendLocationEvent(sendLocationReqEntity));
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor:
-                    Colors.green, // Set the background color to green
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(
-                          8), // Reduce the radius as needed
-                    ),
-                  ),
-                  child: Text(
-                    'Send Link',
-                    style: AppStyle.cardSubtitle.copyWith(color: Colors.white),
-                  ),
-                ));
+                  // ElevatedButton(
+                  //   onPressed: () {
+                  //     for (var email in _displayedTexts) {
+                  //       final sendLocationReqEntity = SendLocationReqEntity(
+                  //         email: email,
+                  //         url: widget.url!,
+                  //         token: widget.token!,
+                  //       );
+                  //       context
+                  //           .read<SendLocationBloc>()
+                  //           .add(SendLocationEvent(sendLocationReqEntity));
+                  //     }
+                  //
+                  //     ScaffoldMessenger.of(context).showSnackBar(
+                  //       SnackBar(
+                  //           content: Text(
+                  //               'Sending link to ${_displayedTexts.length} email(s)')),
+                  //     );
+                  //
+                  //     // if (_formKey.currentState?.validate() ?? false) {
+                  //     // final sendLocationReqEntity = SendLocationReqEntity(
+                  //     //   email: _displayedTexts.first,
+                  //     //   url: "https//ctn-frontend.vercel.app/viewCar/?token=${widget.token}&lat=${widget.latitude}&lon=${widget.longitude}",
+                  //     //   token: widget.token!,
+                  //     // );
+                  //     // context.read<SendLocationBloc>().add(SendLocationEvent(sendLocationReqEntity));
+                  //   },
+                  //   style: ElevatedButton.styleFrom(
+                  //     backgroundColor:
+                  //     Colors.green, // Set the background color to green
+                  //     shape: RoundedRectangleBorder(
+                  //       borderRadius: BorderRadius.circular(
+                  //           8), // Reduce the radius as needed
+                  //     ),
+                  //   ),
+                  //   child: Text(
+                  //     'Send Link',
+                  //     style: AppStyle.cardSubtitle.copyWith(color: Colors.white),
+                  //   ),
+                  // )
+              ),
+            );
           },
         ),
       ],
@@ -620,9 +681,12 @@ class _ViewEmailWidgetState extends State<ViewEmailWidget> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                "Email - List of all emails",
-                style: AppStyle.cardTitle,
+              Padding(
+                padding: const EdgeInsets.only(left: 10.0),
+                child: Text(
+                  "Email - List of all emails",
+                  style: AppStyle.cardSubtitle,
+                ),
               ),
               IconButton(
                 onPressed: () => Navigator.pop(context),
@@ -643,10 +707,10 @@ class _ViewEmailWidgetState extends State<ViewEmailWidget> {
                           children: [
                             Text(
                               email,
-                              style: const TextStyle(fontSize: 16),
+                              style: AppStyle.cardfooter
                             ),
                             IconButton(
-                              icon: const Icon(Icons.delete, color: Colors.red),
+                              icon: const Icon(CupertinoIcons.delete, color: Colors.red),
                               onPressed: () {
                                 _removeEmail(
                                     email); // Remove email from local list and parent

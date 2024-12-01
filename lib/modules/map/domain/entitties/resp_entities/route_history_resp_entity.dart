@@ -37,7 +37,7 @@ class DatumEntity extends Equatable{
   int? error_check;
   List<dynamic> event;
   int? parse_time;
-  String? terminal_info;
+  // String? terminal_info;
   String? voltage_level;
   String? gsm_signal_strength;
   dynamic response_msg;
@@ -69,7 +69,7 @@ class DatumEntity extends Equatable{
     required this.error_check,
     required this.event,
     required this.parse_time,
-    required this.terminal_info,
+    // required this.terminal_info,
     required this.voltage_level,
     required this.gsm_signal_strength,
     required this.response_msg,
@@ -103,7 +103,7 @@ class DatumEntity extends Equatable{
     error_check,
     event,
     parse_time,
-    terminal_info,
+    // terminal_info,
     voltage_level,
     gsm_signal_strength,
     response_msg,

@@ -3,133 +3,6 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 
-// class PusherService {
-//   final String token;
-//   final String userId;
-//   late WebSocket _socket;
-//   final _vehicleUpdatesController = StreamController<Map<String, dynamic>>.broadcast();
-//   bool _isConnected = false;
-//   final String _webSocketUrl = 'wss://ws-mt1.pusher.com:443/app/cf378b7d56a8a5a1b7ad?protocol=7&client=js&version=8.2.0&flash=false';
-//   final String _authUrl = 'https://cti.maypaseducation.com/api/broadcasting/auth';
-//
-//   PusherService(this.token, this.userId) {
-//     initializePusher();
-//   }
-//
-//   Stream<Map<String, dynamic>> get vehicleUpdates => _vehicleUpdatesController.stream;
-//
-//   initializePusher() async {
-//     try {
-//       _socket = await WebSocket.connect(_webSocketUrl);
-//       _socket.listen(
-//         _handleMessage,
-//         onDone: _onDisconnected,
-//         onError: _onError,
-//       );
-//       _isConnected = true;
-//     } catch (e) {
-//       print('Error connecting to Laravel Echo: $e');
-//       _isConnected = false;
-//       _attemptReconnect();
-//     }
-//   }
-//
-//   Future<void> _attemptReconnect({int delaySeconds = 5, int maxAttempts = 3}) async {
-//     for (int attempt = 1; attempt <= maxAttempts; attempt++) {
-//       print('Attempting to reconnect... Attempt $attempt');
-//       await Future.delayed(Duration(seconds: delaySeconds));
-//       try {
-//         await initializePusher();
-//         if (_isConnected) break;
-//       } catch (e) {
-//         print('Reconnection attempt $attempt failed: $e');
-//       }
-//     }
-//   }
-//
-//   Future<String> _getAuthToken(String channelName, String socketId) async {
-//     const int maxRetries = 3;
-//     int attempt = 0;
-//     while (attempt < maxRetries) {
-//       try {
-//         final response = await http.post(
-//           Uri.parse(_authUrl),
-//           headers: {
-//             'Authorization': 'Bearer $token',
-//             'Accept': 'application/json',
-//             'Content-Type': 'application/x-www-form-urlencoded',
-//           },
-//           body: {
-//             'socket_id': socketId,
-//             'channel_name': channelName,
-//           },
-//         );
-//         if (response.statusCode == 200) {
-//           final data = jsonDecode(response.body);
-//           return data['auth'];
-//         } else {
-//           throw Exception('Failed to authenticate with Laravel Echo: ${response.statusCode}');
-//         }
-//       } catch (e) {
-//         print('Auth token fetch error: $e, retrying... ($attempt)');
-//         attempt++;
-//         await Future.delayed(const Duration(seconds: 2));
-//       }
-//     }
-//     throw Exception('Failed to authenticate after $maxRetries attempts');
-//   }
-//
-//   void _handleMessage(dynamic message) async {
-//     final decodedMessage = jsonDecode(message);
-//     final event = decodedMessage['event'];
-//     final data = decodedMessage['data'];
-//     if (event == 'pusher:connection_established' && data is String) {
-//       final dataMap = jsonDecode(data);
-//       final socketId = dataMap['socket_id'];
-//       await _subscribeToChannel('private-admin.vehicle-location', socketId);
-//     } else if (event == 'VehicleLocationUpdated' && data != null) {
-//       final decodedData = jsonDecode(data);
-//       if (decodedData is Map<String, dynamic>) {
-//         _vehicleUpdatesController.add(decodedData);
-//       }
-//     }
-//   }
-//
-//   Future<void> _subscribeToChannel(String channelName, String socketId) async {
-//     try {
-//       final authToken = await _getAuthToken(channelName, socketId);
-//       final message = {
-//         "event": "pusher:subscribe",
-//         "data": {
-//           "auth": authToken,
-//           "channel": channelName,
-//         },
-//       };
-//       _socket.add(jsonEncode(message));
-//     } catch (e) {
-//       print('Subscription error: $e');
-//     }
-//   }
-//
-//   void _onDisconnected() {
-//     print('Disconnected from Laravel Echo');
-//     _isConnected = false;
-//     _attemptReconnect();
-//   }
-//
-//   void _onError(error) {
-//     print('Laravel Echo error: $error');
-//     _isConnected = false;
-//   }
-//
-//   void dispose() {
-//     _vehicleUpdatesController.close();
-//     _socket.close();
-//   }
-// }
-
-
-
 class PusherService {
   final String token;
   final String userId, user_type;
@@ -290,6 +163,132 @@ class PusherService {
 }
 
 
+
+
+// class PusherService {
+//   final String token;
+//   final String userId;
+//   late WebSocket _socket;
+//   final _vehicleUpdatesController = StreamController<Map<String, dynamic>>.broadcast();
+//   bool _isConnected = false;
+//   final String _webSocketUrl = 'wss://ws-mt1.pusher.com:443/app/cf378b7d56a8a5a1b7ad?protocol=7&client=js&version=8.2.0&flash=false';
+//   final String _authUrl = 'https://cti.maypaseducation.com/api/broadcasting/auth';
+//
+//   PusherService(this.token, this.userId) {
+//     initializePusher();
+//   }
+//
+//   Stream<Map<String, dynamic>> get vehicleUpdates => _vehicleUpdatesController.stream;
+//
+//   initializePusher() async {
+//     try {
+//       _socket = await WebSocket.connect(_webSocketUrl);
+//       _socket.listen(
+//         _handleMessage,
+//         onDone: _onDisconnected,
+//         onError: _onError,
+//       );
+//       _isConnected = true;
+//     } catch (e) {
+//       print('Error connecting to Laravel Echo: $e');
+//       _isConnected = false;
+//       _attemptReconnect();
+//     }
+//   }
+//
+//   Future<void> _attemptReconnect({int delaySeconds = 5, int maxAttempts = 3}) async {
+//     for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+//       print('Attempting to reconnect... Attempt $attempt');
+//       await Future.delayed(Duration(seconds: delaySeconds));
+//       try {
+//         await initializePusher();
+//         if (_isConnected) break;
+//       } catch (e) {
+//         print('Reconnection attempt $attempt failed: $e');
+//       }
+//     }
+//   }
+//
+//   Future<String> _getAuthToken(String channelName, String socketId) async {
+//     const int maxRetries = 3;
+//     int attempt = 0;
+//     while (attempt < maxRetries) {
+//       try {
+//         final response = await http.post(
+//           Uri.parse(_authUrl),
+//           headers: {
+//             'Authorization': 'Bearer $token',
+//             'Accept': 'application/json',
+//             'Content-Type': 'application/x-www-form-urlencoded',
+//           },
+//           body: {
+//             'socket_id': socketId,
+//             'channel_name': channelName,
+//           },
+//         );
+//         if (response.statusCode == 200) {
+//           final data = jsonDecode(response.body);
+//           return data['auth'];
+//         } else {
+//           throw Exception('Failed to authenticate with Laravel Echo: ${response.statusCode}');
+//         }
+//       } catch (e) {
+//         print('Auth token fetch error: $e, retrying... ($attempt)');
+//         attempt++;
+//         await Future.delayed(const Duration(seconds: 2));
+//       }
+//     }
+//     throw Exception('Failed to authenticate after $maxRetries attempts');
+//   }
+//
+//   void _handleMessage(dynamic message) async {
+//     final decodedMessage = jsonDecode(message);
+//     final event = decodedMessage['event'];
+//     final data = decodedMessage['data'];
+//     if (event == 'pusher:connection_established' && data is String) {
+//       final dataMap = jsonDecode(data);
+//       final socketId = dataMap['socket_id'];
+//       await _subscribeToChannel('private-admin.vehicle-location', socketId);
+//     } else if (event == 'VehicleLocationUpdated' && data != null) {
+//       final decodedData = jsonDecode(data);
+//       if (decodedData is Map<String, dynamic>) {
+//         _vehicleUpdatesController.add(decodedData);
+//       }
+//     }
+//   }
+//
+//   Future<void> _subscribeToChannel(String channelName, String socketId) async {
+//     try {
+//       final authToken = await _getAuthToken(channelName, socketId);
+//       final message = {
+//         "event": "pusher:subscribe",
+//         "data": {
+//           "auth": authToken,
+//           "channel": channelName,
+//         },
+//       };
+//       _socket.add(jsonEncode(message));
+//     } catch (e) {
+//       print('Subscription error: $e');
+//     }
+//   }
+//
+//   void _onDisconnected() {
+//     print('Disconnected from Laravel Echo');
+//     _isConnected = false;
+//     _attemptReconnect();
+//   }
+//
+//   void _onError(error) {
+//     print('Laravel Echo error: $error');
+//     _isConnected = false;
+//   }
+//
+//   void dispose() {
+//     _vehicleUpdatesController.close();
+//     _socket.close();
+//   }
+// }
 
 
 ///------

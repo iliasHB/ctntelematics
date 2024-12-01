@@ -135,9 +135,16 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
               },
               builder: (context, state) {
                 if (state is AuthLoading) {
-                  return const CircularProgressIndicator(
-                    strokeWidth: 2,
-                    strokeAlign: -10.0,
+                  return const Center(
+                    child: SizedBox(
+                      height: 30, // Adjust the height
+                      width: 30, // Adjust the width
+                      child: CircularProgressIndicator(
+                        strokeWidth: 3, // Adjust the thickness
+                        color: Colors
+                            .green, // Optional: Change the color to match your theme
+                      ),
+                    ),
                   );
                 }
                 return CustomPrimaryButton(

@@ -1,3 +1,4 @@
+import 'package:ctntelematics/core/widgets/custom_button.dart';
 import 'package:flutter/material.dart';
 
 class ResponsePage extends StatelessWidget {
@@ -11,27 +12,7 @@ class ResponsePage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // Logo and title
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.local_shipping, color: Colors.green, size: 40),
-                const SizedBox(width: 8),
-                Text(
-                  'CTN',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.green.withOpacity(0.4), fontSize: 28),
-                ),
-                const SizedBox(width: 8),
-                const Text(
-                  'Telematics',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
-                ),
-              ],
-            ),
+            Image.asset("assets/images/tematics_name.jpeg", height: 100,),
             const SizedBox(height: 40),
 
             // Forgot Password Heading
@@ -55,22 +36,25 @@ class ResponsePage extends StatelessWidget {
             const SizedBox(height: 20),
 
             // Continue button
-            ElevatedButton(
-              onPressed: () => Navigator.pushNamed(context, "/login"),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-              child: const Padding(
-                padding: EdgeInsets.symmetric(vertical: 16.0),
-                child: Text(
-                  'Continue',
-                  style: TextStyle(fontSize: 18),
-                ),
-              ),
-            ),
+            CustomPrimaryButton(
+                label:  'Continue',
+                onPressed: () => Navigator.pushNamed(context, "/login"),)
+            // ElevatedButton(
+            //   onPressed: () => Navigator.pushNamed(context, "/login"),
+            //   style: ElevatedButton.styleFrom(
+            //     backgroundColor: Colors.green,
+            //     shape: RoundedRectangleBorder(
+            //       borderRadius: BorderRadius.circular(10),
+            //     ),
+            //   ),
+            //   child: const Padding(
+            //     padding: EdgeInsets.symmetric(vertical: 16.0),
+            //     child: Text(
+            //       'Continue',
+            //       style: TextStyle(fontSize: 18),
+            //     ),
+            //   ),
+            // ),
           ],
         ),
       ),

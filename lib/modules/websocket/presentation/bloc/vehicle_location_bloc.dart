@@ -6,48 +6,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../domain/usecases/get_vehicle_location_update_usecase.dart';
 
 
-// class VehicleLocationBloc extends Cubit<List<VehicleEntity>> {
-//   final GetVehicleLocationUpdateUseCase _getVehicleLocationUpdateUseCase;
-//   StreamSubscription<VehicleEntity>? _vehicleSubscription;
-//
-//   VehicleLocationBloc(this._getVehicleLocationUpdateUseCase) : super([]) {
-//     _startListening();
-//   }
-//
-//   void _startListening() {
-//     _vehicleSubscription = _getVehicleLocationUpdateUseCase.call().listen(
-//           (vehicle) {
-//         // Check if a vehicle with the same VIN already exists
-//         final updatedVehicles = List<VehicleEntity>.from(state);
-//         final index = updatedVehicles.indexWhere(
-//               (v) => v.locationInfo.vin == vehicle.locationInfo.vin,
-//         );
-//
-//         if (index != -1) {
-//           // Update the existing vehicle
-//           updatedVehicles[index] = vehicle;
-//         } else {
-//           // Add new vehicle
-//           updatedVehicles.add(vehicle);
-//         }
-//         emit(updatedVehicles);
-//       },
-//       onError: (error) {
-//         print('Error receiving vehicle updates: $error');
-//         // Optionally, emit an error state or notify the UI about the issue.
-//       },
-//     );
-//   }
-//
-//   @override
-//   Future<void> close() {
-//     _vehicleSubscription?.cancel();
-//     _getVehicleLocationUpdateUseCase.dispose();
-//     return super.close();
-//   }
-// }
-
-
 class VehicleLocationBloc extends Cubit<List<VehicleEntity>> {
   final GetVehicleLocationUpdateUseCase _getVehicleLocationUpdateUseCase;
   StreamSubscription<VehicleEntity>? _vehicleSubscription;
@@ -99,6 +57,50 @@ class VehicleLocationBloc extends Cubit<List<VehicleEntity>> {
     return super.close();
   }
 }
+
+
+
+// class VehicleLocationBloc extends Cubit<List<VehicleEntity>> {
+//   final GetVehicleLocationUpdateUseCase _getVehicleLocationUpdateUseCase;
+//   StreamSubscription<VehicleEntity>? _vehicleSubscription;
+//
+//   VehicleLocationBloc(this._getVehicleLocationUpdateUseCase) : super([]) {
+//     _startListening();
+//   }
+//
+//   void _startListening() {
+//     _vehicleSubscription = _getVehicleLocationUpdateUseCase.call().listen(
+//           (vehicle) {
+//         // Check if a vehicle with the same VIN already exists
+//         final updatedVehicles = List<VehicleEntity>.from(state);
+//         final index = updatedVehicles.indexWhere(
+//               (v) => v.locationInfo.vin == vehicle.locationInfo.vin,
+//         );
+//
+//         if (index != -1) {
+//           // Update the existing vehicle
+//           updatedVehicles[index] = vehicle;
+//         } else {
+//           // Add new vehicle
+//           updatedVehicles.add(vehicle);
+//         }
+//         emit(updatedVehicles);
+//       },
+//       onError: (error) {
+//         print('Error receiving vehicle updates: $error');
+//         // Optionally, emit an error state or notify the UI about the issue.
+//       },
+//     );
+//   }
+//
+//   @override
+//   Future<void> close() {
+//     _vehicleSubscription?.cancel();
+//     _getVehicleLocationUpdateUseCase.dispose();
+//     return super.close();
+//   }
+// }
+
 
 
 

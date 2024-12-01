@@ -32,7 +32,7 @@ Future<List<LastLocationRespModel>> handleLastLocationError(Future<List<LastLoca
       // Parse the error response and throw a custom exception with the API message
       final errorResponse = error.response?.data;
 
-      throw ApiErrorException(errorResponse['message'] ?? "Invalid email or password.");
+      throw ApiErrorException(errorResponse['message'] ?? "Access token expired");
     } else {
       throw Exception("An unexpected error occurred.");
     }
@@ -58,7 +58,7 @@ Future<RouteHistoryRespModel> handleRouteHistoryError(Future<RouteHistoryRespMod
       // Parse the error response and throw a custom exception with the API message
       final errorResponse = error.response?.data;
 
-      throw ApiErrorException(errorResponse['message'] ?? "Invalid email or password.");
+      throw ApiErrorException(errorResponse['message'] ?? "Access token expired");
     } else if (error.response?.statusCode == 422) {
       print(":::::::::::::::--here--::::::::::::::");
       // Parse the error response for a 422 Unprocessable Entity error
@@ -81,7 +81,7 @@ Future<RouteHistoryRespModel> handleRouteHistoryError(Future<RouteHistoryRespMod
           throw ApiErrorException(timeToErrors.first);
         }
       }
-      throw ApiErrorException("Invalid request. Please check the input.");
+      throw ApiErrorException("Error: An unexpected error occurred.");
     } else {
       throw Exception("An unexpected error occurred.");
     }

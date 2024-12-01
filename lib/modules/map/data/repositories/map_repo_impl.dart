@@ -22,8 +22,10 @@ class MapRepositoryImpl extends MapRepository {
     TokenReqModel tokenReqModel = TokenReqModel(
         token: tokenReqEntity.token, contentType: tokenReqEntity.contentType);
     try {
-      return await handleLastLocationError(apiClient.getLastLocation(
-          tokenReqModel.token, tokenReqModel.contentType));
+      return await handleLastLocationError(
+          apiClient.getLastLocation(
+          tokenReqModel.token, tokenReqModel.contentType)
+    );
     } on ApiErrorException catch (e) {
       throw ApiErrorException(
           e.message); // Propagate the error with the API message
@@ -50,19 +52,21 @@ class MapRepositoryImpl extends MapRepository {
     String contentType = 'application/json';
 
     try {
-      return await handleRouteHistoryError(
-         apiClient.getRouteHistory(
+      // return await handleRouteHistoryError(
+        return  apiClient.getRouteHistory(
           routeHistoryReqModel.vehicle_vin,
           routeHistoryReqModel.time_from,
           routeHistoryReqModel.time_to,
           routeHistoryReqModel.token,
-         ));
-    }
-    on ApiErrorException catch (e) {
-      throw ApiErrorException(e.message); // Propagate the error with the API message
-    } on NetworkException catch (e) {
-      throw NetworkException(); // Propagate network-specific errors
+         );
+    // );
+    // }
+    // on ApiErrorException catch (e) {
+    //   throw ApiErrorException(e.message); // Propagate the error with the API message
+    // } on NetworkException catch (e) {
+    //   throw NetworkException(); // Propagate network-specific errors
     } catch (e) {
+      print('eeeeee-------: $e');
       throw Exception("An error occurred while getting location.");
     }
   }

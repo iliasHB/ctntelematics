@@ -11,27 +11,11 @@ class ResponseProfilePage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // Logo and title
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.local_shipping, color: Colors.green, size: 40),
-                const SizedBox(width: 8),
-                Text(
-                  'CTN',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.green.withOpacity(0.4), fontSize: 28),
-                ),
-                const SizedBox(width: 8),
-                const Text(
-                  'Telematics',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
-                ),
-              ],
+            Image.asset(
+              "assets/images/tematics_name.jpeg",
+              height: 100,
             ),
+            const SizedBox(height: 40),
             const SizedBox(height: 40),
 
             // Forgot Password Heading

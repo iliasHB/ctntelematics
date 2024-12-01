@@ -80,9 +80,12 @@ class ForgotPasswordPage extends StatelessWidget {
               },
               builder: (context, state) {
                 if (state is AuthLoading) {
-                  return const CircularProgressIndicator(
-                    strokeWidth: 2,
-                    strokeAlign: -10.0,
+                  return const Center(
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.0, // Adjust the thickness
+                      color: Colors
+                          .green, // Optional: Change the color to match your theme
+                    ),
                   );
                 }
                 return CustomPrimaryButton(

@@ -51,6 +51,10 @@ class ProfileRepositoryImpl implements ProfileRepository {
       otp: changePwdReqEntity.otp,
       passwordConfirmation: changePwdReqEntity.passwordConfirmation,
     );
+    print("email: ${reqChangePwdReqModel.email}");
+    print("otp: ${ reqChangePwdReqModel.otp}");
+    print("password: ${ reqChangePwdReqModel.password}");
+    print("retype-pwd: ${reqChangePwdReqModel.passwordConfirmation}");
     try {
       return await handleProfileErrorHandling(apiClient.changePassword(
           reqChangePwdReqModel.email,
@@ -59,8 +63,8 @@ class ProfileRepositoryImpl implements ProfileRepository {
           reqChangePwdReqModel.passwordConfirmation,
           sourceCode));
     } on ApiErrorException catch (e) {
-      throw ApiErrorException(
-          e.message); // Propagate the error with the API message
+      print('object----eeee:::: ${e.message}');
+      throw ApiErrorException(e.message); // Propagate the error with the API message
     } on NetworkException catch (e) {
       throw NetworkException(); // Propagate network-specific errors
     } catch (e) {

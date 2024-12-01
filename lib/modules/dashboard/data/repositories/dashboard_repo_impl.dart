@@ -25,7 +25,8 @@ class DashboardRepositoryImpl implements DashboardRepository {
       return await handleDashVehicleErrorHandling(
           apiClient.getAllVehicles(vehicleReqModel.token, vehicleReqModel.contentType)
       );
-    } on ApiErrorException catch (e) {
+    }
+    on ApiErrorException catch (e) {
       throw ApiErrorException(e.message); // Propagate the error with the API message
     } on NetworkException catch (e) {
       throw NetworkException(); // Propagate network-specific errors
@@ -43,9 +44,9 @@ class DashboardRepositoryImpl implements DashboardRepository {
         contentType: dashVehicleReqEntity.contentType);
 
     try {
-    //   return await handleDashVehicleErrorHandling(
-          return apiClient.getAllTrips(vehicleReqModel.token, vehicleReqModel.contentType);
-      // )
+      return await handleDashVehicleTripErrorHandling(
+          apiClient.getAllTrips(vehicleReqModel.token, vehicleReqModel.contentType)
+      );
     } on ApiErrorException catch (e) {
       throw ApiErrorException(e.message); // Propagate the error with the API message
     } on NetworkException catch (e) {

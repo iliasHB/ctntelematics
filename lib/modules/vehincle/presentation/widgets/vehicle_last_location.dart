@@ -57,6 +57,7 @@ class VehicleRouteLastLocation extends StatefulWidget {
 class _VehicleRouteLastLocationState extends State<VehicleRouteLastLocation> {
   late GoogleMapController mapController;
   BitmapDescriptor? _customIcon;
+  BitmapDescriptor? _movingCustomIcon;
   late Future<void> _getAuthUserFuture;
   final Set<Marker> _markers = {};
   bool _isContainerVisible = false;
@@ -105,6 +106,25 @@ class _VehicleRouteLastLocationState extends State<VehicleRouteLastLocation> {
     }
   }
 
+  Future<void> _setOnlineCustomMarkerIcon() async {
+    try {
+      final iconSize = 15.0; // Adjust this size as needed
+
+      // Load and resize the image
+      final image = await BitmapDescriptor.fromAssetImage(
+        ImageConfiguration(
+            size: Size(iconSize, iconSize)), // Size of the marker icon
+        'assets/images/green_moving_car_01.png', // Your custom image path
+      );
+
+      setState(() {
+        _movingCustomIcon = image; // Save the custom icon to use on the map
+      });
+    } catch (e) {
+      print('Error loading custom marker icon: $e');
+    }
+  }
+
   // Function to calculate bearing
   double calculateBearing(LatLng start, LatLng end) {
     final lat1 = start.latitude * math.pi / 180;
@@ -120,6 +140,8 @@ class _VehicleRouteLastLocationState extends State<VehicleRouteLastLocation> {
     final bearing = math.atan2(y, x) * 180 / math.pi;
     return (bearing + 360) % 360; // Normalize to 0-360
   }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -146,6 +168,7 @@ class _VehicleRouteLastLocationState extends State<VehicleRouteLastLocation> {
                           final LatLng _center = LatLng(
                               widget.latitude!.toDouble(),
                               widget.longitude!.toDouble());
+                          _setCustomMarkerIcon();
                           _markers.add(Marker(
                             icon: _customIcon!,
                             markerId: MarkerId(widget.number_plate),
@@ -177,8 +200,9 @@ class _VehicleRouteLastLocationState extends State<VehicleRouteLastLocation> {
                               calculateBearing(startPosition, endPosition);
 
                           _markers.clear();
+                          _setOnlineCustomMarkerIcon();
                           _markers.add(Marker(
-                            icon: _customIcon!,
+                            icon: _movingCustomIcon!,
                             markerId: MarkerId(widget.number_plate),
                             position: endPosition,
                             rotation: bearing, // Set bearing for the marker

@@ -33,7 +33,7 @@ class LastLocationBloc extends Bloc<MapEvent, MapState>{
       var resp = await getLastLocationUseCase(event.tokenReqEntity);
       yield GetLastLocationDone(resp);
     } catch (error) {
-      print(error);
+      print('error>>>>>>>000000: $error');
       if (error is ApiErrorException) {
         yield MapFailure(error.message); // Emit API error message
       } else if (error is NetworkException) {
@@ -47,35 +47,35 @@ class LastLocationBloc extends Bloc<MapEvent, MapState>{
 }
 
 
-class RouteHistoryBloc extends Bloc<MapEvent, MapState>{
-
-  final GetRouteHistoryUseCase getRouteHistoryUseCase;
-
-  RouteHistoryBloc(this.getRouteHistoryUseCase) : super(MapInitial()) {
-    on<RouteHistoryEvent>((event, emit) => emit.forEach<MapState>(
-      mapEventToState(event),
-      onData: (state) => state,
-      onError: (error, stackTrace) => MapFailure(error.toString()), // Handle error cases
-    ));
-  }
-
-  Stream<MapState> mapEventToState(RouteHistoryEvent event) async* {
-    yield MapLoading();
-    try {
-      var resp = await getRouteHistoryUseCase(event.routeHistoryReqEntity);
-      yield GetRouteHistoryDone(resp);
-    } catch (error) {
-      if (error is ApiErrorException) {
-        yield MapFailure(error.message); // Emit API error message
-      } else if (error is NetworkException) {
-        yield MapFailure(error.message); // Emit network failure message
-      }
-      else {
-        yield MapFailure(error.toString()); // Emit generic error message
-      }
-    }
-  }
-}
+// class RouteHistoryBloc extends Bloc<MapEvent, MapState>{
+//
+//   final GetRouteHistoryUseCase getRouteHistoryUseCase;
+//
+//   RouteHistoryBloc(this.getRouteHistoryUseCase) : super(MapInitial()) {
+//     on<RouteHistoryEvent>((event, emit) => emit.forEach<MapState>(
+//       mapEventToState(event),
+//       onData: (state) => state,
+//       onError: (error, stackTrace) => MapFailure(error.toString()), // Handle error cases
+//     ));
+//   }
+//
+//   Stream<MapState> mapEventToState(RouteHistoryEvent event) async* {
+//     yield MapLoading();
+//     try {
+//       var resp = await getRouteHistoryUseCase(event.routeHistoryReqEntity);
+//       yield GetRouteHistoryDone(resp);
+//     } catch (error) {
+//       if (error is ApiErrorException) {
+//         yield MapFailure(error.message); // Emit API error message
+//       } else if (error is NetworkException) {
+//         yield MapFailure(error.message); // Emit network failure message
+//       }
+//       else {
+//         yield MapFailure(error.toString()); // Emit generic error message
+//       }
+//     }
+//   }
+// }
 
 
 class SendLocationBloc extends Bloc<MapEvent, MapState>{

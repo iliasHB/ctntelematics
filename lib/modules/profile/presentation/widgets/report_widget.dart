@@ -118,10 +118,13 @@ class _ReportState extends State<Report> {
                   child: BlocConsumer<ProfileVehiclesBloc, ProfileState>(
                     builder: (context, state) {
                       if (state is ProfileLoading) {
-                        return const Center(
+                        return Center(
                           child: Padding(
                             padding: EdgeInsets.only(top: 10.0),
-                            child: CircularProgressIndicator(strokeWidth: 2.0),
+                            child: Container(
+                              height: 20,
+                                width: 20,
+                                child: const CircularProgressIndicator(strokeWidth: 2.0)),
                           ),
                         );
                       } else if (state is GetVehicleDone) {
@@ -245,7 +248,7 @@ class _ReportState extends State<Report> {
                             );
                           }
                           return Align(
-                            alignment: Alignment.topRight,
+                            alignment: Alignment.center,
                             child: CustomPrimaryButton(
                                 label:  'View Report',
                                 onPressed: (){
@@ -335,7 +338,7 @@ class _ReportState extends State<Report> {
                                 );
                               }
                               return Align(
-                                alignment: Alignment.topRight,
+                                alignment: Alignment.center,
                                 child: CustomPrimaryButton(
                                     label: 'View Report',
                                     onPressed: (){
@@ -567,7 +570,7 @@ class _DateTimeRangePickerState extends State<DateTimeRangePicker> {
                 );
               }
               return Align(
-                alignment: Alignment.topRight,
+                alignment: Alignment.center,
                 child: CustomPrimaryButton(
                     label:  'View Report',
                     onPressed: (){

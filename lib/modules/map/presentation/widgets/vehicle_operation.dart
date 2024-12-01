@@ -50,7 +50,7 @@ class VehicleOperation extends StatelessWidget {
               color: Colors.grey.shade400,
               borderRadius: BorderRadius.circular(10)),
         ),
-        Container(
+        SizedBox(
           height: getVerticalSize(200),
           child: GridView.count(
             crossAxisCount: 3,
@@ -62,19 +62,21 @@ class VehicleOperation extends StatelessWidget {
             children: [
               InkWell(
                 onTap: () {
-                  showModalBottomSheet(
-                      context: context,
-                      isDismissible: false,
-                      isScrollControlled: true,
-                      //useSafeArea: true,
-                      shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(20),
-                            topRight: Radius.circular(20)),
-                      ),
-                      builder: (BuildContext context) {
-                        return VehicleDashboard(token: token, vin: vin); //VehicleLiveTracking();
-                      });
+                  Navigator.push(context, MaterialPageRoute(builder: (_) =>  VehicleDashboard(token: token, vin: vin)));
+
+                  // showModalBottomSheet(
+                  //     context: context,
+                  //     isDismissible: false,
+                  //     isScrollControlled: true,
+                  //     //useSafeArea: true,
+                  //     shape: const RoundedRectangleBorder(
+                  //       borderRadius: BorderRadius.only(
+                  //           topLeft: Radius.circular(20),
+                  //           topRight: Radius.circular(20)),
+                  //     ),
+                  //     builder: (BuildContext context) {
+                  //       return VehicleDashboard(token: token, vin: vin); //VehicleLiveTracking();
+                  //     });
                 },
                 child: VehicleOperationCard(
                     status: 'Dashboard',
@@ -159,19 +161,21 @@ class VehicleOperation extends StatelessWidget {
               ),
               InkWell(
                 onTap: () {
-                  showModalBottomSheet(
-                      context: context,
-                      isDismissible: false,
-                      isScrollControlled: true,
-                      //useSafeArea: true,
-                      shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(20),
-                            topRight: Radius.circular(20)),
-                      ),
-                      builder: (BuildContext context) {
-                        return const VehicleEngineLock();
-                      });
+                  Navigator.push(context, MaterialPageRoute(builder: (_) =>  const VehicleEngineLock()));
+
+                  // showModalBottomSheet(
+                  //     context: context,
+                  //     isDismissible: false,
+                  //     isScrollControlled: true,
+                  //     //useSafeArea: true,
+                  //     shape: const RoundedRectangleBorder(
+                  //       borderRadius: BorderRadius.only(
+                  //           topLeft: Radius.circular(20),
+                  //           topRight: Radius.circular(20)),
+                  //     ),
+                  //     builder: (BuildContext context) {
+                  //       return const VehicleEngineLock();
+                  //     });
                 },
                 child: VehicleOperationCard(
                   status: 'Engine lock',
@@ -202,19 +206,21 @@ class VehicleOperation extends StatelessWidget {
               ),
               InkWell(
                 onTap: () {
-                  showModalBottomSheet(
-                      context: context,
-                      isDismissible: false,
-                      isScrollControlled: true,
-                      //useSafeArea: true,
-                      shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(20),
-                            topRight: Radius.circular(20)),
-                      ),
-                      builder: (BuildContext context) {
-                        return const VehicleQuickSetting();
-                      });
+                  Navigator.push(context, MaterialPageRoute(builder: (_) =>  const VehicleQuickSetting()));
+
+                  // showModalBottomSheet(
+                  //     context: context,
+                  //     isDismissible: false,
+                  //     isScrollControlled: true,
+                  //     //useSafeArea: true,
+                  //     shape: const RoundedRectangleBorder(
+                  //       borderRadius: BorderRadius.only(
+                  //           topLeft: Radius.circular(20),
+                  //           topRight: Radius.circular(20)),
+                  //     ),
+                  //     builder: (BuildContext context) {
+                  //       return const VehicleQuickSetting();
+                  //     });
                 },
                 child: VehicleOperationCard(
                   status: 'Quick Setting',
