@@ -60,7 +60,7 @@ class ResetPasswordPage extends StatelessWidget {
                   child: Text(
                     overflow: TextOverflow.ellipsis,
                     '- Password must include alphabet numeric & \ncharacter',
-                    textAlign: TextAlign.center,
+                    textAlign: TextAlign.start,
                     style: AppStyle.cardfooter
                         .copyWith(color: Colors.grey[700]),
                   ),
@@ -79,6 +79,7 @@ class ResetPasswordPage extends StatelessWidget {
                     decoration: customInputDecoration(
                         labelText: 'New password',
                         hintText: 'abc@gmail.com',
+                      prefixIcon: Icon(Icons.lock, color: Colors.green,)
                     ),
 
                     // InputDecoration(
@@ -107,6 +108,7 @@ class ResetPasswordPage extends StatelessWidget {
                     decoration: customInputDecoration(
                     labelText: 'Confirm password',
                     hintText: 'abc@gmail.com',
+                        prefixIcon: Icon(Icons.lock, color: Colors.green,)
                   ),
                     // InputDecoration(
                     //   labelText: 'Confirm password',
@@ -141,20 +143,30 @@ class ResetPasswordPage extends StatelessWidget {
                   ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text(state.resp.message)));
                 } else if (state is AuthFailure) {
+                  if(state.message.toString().contains("Unauthenticated")){
+                    Navigator.pushNamed(context, '/login');
+                  }
                   ScaffoldMessenger.of(context)
                       .showSnackBar(SnackBar(content: Text(state.message)));
                 }
               },
               builder: (context, state) {
                 if (state is AuthLoading) {
-                  return const CircularProgressIndicator(
-                    strokeWidth: 2,
-                    strokeAlign: -10.0,
+                  return const Center(
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.0, // Adjust the thickness
+                      color: Colors
+                          .green, // Optional: Change the color to match your theme
+                    ),
                   );
                 }
                 return CustomPrimaryButton(
                     label:  'Continue',
                   onPressed: () {
+                      print("email: ${args['email']}");
+                      print("otp: ${args['otp']}");
+                      print("password: ${_pwdController.text.trim()}");
+                      print("retype-pwd: ${_retypePwdController.text.trim()}");
                     if (_formKey.currentState?.validate() ?? false) {
                       final changePwdReqEntity = ChangePwdReqEntity(
                           email: args['email'],
@@ -162,7 +174,7 @@ class ResetPasswordPage extends StatelessWidget {
                           password: _pwdController.text.trim(),
                           passwordConfirmation: _retypePwdController.text.trim()
                       );
-                      context.read<EmailVerifyBloc>().add(ChangePwdEvent(changePwdReqEntity));
+                      context.read<ChangePwdBloc>().add(ChangePwdEvent(changePwdReqEntity));
                     }
                   },
                 );

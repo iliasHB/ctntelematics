@@ -9,7 +9,7 @@ import 'package:ctntelematics/modules/profile/domain/usecases/profile_usecase.da
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/network/network_exception.dart';
-import '../../../../core/resources/data_state.dart';
+import '../../../../core/resources/profile_data_state.dart';
 import '../../domain/entitties/resp_entities/create_schedule_resp_entity.dart';
 import '../../domain/entitties/resp_entities/profile_resp_entity.dart';
 
@@ -67,6 +67,7 @@ class ProfileChangePwdBloc extends Bloc<ProfileEvent, ProfileState> {
       yield ProfileDone(user); // Emit success state after getting the user
     } catch (error) {
       if (error is ApiErrorException) {
+        // print('object----eeee:::: ${e.message}');
         yield ProfileFailure(error.message); // Emit API error message
       } else if (error is NetworkException) {
         yield ProfileFailure(error.message); // Emit network failure message

@@ -65,14 +65,14 @@ class _SettingState extends State<Setting> {
     });
   }
 
-
   Future<void> pickAndSaveProfilePicture(int userId) async {
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
 
     if (pickedFile != null) {
       final filePath = pickedFile.path;
-      final uploadedAt = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
+      final uploadedAt =
+          DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
 
       print('userId: $userId');
 
@@ -100,7 +100,8 @@ class _SettingState extends State<Setting> {
 
     if (pickedFile != null) {
       final filePath = pickedFile.path;
-      final uploadedAt = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
+      final uploadedAt =
+          DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
 
       print('UserId: $userId');
 
@@ -124,13 +125,14 @@ class _SettingState extends State<Setting> {
     }
   }
 
-
   Future<String?> fetchUserProfilePicture(int userId) async {
     final dbHelper = DatabaseHelper();
-    final picture = await dbHelper.fetchLatestProfilePicture(userId); // Fetch the latest picture as a single map
+    final picture = await dbHelper.fetchLatestProfilePicture(
+        userId); // Fetch the latest picture as a single map
 
     if (picture != null) {
-      return picture['filePath'] as String?; // Return the file path if available
+      return picture['filePath']
+          as String?; // Return the file path if available
     }
 
     return null; // Return null if no picture is found
@@ -157,39 +159,48 @@ class _SettingState extends State<Setting> {
                   padding: const EdgeInsets.all(10.0),
                   child: Row(
                     children: [
-
-                      InkWell(
-                        onTap: (){
-                          pickAndUpdateProfilePicture(int.parse(userId!));
-                        },
-                        child: FutureBuilder<String?>(
-                          future: fetchUserProfilePicture(int.parse(userId ?? '0')),
-                          builder: (context, snapshot) {
-                            if (snapshot.connectionState == ConnectionState.waiting) {
-                              return Container(
-                                height: 20.0,
-                                width: 20.0,
-                                child: const CircularProgressIndicator(
-                                  strokeWidth: 2.0,
-                                ),
-                              ); // Loading indicator
-                            } else if (snapshot.hasError) {
-                              return const Icon(Icons.error, color: Colors.red); // Error state
-                            } else if (!snapshot.hasData || snapshot.data == null) {
-                              return const CircleAvatar(
-                                radius: 50,
-                                backgroundImage: AssetImage("assets/images/avatar.jpeg"), // Default avatar
-                              );
-                            } else {
-                              return CircleAvatar(
+                      FutureBuilder<String?>(
+                        future:
+                            fetchUserProfilePicture(int.parse(userId ?? '0')),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return Container(
+                              height: 20.0,
+                              width: 20.0,
+                              child: const CircularProgressIndicator(
+                                strokeWidth: 2.0,
+                              ),
+                            ); // Loading indicator
+                          } else if (snapshot.hasError) {
+                            return const Icon(Icons.error,
+                                color: Colors.red); // Error state
+                          } else if (!snapshot.hasData ||
+                              snapshot.data == null) {
+                            return InkWell(
+                              onTap: () {
+                                pickAndSaveProfilePicture(int.parse(userId!));
+                              },
+                              child: const CircleAvatar(
                                 radius: 30,
-                                backgroundImage: FileImage(File(snapshot.data!)), // Fetched image
-                              );
-                            }
-                          },
-                        ),
+                                backgroundImage: AssetImage(
+                                    "assets/images/avatar.jpeg"), // Default avatar
+                              ),
+                            );
+                          } else {
+                            return InkWell(
+                              onTap: () {
+                                pickAndUpdateProfilePicture(int.parse(userId!));
+                              },
+                              child: CircleAvatar(
+                                radius: 30,
+                                backgroundImage: FileImage(
+                                    File(snapshot.data!)), // Fetched image
+                              ),
+                            );
+                          }
+                        },
                       ),
-
                       const SizedBox(
                         width: 10.0,
                       ),
@@ -209,13 +220,14 @@ class _SettingState extends State<Setting> {
                           if (vehicles.isEmpty) {
                             return InkWell(
                               onTap: () async {
-                                final savedNotifications =
-                                    await db_notification.fetchCombinedNotifications();
+                                final savedNotifications = await db_notification
+                                    .fetchCombinedNotifications();
                                 Navigator.push(
                                     context,
                                     MaterialPageRoute(
                                         builder: (_) => NotificationWidget(
-                                            notifications: savedNotifications)));
+                                            notifications:
+                                                savedNotifications)));
                               },
                               child: const CircleAvatar(
                                 child: Icon(CupertinoIcons.bell_fill),
@@ -225,26 +237,36 @@ class _SettingState extends State<Setting> {
 
                           // Filter vehicles with geofence violations or exceeding speed limits
                           final geofenceNotifications = vehicles.where((v) {
-                            return !(v.locationInfo.withinGeofence?.isInGeofence ?? true);
+                            return !(v.locationInfo.withinGeofence
+                                    ?.isInGeofence ??
+                                true);
                           }).toList();
 
                           final speedLimitNotifications = vehicles.where((v) {
-                            final speedLimit =
-                                double.tryParse(v.locationInfo.speedLimit?.toString() ?? '0') ?? 0;
-                            final vehicleSpeed =
-                                double.tryParse(v.locationInfo.tracker?.position?.speed?.toString() ?? '0') ?? 0;
+                            final speedLimit = double.tryParse(
+                                    v.locationInfo.speedLimit?.toString() ??
+                                        '0') ??
+                                0;
+                            final vehicleSpeed = double.tryParse(v
+                                        .locationInfo.tracker?.position?.speed
+                                        ?.toString() ??
+                                    '0') ??
+                                0;
                             return vehicleSpeed > speedLimit;
                           }).toList();
 
-                          db_notification.saveNotifications(geofenceNotifications, speedLimitNotifications);
-                          
+                          db_notification.saveNotifications(
+                              geofenceNotifications, speedLimitNotifications);
+
                           return InkWell(
                             onTap: () async {
-                              final savedNotifications = await db_notification.fetchCombinedNotifications();
+                              final savedNotifications = await db_notification
+                                  .fetchCombinedNotifications();
                               Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                      builder: (_) => NotificationWidget(notifications: savedNotifications)));
+                                      builder: (_) => NotificationWidget(
+                                          notifications: savedNotifications)));
                             },
                             child: const Stack(
                               children: [
@@ -438,10 +460,18 @@ class _SettingState extends State<Setting> {
                       BlocConsumer<ProfileGenerateOtpBloc, ProfileState>(
                         listener: (context, state) {
                           if (state is ProfileDone) {
-                            ChangePwdDialog.showChangePwdDialog(context, email);
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (_) => VerifyEmailSettingsPage(
+                                        email: email!)));
+                            // ChangePwdDialog.showChangePwdDialog(context, email);
                             ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(content: Text(state.resp.message)));
                           } else if (state is ProfileFailure) {
+                            if (state.message.contains("Unauthenticated")) {
+                              Navigator.pushNamed(context, '/login');
+                            }
                             ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(content: Text(state.message)));
                           }
@@ -731,6 +761,7 @@ class _SettingState extends State<Setting> {
                         },
                         builder: (context, state) {
                           if (state is ProfileLoading) {
+                            print(' loading >>>>>>>>>>>>');
                             Row(
                               children: [
                                 Container(
@@ -755,7 +786,6 @@ class _SettingState extends State<Setting> {
                                 const Spacer(),
                                 const CircularProgressIndicator(
                                   strokeWidth: 2,
-                                  strokeAlign: -10.0,
                                 ),
                               ],
                             );
@@ -765,7 +795,7 @@ class _SettingState extends State<Setting> {
                             child: Row(
                               children: [
                                 const Icon(
-                                  Icons.lock_outline,
+                                  Icons.logout,
                                   color: Colors.green,
                                   size: 20,
                                 ),
@@ -802,12 +832,7 @@ class _SettingState extends State<Setting> {
       ),
     );
   }
-
-
 }
-
-
-
 
 // final ImagePicker _picker = ImagePicker();
 //
@@ -823,5 +848,3 @@ class _SettingState extends State<Setting> {
 //     });
 //   }
 // }
-
-

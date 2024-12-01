@@ -34,7 +34,8 @@ abstract class AuthApiClient {
 
   @POST("/user/change/password")
   @FormUrlEncoded()
-  Future<AuthRespModel> changePassword(@Field("email") String email,
+  Future<AuthRespModel> changePassword(
+      @Field("email") String email,
       @Field("otp") String otp,
       @Field("password") String password,
       @Field("password_confirmation") String passwordConfirmation,

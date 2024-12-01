@@ -95,13 +95,13 @@ Future<void> initializeDependencies() async {
   sl.registerFactory(() => ChangePwdBloc(sl()));
   sl.registerFactory(() => EmailVerifyBloc(sl()));
   sl.registerFactory(() => DashVehiclesBloc(sl()));
-  sl.registerFactory(() => VehiclesBloc(sl()));
+  // sl.registerFactory(() => VehiclesBloc(sl()));
   sl.registerFactory(() => ProfileGenerateOtpBloc(sl()));
   sl.registerFactory(() => ProfileChangePwdBloc(sl()));
   sl.registerFactory(() => ProfileEmailVerifyBloc(sl()));
   sl.registerFactory(() => LogoutBloc(sl()));
   sl.registerFactory(() => LastLocationBloc(sl()));
-  sl.registerFactory(() => RouteHistoryBloc(sl()));
+  // sl.registerFactory(() => RouteHistoryBloc(sl()));
   sl.registerFactory(() => VehicleRouteHistoryBloc(sl()));
   sl.registerFactory(() => VehicleLocationBloc(sl()));
   sl.registerFactory(() => GetScheduleBloc(sl()));

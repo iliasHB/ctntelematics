@@ -53,6 +53,7 @@ class _AnimatedAppBarState extends State<AnimatedAppBar>
   File? _image;
   String? token;
   String? userId;
+  bool isLoading = true;
 
   @override
   void initState() {
@@ -90,6 +91,7 @@ class _AnimatedAppBarState extends State<AnimatedAppBar>
       // email = authUser[3] == "" ? null : authUser[3];
       token = authUser?[4] == "" ? null : authUser?[4];
       userId = authUser?[8] == "" ? null : authUser?[8];
+      isLoading = false;
     });
   }
 
@@ -100,8 +102,6 @@ class _AnimatedAppBarState extends State<AnimatedAppBar>
     if (pickedFile != null) {
       final filePath = pickedFile.path;
       final uploadedAt = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
-
-      print('userId: $userId');
 
       // Save to the database
       final dbHelper = DatabaseHelper();
@@ -122,6 +122,7 @@ class _AnimatedAppBarState extends State<AnimatedAppBar>
   }
 
   Future<void> pickAndUpdateProfilePicture(int userId) async {
+    print("userId:::::::::::: $userId");
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
 
@@ -184,37 +185,53 @@ class _AnimatedAppBarState extends State<AnimatedAppBar>
                 ),
                 child: Row(
                   children: [
-                    InkWell(
-                      onTap: (){
-                        pickAndUpdateProfilePicture(int.parse(userId!));
-                      },
-                      child: FutureBuilder<String?>(
-                        future: fetchUserProfilePicture(int.parse(userId ?? '0')),
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState == ConnectionState.waiting) {
-                            return Container(
-                              height: 15,
-                              width: 15,
-                              child: const CircularProgressIndicator(
-                                strokeWidth: 2.0,
-                              ),
-                            ); // Loading indicator
-                          } else if (snapshot.hasError) {
-                            return const Icon(Icons.error, color: Colors.red); // Error state
-                          } else if (!snapshot.hasData || snapshot.data == null) {
-                            return const CircleAvatar(
-                              radius: 45,
-                              backgroundImage: AssetImage("assets/images/avatar.jpeg"), // Default avatar
-                            );
-                          } else {
-                            return CircleAvatar(
-                              radius: 30,
-                              backgroundImage: FileImage(File(snapshot.data!)), // Fetched image
-                            );
-                          }
-                        },
-                      ),
-                    ),
+                    isLoading
+                        ? Center(child: Container(
+                        height: 20,
+                        width: 20,
+                        child: const CircularProgressIndicator(
+                          strokeWidth: 2.0,
+                        )))
+                        :  FutureBuilder<String?>(
+                          future: fetchUserProfilePicture(int.parse(userId ?? '0')),
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState == ConnectionState.waiting) {
+                              return Container(
+                                height: 15,
+                                width: 15,
+                                child: const CircularProgressIndicator(
+                                  strokeWidth: 2.0,
+                                ),
+                              ); // Loading indicator
+                            } else if (snapshot.hasError) {
+                              return const Icon(Icons.error, color: Colors.red); // Error state
+                            } else if (!snapshot.hasData || snapshot.data == null) {
+                              return InkWell(
+                                onTap: (){
+                                  pickAndSaveProfilePicture(int.parse(userId!));
+                                  //pickAndUpdateProfilePicture(int.parse(userId!));
+                                },
+                                child: CircleAvatar(
+                                  radius: 30,
+                                  // backgroundImage: AssetImage("assets/images/avatar.jpeg"),
+                                  child: ClipOval(
+                                    child: Image.asset("assets/images/avatar.jpeg", height: 40, width: 40,),
+                                  ),// Default avatar
+                                ),
+                              );
+                            } else {
+                              return InkWell(
+                                    onTap: (){
+                                      pickAndUpdateProfilePicture(int.parse(userId!));
+                                    },
+                                child: CircleAvatar(
+                                  radius: 30,
+                                  backgroundImage: FileImage(File(snapshot.data!)), // Fetched image
+                                ),
+                              );
+                            }
+                          },
+                        ),
                     const SizedBox(width: 10),
                     Text(
                       "Welcome, ${widget.firstname}",

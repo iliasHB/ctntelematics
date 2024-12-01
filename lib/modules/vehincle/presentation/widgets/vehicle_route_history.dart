@@ -373,7 +373,7 @@ class _RouteHistoryMapState extends State<RouteHistoryMap> {
     try {
       _customIcon = await BitmapDescriptor.fromAssetImage(
         const ImageConfiguration(size: Size(24, 24)),
-        'assets/images/vehicle_map.png', // Path to your custom vehicle image
+        'assets/images/green_moving_car_01.png', // Path to your custom vehicle image
       );
       print('Custom marker icon loaded successfully');
       setState(() {}); // Refresh to show the marker with the custom icon

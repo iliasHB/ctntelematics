@@ -18,7 +18,6 @@ import '../../../../core/widgets/format_data.dart';
 import '../../../vehincle/presentation/bloc/vehicle_bloc.dart';
 import '../bloc/map_bloc.dart';
 
-
 class VehicleRouteHistory1 extends StatefulWidget {
   final String brand, model, vin, token;
   final double latitude, longitude;
@@ -33,7 +32,7 @@ class VehicleRouteHistory1 extends StatefulWidget {
 class _VehicleRouteHistory1State extends State<VehicleRouteHistory1> {
   bool _isDialogShown = false;
   bool _isContainerVisible =
-  false; // Flag to check if the dialog is already shown
+      false; // Flag to check if the dialog is already shown
   DateTime? fromDate;
   DateTime? toDate;
   String? speed;
@@ -61,7 +60,7 @@ class _VehicleRouteHistory1State extends State<VehicleRouteHistory1> {
             children: [
               Padding(
                 padding:
-                const EdgeInsets.only(top: 20.0, right: 0.0, left: 10.0),
+                    const EdgeInsets.only(top: 20.0, right: 0.0, left: 10.0),
                 child: Row(
                   // mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -90,7 +89,7 @@ class _VehicleRouteHistory1State extends State<VehicleRouteHistory1> {
               ),
               Padding(
                 padding:
-                const EdgeInsets.only(top: 0.0, right: 10.0, left: 10.0),
+                    const EdgeInsets.only(top: 0.0, right: 10.0, left: 10.0),
                 child: Row(
                   children: [
                     Flexible(
@@ -104,7 +103,7 @@ class _VehicleRouteHistory1State extends State<VehicleRouteHistory1> {
               ),
               Padding(
                 padding:
-                const EdgeInsets.only(top: 0.0, right: 10.0, left: 10.0),
+                    const EdgeInsets.only(top: 0.0, right: 10.0, left: 10.0),
                 child: Row(
                   children: [
                     Flexible(
@@ -160,19 +159,19 @@ class _VehicleRouteHistory1State extends State<VehicleRouteHistory1> {
 
               BlocConsumer<VehicleRouteHistoryBloc, VehicleState>(
                   builder: (BuildContext context, state) {
-                    if (state is VehicleLoading) {
-                      return const Center(child: CircularProgressIndicator());
-                    } else if (state is GetVehicleRouteHistoryDone) {
-                      return Flexible(
-                        child: RouteHistoryMap(resp: state.resp, speed: speed),
-                      );
-                    } else {
-                      return RouteLastLocation(widget.latitude, widget.longitude);
-                    }
-                  }, listener: (context, state) {
+                if (state is VehicleLoading) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (state is GetVehicleRouteHistoryDone) {
+                  return Flexible(
+                    child: RouteHistoryMap(resp: state.resp, speed: speed),
+                  );
+                } else {
+                  return RouteLastLocation(widget.latitude, widget.longitude);
+                }
+              }, listener: (context, state) {
                 if (state is VehicleFailure) {
-                  if (state.message.contains("401")) {
-                  Navigator.pushNamed(context, "/login");
+                  if (state.message.contains("Unauthenticated")) {
+                    Navigator.pushNamed(context, "/login");
                   }
                   ScaffoldMessenger.of(context)
                       .showSnackBar(SnackBar(content: Text(state.message)));
@@ -231,9 +230,9 @@ class RouteWidget extends StatelessWidget {
   final Color color;
   const RouteWidget(
       {super.key,
-        required this.title,
-        required this.subTitle,
-        required this.color});
+      required this.title,
+      required this.subTitle,
+      required this.color});
 
   @override
   Widget build(BuildContext context) {
@@ -377,7 +376,7 @@ class _RouteHistoryMapState extends State<RouteHistoryMap> {
     try {
       _customIcon = await BitmapDescriptor.fromAssetImage(
         const ImageConfiguration(size: Size(24, 24)),
-        'assets/images/vehicle_map.png', // Path to your custom vehicle image
+        'assets/images/green_moving_car_01.png', // Path to your custom vehicle image
       );
       print('Custom marker icon loaded successfully');
       setState(() {}); // Refresh to show the marker with the custom icon
@@ -411,7 +410,7 @@ class _RouteHistoryMapState extends State<RouteHistoryMap> {
     // Populate the polyline coordinates
     _polylineCoordinates = widget.resp.data
         .map((location) => LatLng(double.parse(location.latitude!),
-        double.parse(location.longitude!)))
+            double.parse(location.longitude!)))
         .toList();
   }
 
@@ -423,7 +422,7 @@ class _RouteHistoryMapState extends State<RouteHistoryMap> {
       markerId: MarkerId(location.id.toString()),
       position: latLng,
       infoWindow:
-      InfoWindow(title: label, snippet: "Speed: ${location.speed} km/h"),
+          InfoWindow(title: label, snippet: "Speed: ${location.speed} km/h"),
       icon: icon,
     );
     _markers[MarkerId(location.id.toString())] = marker;
@@ -488,7 +487,7 @@ class _RouteHistoryMapState extends State<RouteHistoryMap> {
     if (_currentIndex < _polylineCoordinates.length - 1) {
       LatLng nextLocation = _polylineCoordinates[_currentIndex + 1];
       double distanceToNextPoint =
-      _calculateDistance(currentLocation, nextLocation);
+          _calculateDistance(currentLocation, nextLocation);
       print(
           "Distance to next point: ${distanceToNextPoint.toStringAsFixed(2)} km");
 
@@ -520,12 +519,12 @@ class _RouteHistoryMapState extends State<RouteHistoryMap> {
 
   void _fetchAddress(double latitude, double longitude) async {
     List<Placemark> placemarks =
-    await placemarkFromCoordinates(latitude, longitude);
+        await placemarkFromCoordinates(latitude, longitude);
     if (placemarks.isNotEmpty) {
       Placemark place = placemarks[0];
       setState(() {
         _currentAddress =
-        "${place.street}, ${place.locality}, ${place.country}";
+            "${place.street}, ${place.locality}, ${place.country}";
       });
     }
   }
@@ -625,8 +624,8 @@ class _RouteHistoryMapState extends State<RouteHistoryMap> {
                               RouteWidget(
                                   title: "Route Length",
                                   subTitle:
-                                  FormatData.handle2DecimalPointFormat(
-                                      widget.resp.routeLength ?? 0.00),
+                                      FormatData.handle2DecimalPointFormat(
+                                          widget.resp.routeLength ?? 0.00),
                                   color: Colors.green),
                               const SizedBox(
                                 width: 10,
@@ -635,14 +634,14 @@ class _RouteHistoryMapState extends State<RouteHistoryMap> {
                               RouteWidget(
                                 title: "Move Duration",
                                 subTitle:
-                                "${moveDuration.inHours}h ${moveDuration.inMinutes.remainder(60)}min ${moveDuration.inSeconds.remainder(60)}s",
+                                    "${moveDuration.inHours}h ${moveDuration.inMinutes.remainder(60)}min ${moveDuration.inSeconds.remainder(60)}s",
                                 color: Colors.brown,
                               ),
                               const SizedBox(width: 10),
                               RouteWidget(
                                 title: "Stop Duration",
                                 subTitle:
-                                "${stopDuration.inHours}h ${stopDuration.inMinutes.remainder(60)}min ${stopDuration.inSeconds.remainder(60)}s",
+                                    "${stopDuration.inHours}h ${stopDuration.inMinutes.remainder(60)}min ${stopDuration.inSeconds.remainder(60)}s",
                                 color: Colors.blue,
                               ),
                               const SizedBox(
@@ -667,7 +666,7 @@ class _RouteHistoryMapState extends State<RouteHistoryMap> {
                   padding: const EdgeInsets.symmetric(horizontal: 8.0),
                   child: Text(
                       'Coordinate: (${_currentLatitude?.toStringAsFixed(6) ?? 'N/A'}, '
-                          '${_currentLongitude?.toStringAsFixed(6) ?? 'N/A'})',
+                      '${_currentLongitude?.toStringAsFixed(6) ?? 'N/A'})',
                       style: AppStyle.cardSubtitle.copyWith(fontSize: 14)),
                 ),
               ],
@@ -703,7 +702,7 @@ class _RouteHistoryMapState extends State<RouteHistoryMap> {
                   minHeight: 100.0,
                   maxHeight: 700.0,
                   borderRadius:
-                  const BorderRadius.vertical(top: Radius.circular(18)),
+                      const BorderRadius.vertical(top: Radius.circular(18)),
                   panel: _buildAddressList()),
             ],
           ),
@@ -733,7 +732,8 @@ class _RouteHistoryMapState extends State<RouteHistoryMap> {
                   Row(
                     // crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      Text(vehicleSpeed, style: const TextStyle(fontSize: 35)),
+                      Text(vehicleSpeed,
+                          style: AppStyle.cardfooter.copyWith(fontSize: 35)),
                       Text(
                         "kph",
                         style: AppStyle.cardfooter,
@@ -800,7 +800,7 @@ class _RouteHistoryMapState extends State<RouteHistoryMap> {
                 ),
                 child: Text(
                   widget.speed == null ? "" : widget.speed!,
-                  style: const TextStyle(fontSize: 18),
+                  style: AppStyle.cardfooter.copyWith(fontSize: 18),
                 ),
               ),
             ],
@@ -835,15 +835,26 @@ class _RouteHistoryMapState extends State<RouteHistoryMap> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(addresses.length > index
-                                  ? addresses[index]
-                                  : "Loading...", style: AppStyle.cardfooter,),
-                              Text(widget.resp.data[index].created_at!, style: AppStyle.cardfooter,),
+                              Text(
+                                addresses.length > index
+                                    ? addresses[index]
+                                    : "Loading...",
+                                style: AppStyle.cardfooter,
+                              ),
+                              Text(
+                                FormatData.formatTimestamp(
+                                    widget.resp.data[index].created_at!),
+                                style: AppStyle.cardfooter,
+                              ),
                               const SizedBox(height: 20),
                               Text(addresses.length > index + 1
                                   ? addresses[index + 1]
                                   : "Loading..."),
-                              Text(widget.resp.data[index].created_at!, style: AppStyle.cardfooter,),
+                              Text(
+                                FormatData.formatTimestamp(
+                                    widget.resp.data[index].created_at!),
+                                style: AppStyle.cardfooter,
+                              ),
                             ],
                           ),
                         ),
@@ -883,7 +894,7 @@ class _RouteLastLocationState extends State<RouteLastLocation> {
   late GoogleMapController mapController;
   BitmapDescriptor? _customIcon;
   late Future<void> _getAuthUserFuture;
-  Set<Marker> _markers = {};
+  final Set<Marker> _markers = {};
   @override
   void initState() {
     super.initState();
@@ -911,7 +922,9 @@ class _RouteLastLocationState extends State<RouteLastLocation> {
         'assets/images/vehicle_map.png',
       );
       print('Custom marker icon loaded successfully');
-      setState(() {}); // Refresh to show the marker with the custom icon
+      // setState(() {
+      //   _customIcon;
+      // }); // Refresh to show the marker with the custom icon
     } catch (e) {
       print('Error loading custom marker icon: $e');
     }
@@ -931,7 +944,7 @@ class _RouteLastLocationState extends State<RouteLastLocation> {
             _markers.addAll([
               Marker(
                 icon: _customIcon!,
-                markerId: const MarkerId('id'),
+                markerId: MarkerId('id'),
                 position: LatLng(widget.latitude, widget.longitude),
               ),
             ]);
@@ -939,7 +952,7 @@ class _RouteLastLocationState extends State<RouteLastLocation> {
               child: Container(
                 margin: const EdgeInsets.only(top: 20.0),
                 height:
-                double.infinity, //MediaQuery.of(context).size.height * 0.4,
+                    double.infinity, //MediaQuery.of(context).size.height * 0.4,
                 child: GoogleMap(
                   onMapCreated: (GoogleMapController controller) {
                     mapController = controller;
@@ -968,11 +981,11 @@ class DateTimeRangePicker extends StatefulWidget {
   final String? vin, token;
   const DateTimeRangePicker(
       {super.key,
-        // required this.onDateFromSelected,
-        // required this.onDateToSelected,
-        required this.onSpeedSelected,
-        required this.vin,
-        required this.token});
+      // required this.onDateFromSelected,
+      // required this.onDateToSelected,
+      required this.onSpeedSelected,
+      required this.vin,
+      required this.token});
   @override
   _DateTimeRangePickerState createState() => _DateTimeRangePickerState();
 }
@@ -1004,56 +1017,57 @@ class _DateTimeRangePickerState extends State<DateTimeRangePicker> {
             children: [
               Expanded(
                   child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'From: ',
+                    style: AppStyle.cardTitle.copyWith(fontSize: 14),
+                  ),
+                  Row(
                     children: [
-                      Text(
-                        'From: ',
-                        style: AppStyle.cardTitle.copyWith(fontSize: 14),
-                      ),
-                      Row(
-                        children: [
-                          Expanded(
-                              child: SizedBox(
-                                height: 40,
-                                child: TextFormField(
-                                  decoration: InputDecoration(
-                                    enabled: false,
-                                    filled: true,
-                                    fillColor: Colors.grey[200],
-                                    label: Text(
-                                      fromDate == null
-                                          ? 'Select Start Date and Time'
-                                          : fromDate.toString(),
-                                    ),
-                                    border: OutlineInputBorder(
-                                        borderSide: BorderSide.none,
-                                        borderRadius: BorderRadius.circular(5)),
-                                  ),
-                                ),
-                              )),
-                          const SizedBox(width: 5),
-                          InkWell(
-                              onTap: () {
-                                DatePicker.showDateTimePicker(
-                                  context,
-                                  showTitleActions: true,
-                                  onConfirm: (date) {
-                                    setState(() {
-                                      fromDate = date;
-                                    });
-                                  },
-                                  currentTime: DateTime.now(),
-                                );
+                      Expanded(
+                          child: SizedBox(
+                        height: 40,
+                        child: TextFormField(
+                          decoration: InputDecoration(
+                            enabled: false,
+                            filled: true,
+                            fillColor: Colors.grey[200],
+                            labelStyle: AppStyle.cardfooter,
+                            label: Text(
+                              fromDate == null
+                                  ? 'Select Start Date and Time'
+                                  : fromDate.toString(),
+                            ),
+                            border: OutlineInputBorder(
+                                borderSide: BorderSide.none,
+                                borderRadius: BorderRadius.circular(5)),
+                          ),
+                        ),
+                      )),
+                      const SizedBox(width: 5),
+                      InkWell(
+                          onTap: () {
+                            DatePicker.showDateTimePicker(
+                              context,
+                              showTitleActions: true,
+                              onConfirm: (date) {
+                                setState(() {
+                                  fromDate = date;
+                                });
                               },
-                              child: const Icon(
-                                Icons.calendar_month,
-                                color: Colors.green,
-                              ))
-                        ],
-                      ),
+                              currentTime: DateTime.now(),
+                            );
+                          },
+                          child: const Icon(
+                            Icons.calendar_month,
+                            color: Colors.green,
+                          ))
                     ],
-                  )),
+                  ),
+                ],
+              )),
             ],
           ),
           const SizedBox(height: 10),
@@ -1061,56 +1075,57 @@ class _DateTimeRangePickerState extends State<DateTimeRangePicker> {
             children: [
               Expanded(
                   child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'To: ',
+                    style: AppStyle.cardTitle.copyWith(fontSize: 14),
+                  ),
+                  Row(
                     children: [
-                      Text(
-                        'To: ',
-                        style: AppStyle.cardTitle.copyWith(fontSize: 14),
-                      ),
-                      Row(
-                        children: [
-                          Expanded(
-                              child: SizedBox(
-                                height: 40,
-                                child: TextFormField(
-                                  decoration: InputDecoration(
-                                    enabled: false,
-                                    filled: true,
-                                    fillColor: Colors.grey[200],
-                                    label: Text(
-                                      toDate == null
-                                          ? 'Select End Date and Time'
-                                          : toDate.toString(),
-                                    ),
-                                    border: OutlineInputBorder(
-                                        borderSide: BorderSide.none,
-                                        borderRadius: BorderRadius.circular(5)),
-                                  ),
-                                ),
-                              )),
-                          const SizedBox(width: 5),
-                          InkWell(
-                              onTap: () {
-                                DatePicker.showDateTimePicker(
-                                  context,
-                                  showTitleActions: true,
-                                  onConfirm: (date) {
-                                    setState(() {
-                                      toDate = date;
-                                    });
-                                  },
-                                  currentTime: DateTime.now(),
-                                );
+                      Expanded(
+                          child: SizedBox(
+                        height: 40,
+                        child: TextFormField(
+                          decoration: InputDecoration(
+                            enabled: false,
+                            filled: true,
+                            fillColor: Colors.grey[200],
+                            labelStyle: AppStyle.cardfooter,
+                            label: Text(
+                              toDate == null
+                                  ? 'Select End Date and Time'
+                                  : toDate.toString(),
+                            ),
+                            border: OutlineInputBorder(
+                                borderSide: BorderSide.none,
+                                borderRadius: BorderRadius.circular(5)),
+                          ),
+                        ),
+                      )),
+                      const SizedBox(width: 5),
+                      InkWell(
+                          onTap: () {
+                            DatePicker.showDateTimePicker(
+                              context,
+                              showTitleActions: true,
+                              onConfirm: (date) {
+                                setState(() {
+                                  toDate = date;
+                                });
                               },
-                              child: const Icon(
-                                Icons.calendar_month,
-                                color: Colors.green,
-                              ))
-                        ],
-                      ),
+                              currentTime: DateTime.now(),
+                            );
+                          },
+                          child: const Icon(
+                            Icons.calendar_month,
+                            color: Colors.green,
+                          ))
                     ],
-                  )),
+                  ),
+                ],
+              )),
             ],
           ),
           const SizedBox(height: 10),
@@ -1133,7 +1148,7 @@ class _DateTimeRangePickerState extends State<DateTimeRangePicker> {
                     widget.onSpeedSelected(value);
                   },
                   dropdownMenuEntries:
-                  speedType.map<DropdownMenuEntry<String>>((String value) {
+                      speedType.map<DropdownMenuEntry<String>>((String value) {
                     return DropdownMenuEntry<String>(
                         value: value, label: value);
                   }).toList(),
@@ -1145,28 +1160,28 @@ class _DateTimeRangePickerState extends State<DateTimeRangePicker> {
                 child: PopupMenuButton(
                     icon: const Icon(Icons.filter_alt),
                     itemBuilder: (context) => [
-                      PopupMenuItem(
-                        value: 1,
-                        onTap: () {
-                          _setDateRange(1); // Yesterday
-                        },
-                        child: const Text("Yesterday"),
-                      ),
-                      PopupMenuItem(
-                        value: 2,
-                        onTap: () {
-                          _setDateRange(2); // 2 days ago
-                        },
-                        child: const Text("2 days ago"),
-                      ),
-                      PopupMenuItem(
-                        value: 3,
-                        onTap: () {
-                          _setDateRange(3); // 3 days ago
-                        },
-                        child: const Text("3 days ago"),
-                      ),
-                    ]),
+                          PopupMenuItem(
+                            value: 1,
+                            onTap: () {
+                              _setDateRange(1); // Yesterday
+                            },
+                            child: Text("Yesterday", style: AppStyle.cardfooter,),
+                          ),
+                          PopupMenuItem(
+                            value: 2,
+                            onTap: () {
+                              _setDateRange(2); // 2 days ago
+                            },
+                            child: Text("2 days ago", style: AppStyle.cardfooter,),
+                          ),
+                          PopupMenuItem(
+                            value: 3,
+                            onTap: () {
+                              _setDateRange(3); // 3 days ago
+                            },
+                            child: Text("3 days ago", style: AppStyle.cardfooter,),
+                          ),
+                        ]),
               ),
               Align(
                 alignment: Alignment.topLeft,
@@ -1175,7 +1190,7 @@ class _DateTimeRangePickerState extends State<DateTimeRangePicker> {
                     final routeHistoryReqEntity = VehicleRouteHistoryReqEntity(
                         vehicle_vin: widget.vin!,
                         time_from:
-                        fromDate.toString().split('.').first ?? "N/A",
+                            fromDate.toString().split('.').first ?? "N/A",
                         time_to: toDate.toString().split('.').first ?? "N/A",
                         token: widget.token!);
                     BlocProvider.of<VehicleRouteHistoryBloc>(context)
@@ -1197,11 +1212,6 @@ class _DateTimeRangePickerState extends State<DateTimeRangePicker> {
     );
   }
 }
-
-
-
-
-
 
 // class VehicleRouteHistory1 extends StatefulWidget {
 //   final String brand, model, vin, latitude, longitude, token;
@@ -1338,4 +1348,3 @@ class _DateTimeRangePickerState extends State<DateTimeRangePicker> {
 //     );
 //   }
 // }
-

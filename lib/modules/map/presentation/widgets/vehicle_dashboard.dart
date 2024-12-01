@@ -84,65 +84,62 @@ class _VehicleDashboardState extends State<VehicleDashboard> {
           token: widget.token),
     ];
 
-    return Padding(
-      padding: const EdgeInsets.only(top: 20),
-      child: Scaffold(
-        appBar: AppBar(
-          title: Row(
-            children: [
-              Text(
-                "Dashboard",
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                ),
-              ),
-            ],
-          ),
-        ),
-        body: Column(
+    return Scaffold(
+      appBar: AppBar(
+        title: const Row(
           children: [
-            // Tab Selection (Chips)
-            SizedBox(
-              height: 50.0,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: _tabs.length,
-                itemBuilder: (context, index) {
-                  return GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        _selectedTabIndex = index;
-                      });
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                      child: Chip(
-                        side: BorderSide.none,
-                        backgroundColor: _selectedTabIndex == index
-                            ? Colors.green
-                            : Colors.grey.shade200,
-                        label: Text(
-                          _tabs[index],
-                          style: TextStyle(
-                            color: _selectedTabIndex == index
-                                ? Colors.white
-                                : Colors.black,
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
-                },
+            Text(
+              "Dashboard",
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
               ),
-            ),
-
-            // Display selected page
-            Expanded(
-              child: pages[_selectedTabIndex],
             ),
           ],
         ),
+      ),
+      body: Column(
+        children: [
+          // Tab Selection (Chips)
+          SizedBox(
+            height: 50.0,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: _tabs.length,
+              itemBuilder: (context, index) {
+                return GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _selectedTabIndex = index;
+                    });
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    child: Chip(
+                      side: BorderSide.none,
+                      backgroundColor: _selectedTabIndex == index
+                          ? Colors.green
+                          : Colors.grey.shade200,
+                      label: Text(
+                        _tabs[index],
+                        style: TextStyle(
+                          color: _selectedTabIndex == index
+                              ? Colors.white
+                              : Colors.black,
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+
+          // Display selected page
+          Expanded(
+            child: pages[_selectedTabIndex],
+          ),
+        ],
       ),
     );
   }
@@ -197,7 +194,7 @@ class TodayDashboardPage extends StatelessWidget {
         },
         listener: (context, state) {
           if (state is VehicleFailure) {
-            if (state.message.contains("401")) {
+            if (state.message.contains("Unauthenticated")) {
               Navigator.pushNamed(context, "/login");
             }
             ScaffoldMessenger.of(context).showSnackBar(
@@ -252,7 +249,7 @@ class ThreeDaysDashboardPage extends StatelessWidget {
         },
         listener: (context, state) {
           if (state is VehicleFailure) {
-            if (state.message.contains("401")) {
+            if (state.message.contains("Unauthenticated")) {
               Navigator.pushNamed(context, "/login");
             }
             ScaffoldMessenger.of(context).showSnackBar(
@@ -309,7 +306,7 @@ class OneWeekDashboardPage extends StatelessWidget {
         },
         listener: (context, state) {
           if (state is VehicleFailure) {
-            if (state.message.contains("401")) {
+            if (state.message.contains("Unauthenticated")) {
               Navigator.pushNamed(context, "/login");
             }
             ScaffoldMessenger.of(context).showSnackBar(
@@ -364,7 +361,7 @@ class YesterdayDashboardPage extends StatelessWidget {
         },
         listener: (context, state) {
           if (state is VehicleFailure) {
-            if (state.message.contains("401")) {
+            if (state.message.contains("Unauthenticated")) {
               Navigator.pushNamed(context, "/login");
             }
             ScaffoldMessenger.of(context).showSnackBar(
@@ -377,616 +374,9 @@ class YesterdayDashboardPage extends StatelessWidget {
   }
 }
 
-// Page for "Today" analytics
-class TodayRouteHistory extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: GridView.count(
-        padding: const EdgeInsets.symmetric(horizontal: 10),
-        crossAxisCount: 2,
-        mainAxisSpacing: 10, // Adjust spacing between grid items
-        crossAxisSpacing: 5,
-        childAspectRatio: 2.0, //
-        children: [
-          Card(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              // crossAxisAlignment: CrossAxisAlignment,
-              children: [
-                const Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "Route Start",
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.w500),
-                      ),
-                      Text(
-                        "2024-09-17",
-                        softWrap: true,
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 2,
-                      ),
-                      Text(
-                        "00:18:24",
-                        softWrap: true,
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 2,
-                      ),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Icon(
-                    Icons.route,
-                    color: Colors.green.shade300,
-                  ),
-                )
-              ],
-            ),
-          ),
-          Card(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              // crossAxisAlignment: CrossAxisAlignment,
-              children: [
-                const Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "Route End",
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.w500),
-                      ),
-                      Text(
-                        "2024-09-17",
-                        softWrap: true,
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 2,
-                      ),
-                      Text(
-                        "00:18:24",
-                        softWrap: true,
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 2,
-                      ),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Icon(
-                    Icons.route,
-                    color: Colors.red.shade300,
-                  ),
-                )
-              ],
-            ),
-          ),
-          Card(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              // crossAxisAlignment: CrossAxisAlignment,
-              children: [
-                const Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "Route Length",
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.w500),
-                      ),
-                      Text(
-                        "20km",
-                        softWrap: true,
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 2,
-                      ),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Icon(
-                    Icons.route,
-                    color: Colors.green.shade300,
-                  ),
-                )
-              ],
-            ),
-          ),
-          Card(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              // crossAxisAlignment: CrossAxisAlignment,
-              children: [
-                const Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "Move Duration",
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.w500),
-                      ),
-                      Text(
-                        "20min 40s",
-                        softWrap: true,
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 2,
-                      ),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Icon(
-                    Icons.av_timer_rounded,
-                    color: Colors.green.shade300,
-                  ),
-                )
-              ],
-            ),
-          ),
-          Card(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              // crossAxisAlignment: CrossAxisAlignment,
-              children: [
-                const Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "Stop Duration",
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.w500),
-                      ),
-                      Text(
-                        "11hr 20min 40s",
-                        softWrap: true,
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 2,
-                      ),
-                      Text(
-                        "00:18:24",
-                        softWrap: true,
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 2,
-                      ),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Icon(
-                    Icons.av_timer_rounded,
-                    color: Colors.red.shade300,
-                  ),
-                )
-              ],
-            ),
-          ),
-          Card(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              // crossAxisAlignment: CrossAxisAlignment,
-              children: [
-                const Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "Stop Count",
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.w500),
-                      ),
-                      Text(
-                        "3",
-                        softWrap: true,
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 2,
-                      ),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Icon(
-                    Icons.hexagon,
-                    color: Colors.red.shade300,
-                  ),
-                )
-              ],
-            ),
-          ),
-          Card(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              // crossAxisAlignment: CrossAxisAlignment,
-              children: [
-                const Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "Top Speed",
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.w500),
-                      ),
-                      Text(
-                        "60kph",
-                        softWrap: true,
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 2,
-                      ),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Icon(
-                    Icons.timer,
-                    color: Colors.green.shade300,
-                  ),
-                )
-              ],
-            ),
-          ),
-          Card(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              // crossAxisAlignment: CrossAxisAlignment,
-              children: [
-                const Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "Average speed",
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.w500),
-                      ),
-                      Text(
-                        "30 kph",
-                        softWrap: true,
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 2,
-                      ),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Icon(
-                    Icons.timer_outlined,
-                    color: Colors.green.shade300,
-                  ),
-                )
-              ],
-            ),
-          ),
-          Card(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              // crossAxisAlignment: CrossAxisAlignment,
-              children: [
-                const Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "Overspeed\nCount",
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.w500),
-                      ),
-                      Text(
-                        "60kph",
-                        softWrap: true,
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 2,
-                      ),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Icon(
-                    Icons.access_time,
-                    color: Colors.green.shade300,
-                  ),
-                )
-              ],
-            ),
-          ),
-          Card(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              // crossAxisAlignment: CrossAxisAlignment,
-              children: [
-                const Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "Fuel\nConsumption",
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.w500),
-                        softWrap: true,
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 2,
-                      ),
-                      Text(
-                        "0 liters",
-                        softWrap: true,
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 2,
-                      ),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Icon(
-                    Icons.heat_pump_outlined,
-                    color: Colors.green.shade300,
-                  ),
-                )
-              ],
-            ),
-          ),
-          Card(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              // crossAxisAlignment: CrossAxisAlignment,
-              children: [
-                const Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "Avg. fuel\nConsumption",
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.w500),
-                      ),
-                      Text(
-                        "0 liters",
-                        softWrap: true,
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 2,
-                      ),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Icon(
-                    Icons.heat_pump_outlined,
-                    color: Colors.red.shade300,
-                  ),
-                )
-              ],
-            ),
-          ),
-          Card(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              // crossAxisAlignment: CrossAxisAlignment,
-              children: [
-                const Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "Fuel cost",
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.w500),
-                        softWrap: true,
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 2,
-                      ),
-                      Text(
-                        "0 USD",
-                        softWrap: true,
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 2,
-                      ),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Icon(
-                    Icons.monetization_on,
-                    color: Colors.green.shade300,
-                  ),
-                )
-              ],
-            ),
-          ),
-          Card(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              // crossAxisAlignment: CrossAxisAlignment,
-              children: [
-                const Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "Engine Work",
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.w500),
-                      ),
-                      Text(
-                        "0s",
-                        softWrap: true,
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 2,
-                      ),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Icon(
-                    Icons.heat_pump_outlined,
-                    color: Colors.red.shade300,
-                  ),
-                )
-              ],
-            ),
-          ),
-          Card(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              // crossAxisAlignment: CrossAxisAlignment,
-              children: [
-                const Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "Engine Idle",
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.w500),
-                        softWrap: true,
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 2,
-                      ),
-                      Text(
-                        "0s",
-                        softWrap: true,
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 2,
-                      ),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Icon(
-                    Icons.block_sharp,
-                    color: Colors.red.shade300,
-                  ),
-                )
-              ],
-            ),
-          ),
-          Card(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              // crossAxisAlignment: CrossAxisAlignment,
-              children: [
-                const Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "Odometer",
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.w500),
-                      ),
-                      Text(
-                        "0s",
-                        softWrap: true,
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 2,
-                      ),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Icon(
-                    Icons.timelapse,
-                    color: Colors.green.shade300,
-                  ),
-                )
-              ],
-            ),
-          ),
-          Card(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              // crossAxisAlignment: CrossAxisAlignment,
-              children: [
-                const Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "Engine hour",
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.w500),
-                        softWrap: true,
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 2,
-                      ),
-                      Text(
-                        "0s",
-                        softWrap: true,
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 2,
-                      ),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Icon(
-                    Icons.access_alarms,
-                    color: Colors.green.shade300,
-                  ),
-                )
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
 
 class GpsProcessor {
-  // Function to process GPS data and calculate metrics
+
   static Map<String, dynamic> calculateMetrics(List<DatumEntity> gpsData) {
     if (gpsData.isEmpty) {
       return {
@@ -1001,16 +391,11 @@ class GpsProcessor {
     }
 
     // Filter out stationary data (speed == 0)
-
-    // Filter out stationary data (speed == 0)
     List<DatumEntity> movingData = gpsData.where((data) {
       final speed = double.tryParse(data.speed) ?? 0.0;
       return speed > 0.0;
     }).toList();
-    // List<DatumEntity> movingData = gpsData.where((data) => double.parse(data.speed) > 0.00).toList();
-    print('gpsData::::::: ${gpsData[0].created_at}');
 
-    // Handle case where no moving data is present
     if (movingData.isEmpty) {
       return {
         'routeStart': gpsData.first.created_at,
@@ -1022,33 +407,29 @@ class GpsProcessor {
         'stopCount': gpsData.length,
       };
     }
-    // List<DatumEntity> movingData = gpsData.where((data) => double.tryParse(data.speed) ?? 0.0 > 0.00).toList();
 
     // Calculate route start and end
-    DatumEntity routeStart = movingData.first.created_at;
-    DatumEntity routeEnd = movingData.last.created_at;
-
-    DateTime startTime = movingData.first.created_at;
-    DateTime endTime = movingData.last.created_at;
-    Duration moveDuration = endTime.difference(startTime);
+    DateTime routeStart =  DateTime.parse(movingData.first.created_at);//movingData.first.created_at;
+    DateTime routeEnd =  DateTime.parse(movingData.last.created_at);//movingData.last.created_at;
+    Duration moveDuration = routeEnd.difference(routeStart);
 
     // Maximum speed and average speed
-    double maxSpeed =
-        movingData.map((data) => data.speed).reduce((a, b) => a > b ? a : b);
-    double averageSpeed =
-        movingData.map((data) => data.speed).reduce((a, b) => a + b) /
-            movingData.length;
+    double maxSpeed = movingData
+        .map((data) => double.tryParse(data.speed) ?? 0.0)
+        .reduce((a, b) => a > b ? a : b);
 
-    // Count stops (where speed is 0)
+    double averageSpeed = movingData
+        .map((data) => double.tryParse(data.speed) ?? 0.0)
+        .reduce((a, b) => a + b) /
+        movingData.length;
+
+    // Count stops and total stop duration
     int stopCount = gpsData.length - movingData.length;
-
-    // Calculate total stop duration
     Duration totalStopDuration = _calculateStopDuration(gpsData);
 
-    // Return metrics in a map
     return {
-      'routeStart': routeStart,
-      'routeEnd': routeEnd,
+      'routeStart': routeStart.toString(),
+      'routeEnd': routeEnd.toString(),
       'moveDuration': moveDuration.inMinutes,
       'stopDuration': totalStopDuration.inMinutes,
       'maxSpeed': maxSpeed,
@@ -1057,24 +438,28 @@ class GpsProcessor {
     };
   }
 
-  // Helper function to calculate total stop duration
   static Duration _calculateStopDuration(List<DatumEntity> gpsData) {
     Duration totalStopDuration = Duration.zero;
-
     DateTime? stopStartTime;
 
     for (int i = 0; i < gpsData.length; i++) {
       final speed = double.tryParse(gpsData[i].speed) ?? 0.0;
 
+      // Parse created_at as DateTime
+      final createdAt = DateTime.tryParse(gpsData[i].created_at);
+      if (createdAt == null) {
+        throw FormatException('Invalid date format in created_at: ${gpsData[i].created_at}');
+      }
+
       if (speed == 0.0) {
         // Start tracking stop time if not already tracking
         if (stopStartTime == null) {
-          stopStartTime = gpsData[i].created_at;
+          stopStartTime = createdAt;
         }
       } else {
         // If a stop period ends, calculate the duration
         if (stopStartTime != null) {
-          totalStopDuration += gpsData[i].created_at.difference(stopStartTime);
+          totalStopDuration += createdAt.difference(stopStartTime);
           stopStartTime = null; // Reset stop start time
         }
       }
@@ -1082,11 +467,46 @@ class GpsProcessor {
 
     // If the last entry is a stop, add its duration
     if (stopStartTime != null) {
-      totalStopDuration += gpsData.last.created_at.difference(stopStartTime);
+      final lastCreatedAt = DateTime.tryParse(gpsData.last.created_at);
+      if (lastCreatedAt == null) {
+        throw FormatException('Invalid date format in last created_at: ${gpsData.last.created_at}');
+      }
+      totalStopDuration += lastCreatedAt.difference(stopStartTime);
     }
 
     return totalStopDuration;
   }
+
+
+// static Duration _calculateStopDuration(List<DatumEntity> gpsData) {
+  //   Duration totalStopDuration = Duration.zero;
+  //
+  //   DateTime? stopStartTime;
+  //
+  //   for (int i = 0; i < gpsData.length; i++) {
+  //     final speed = double.tryParse(gpsData[i].speed) ?? 0.0;
+  //
+  //     if (speed == 0.0) {
+  //       // Start tracking stop time if not already tracking
+  //       if (stopStartTime == null) {
+  //         stopStartTime = gpsData[i].created_at;
+  //       }
+  //     } else {
+  //       // If a stop period ends, calculate the duration
+  //       if (stopStartTime != null) {
+  //         totalStopDuration += gpsData[i].created_at.difference(stopStartTime);
+  //         stopStartTime = null; // Reset stop start time
+  //       }
+  //     }
+  //   }
+  //
+  //   // If the last entry is a stop, add its duration
+  //   if (stopStartTime != null) {
+  //     totalStopDuration += gpsData.last.created_at.difference(stopStartTime);
+  //   }
+  //
+  //   return totalStopDuration;
+  // }
 }
 
 class DashboardVehicleRouteData extends StatefulWidget {
@@ -1154,7 +574,7 @@ class _DashboardVehicleRouteDataState extends State<DashboardVehicleRouteData> {
             _buildMetricCard(
               title: "Route Length",
               value: widget.vehicle.routeLength != null
-                  ? "${widget.vehicle.routeLength} km"
+                  ? "${widget.vehicle.routeLength?.toStringAsFixed(2)} km"
                   : "N/A",
               icon: Icon(
                 Icons.route,
@@ -1271,6 +691,616 @@ class _DashboardVehicleRouteDataState extends State<DashboardVehicleRouteData> {
   }
 }
 
+// Page for "Today" analytics
+// class TodayRouteHistory extends StatelessWidget {
+//   @override
+//   Widget build(BuildContext context) {
+//     return Expanded(
+//       child: GridView.count(
+//         padding: const EdgeInsets.symmetric(horizontal: 10),
+//         crossAxisCount: 2,
+//         mainAxisSpacing: 10, // Adjust spacing between grid items
+//         crossAxisSpacing: 5,
+//         childAspectRatio: 2.0, //
+//         children: [
+//           Card(
+//             child: Row(
+//               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//               // crossAxisAlignment: CrossAxisAlignment,
+//               children: [
+//                 Padding(
+//                   padding: EdgeInsets.all(8.0),
+//                   child: Column(
+//                     mainAxisAlignment: MainAxisAlignment.start,
+//                     crossAxisAlignment: CrossAxisAlignment.start,
+//                     children: [
+//                       Text(
+//                         "Route Start",
+//                         style: AppStyle.cardSubtitle.copyWith(fontSize: 14)
+//                       ),
+//                       Text(
+//                         "2024-09-17",
+//                         style: AppStyle.cardfooter,
+//                         softWrap: true,
+//                         overflow: TextOverflow.ellipsis,
+//                         maxLines: 2,
+//                       ),
+//                       Text(
+//                         "00:18:24",
+//                         style: AppStyle.cardfooter,
+//                         softWrap: true,
+//                         overflow: TextOverflow.ellipsis,
+//                         maxLines: 2,
+//                       ),
+//                     ],
+//                   ),
+//                 ),
+//                 Padding(
+//                   padding: const EdgeInsets.all(8.0),
+//                   child: Icon(
+//                     Icons.route,
+//                     color: Colors.green.shade300,
+//                   ),
+//                 )
+//               ],
+//             ),
+//           ),
+//           Card(
+//             child: Row(
+//               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//               // crossAxisAlignment: CrossAxisAlignment,
+//               children: [
+//                 const Padding(
+//                   padding: EdgeInsets.all(8.0),
+//                   child: Column(
+//                     mainAxisAlignment: MainAxisAlignment.start,
+//                     crossAxisAlignment: CrossAxisAlignment.start,
+//                     children: [
+//                       Text(
+//                         "Route End",
+//                         style: TextStyle(
+//                             fontSize: 16, fontWeight: FontWeight.w500),
+//                       ),
+//                       Text(
+//                         "2024-09-17",
+//                         softWrap: true,
+//                         overflow: TextOverflow.ellipsis,
+//                         maxLines: 2,
+//                       ),
+//                       Text(
+//                         "00:18:24",
+//                         softWrap: true,
+//                         overflow: TextOverflow.ellipsis,
+//                         maxLines: 2,
+//                       ),
+//                     ],
+//                   ),
+//                 ),
+//                 Padding(
+//                   padding: const EdgeInsets.all(8.0),
+//                   child: Icon(
+//                     Icons.route,
+//                     color: Colors.red.shade300,
+//                   ),
+//                 )
+//               ],
+//             ),
+//           ),
+//           Card(
+//             child: Row(
+//               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//               // crossAxisAlignment: CrossAxisAlignment,
+//               children: [
+//                 const Padding(
+//                   padding: EdgeInsets.all(8.0),
+//                   child: Column(
+//                     mainAxisAlignment: MainAxisAlignment.start,
+//                     crossAxisAlignment: CrossAxisAlignment.start,
+//                     children: [
+//                       Text(
+//                         "Route Length",
+//                         style: TextStyle(
+//                             fontSize: 16, fontWeight: FontWeight.w500),
+//                       ),
+//                       Text(
+//                         "20km",
+//                         softWrap: true,
+//                         overflow: TextOverflow.ellipsis,
+//                         maxLines: 2,
+//                       ),
+//                     ],
+//                   ),
+//                 ),
+//                 Padding(
+//                   padding: const EdgeInsets.all(8.0),
+//                   child: Icon(
+//                     Icons.route,
+//                     color: Colors.green.shade300,
+//                   ),
+//                 )
+//               ],
+//             ),
+//           ),
+//           Card(
+//             child: Row(
+//               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//               // crossAxisAlignment: CrossAxisAlignment,
+//               children: [
+//                 const Padding(
+//                   padding: EdgeInsets.all(8.0),
+//                   child: Column(
+//                     mainAxisAlignment: MainAxisAlignment.start,
+//                     crossAxisAlignment: CrossAxisAlignment.start,
+//                     children: [
+//                       Text(
+//                         "Move Duration",
+//                         style: TextStyle(
+//                             fontSize: 16, fontWeight: FontWeight.w500),
+//                       ),
+//                       Text(
+//                         "20min 40s",
+//                         softWrap: true,
+//                         overflow: TextOverflow.ellipsis,
+//                         maxLines: 2,
+//                       ),
+//                     ],
+//                   ),
+//                 ),
+//                 Padding(
+//                   padding: const EdgeInsets.all(8.0),
+//                   child: Icon(
+//                     Icons.av_timer_rounded,
+//                     color: Colors.green.shade300,
+//                   ),
+//                 )
+//               ],
+//             ),
+//           ),
+//           Card(
+//             child: Row(
+//               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//               // crossAxisAlignment: CrossAxisAlignment,
+//               children: [
+//                 const Padding(
+//                   padding: EdgeInsets.all(8.0),
+//                   child: Column(
+//                     mainAxisAlignment: MainAxisAlignment.start,
+//                     crossAxisAlignment: CrossAxisAlignment.start,
+//                     children: [
+//                       Text(
+//                         "Stop Duration",
+//                         style: TextStyle(
+//                             fontSize: 16, fontWeight: FontWeight.w500),
+//                       ),
+//                       Text(
+//                         "11hr 20min 40s",
+//                         softWrap: true,
+//                         overflow: TextOverflow.ellipsis,
+//                         maxLines: 2,
+//                       ),
+//                       Text(
+//                         "00:18:24",
+//                         softWrap: true,
+//                         overflow: TextOverflow.ellipsis,
+//                         maxLines: 2,
+//                       ),
+//                     ],
+//                   ),
+//                 ),
+//                 Padding(
+//                   padding: const EdgeInsets.all(8.0),
+//                   child: Icon(
+//                     Icons.av_timer_rounded,
+//                     color: Colors.red.shade300,
+//                   ),
+//                 )
+//               ],
+//             ),
+//           ),
+//           Card(
+//             child: Row(
+//               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//               // crossAxisAlignment: CrossAxisAlignment,
+//               children: [
+//                 const Padding(
+//                   padding: EdgeInsets.all(8.0),
+//                   child: Column(
+//                     mainAxisAlignment: MainAxisAlignment.start,
+//                     crossAxisAlignment: CrossAxisAlignment.start,
+//                     children: [
+//                       Text(
+//                         "Stop Count",
+//                         style: TextStyle(
+//                             fontSize: 16, fontWeight: FontWeight.w500),
+//                       ),
+//                       Text(
+//                         "3",
+//                         softWrap: true,
+//                         overflow: TextOverflow.ellipsis,
+//                         maxLines: 2,
+//                       ),
+//                     ],
+//                   ),
+//                 ),
+//                 Padding(
+//                   padding: const EdgeInsets.all(8.0),
+//                   child: Icon(
+//                     Icons.hexagon,
+//                     color: Colors.red.shade300,
+//                   ),
+//                 )
+//               ],
+//             ),
+//           ),
+//           Card(
+//             child: Row(
+//               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//               // crossAxisAlignment: CrossAxisAlignment,
+//               children: [
+//                 const Padding(
+//                   padding: EdgeInsets.all(8.0),
+//                   child: Column(
+//                     mainAxisAlignment: MainAxisAlignment.start,
+//                     crossAxisAlignment: CrossAxisAlignment.start,
+//                     children: [
+//                       Text(
+//                         "Top Speed",
+//                         style: TextStyle(
+//                             fontSize: 16, fontWeight: FontWeight.w500),
+//                       ),
+//                       Text(
+//                         "60kph",
+//                         softWrap: true,
+//                         overflow: TextOverflow.ellipsis,
+//                         maxLines: 2,
+//                       ),
+//                     ],
+//                   ),
+//                 ),
+//                 Padding(
+//                   padding: const EdgeInsets.all(8.0),
+//                   child: Icon(
+//                     Icons.timer,
+//                     color: Colors.green.shade300,
+//                   ),
+//                 )
+//               ],
+//             ),
+//           ),
+//           Card(
+//             child: Row(
+//               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//               // crossAxisAlignment: CrossAxisAlignment,
+//               children: [
+//                 const Padding(
+//                   padding: EdgeInsets.all(8.0),
+//                   child: Column(
+//                     mainAxisAlignment: MainAxisAlignment.start,
+//                     crossAxisAlignment: CrossAxisAlignment.start,
+//                     children: [
+//                       Text(
+//                         "Average speed",
+//                         style: TextStyle(
+//                             fontSize: 16, fontWeight: FontWeight.w500),
+//                       ),
+//                       Text(
+//                         "30 kph",
+//                         softWrap: true,
+//                         overflow: TextOverflow.ellipsis,
+//                         maxLines: 2,
+//                       ),
+//                     ],
+//                   ),
+//                 ),
+//                 Padding(
+//                   padding: const EdgeInsets.all(8.0),
+//                   child: Icon(
+//                     Icons.timer_outlined,
+//                     color: Colors.green.shade300,
+//                   ),
+//                 )
+//               ],
+//             ),
+//           ),
+//           Card(
+//             child: Row(
+//               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//               // crossAxisAlignment: CrossAxisAlignment,
+//               children: [
+//                 const Padding(
+//                   padding: EdgeInsets.all(8.0),
+//                   child: Column(
+//                     mainAxisAlignment: MainAxisAlignment.start,
+//                     crossAxisAlignment: CrossAxisAlignment.start,
+//                     children: [
+//                       Text(
+//                         "Overspeed\nCount",
+//                         style: TextStyle(
+//                             fontSize: 16, fontWeight: FontWeight.w500),
+//                       ),
+//                       Text(
+//                         "60kph",
+//                         softWrap: true,
+//                         overflow: TextOverflow.ellipsis,
+//                         maxLines: 2,
+//                       ),
+//                     ],
+//                   ),
+//                 ),
+//                 Padding(
+//                   padding: const EdgeInsets.all(8.0),
+//                   child: Icon(
+//                     Icons.access_time,
+//                     color: Colors.green.shade300,
+//                   ),
+//                 )
+//               ],
+//             ),
+//           ),
+//           Card(
+//             child: Row(
+//               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//               // crossAxisAlignment: CrossAxisAlignment,
+//               children: [
+//                 const Padding(
+//                   padding: EdgeInsets.all(8.0),
+//                   child: Column(
+//                     mainAxisAlignment: MainAxisAlignment.start,
+//                     crossAxisAlignment: CrossAxisAlignment.start,
+//                     children: [
+//                       Text(
+//                         "Fuel\nConsumption",
+//                         style: TextStyle(
+//                             fontSize: 16, fontWeight: FontWeight.w500),
+//                         softWrap: true,
+//                         overflow: TextOverflow.ellipsis,
+//                         maxLines: 2,
+//                       ),
+//                       Text(
+//                         "0 liters",
+//                         softWrap: true,
+//                         overflow: TextOverflow.ellipsis,
+//                         maxLines: 2,
+//                       ),
+//                     ],
+//                   ),
+//                 ),
+//                 Padding(
+//                   padding: const EdgeInsets.all(8.0),
+//                   child: Icon(
+//                     Icons.heat_pump_outlined,
+//                     color: Colors.green.shade300,
+//                   ),
+//                 )
+//               ],
+//             ),
+//           ),
+//           Card(
+//             child: Row(
+//               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//               // crossAxisAlignment: CrossAxisAlignment,
+//               children: [
+//                 const Padding(
+//                   padding: EdgeInsets.all(8.0),
+//                   child: Column(
+//                     mainAxisAlignment: MainAxisAlignment.start,
+//                     crossAxisAlignment: CrossAxisAlignment.start,
+//                     children: [
+//                       Text(
+//                         "Avg. fuel\nConsumption",
+//                         style: TextStyle(
+//                             fontSize: 16, fontWeight: FontWeight.w500),
+//                       ),
+//                       Text(
+//                         "0 liters",
+//                         softWrap: true,
+//                         overflow: TextOverflow.ellipsis,
+//                         maxLines: 2,
+//                       ),
+//                     ],
+//                   ),
+//                 ),
+//                 Padding(
+//                   padding: const EdgeInsets.all(8.0),
+//                   child: Icon(
+//                     Icons.heat_pump_outlined,
+//                     color: Colors.red.shade300,
+//                   ),
+//                 )
+//               ],
+//             ),
+//           ),
+//           Card(
+//             child: Row(
+//               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//               // crossAxisAlignment: CrossAxisAlignment,
+//               children: [
+//                 const Padding(
+//                   padding: EdgeInsets.all(8.0),
+//                   child: Column(
+//                     mainAxisAlignment: MainAxisAlignment.start,
+//                     crossAxisAlignment: CrossAxisAlignment.start,
+//                     children: [
+//                       Text(
+//                         "Fuel cost",
+//                         style: TextStyle(
+//                             fontSize: 16, fontWeight: FontWeight.w500),
+//                         softWrap: true,
+//                         overflow: TextOverflow.ellipsis,
+//                         maxLines: 2,
+//                       ),
+//                       Text(
+//                         "0 USD",
+//                         softWrap: true,
+//                         overflow: TextOverflow.ellipsis,
+//                         maxLines: 2,
+//                       ),
+//                     ],
+//                   ),
+//                 ),
+//                 Padding(
+//                   padding: const EdgeInsets.all(8.0),
+//                   child: Icon(
+//                     Icons.monetization_on,
+//                     color: Colors.green.shade300,
+//                   ),
+//                 )
+//               ],
+//             ),
+//           ),
+//           Card(
+//             child: Row(
+//               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//               // crossAxisAlignment: CrossAxisAlignment,
+//               children: [
+//                 const Padding(
+//                   padding: EdgeInsets.all(8.0),
+//                   child: Column(
+//                     mainAxisAlignment: MainAxisAlignment.start,
+//                     crossAxisAlignment: CrossAxisAlignment.start,
+//                     children: [
+//                       Text(
+//                         "Engine Work",
+//                         style: TextStyle(
+//                             fontSize: 16, fontWeight: FontWeight.w500),
+//                       ),
+//                       Text(
+//                         "0s",
+//                         softWrap: true,
+//                         overflow: TextOverflow.ellipsis,
+//                         maxLines: 2,
+//                       ),
+//                     ],
+//                   ),
+//                 ),
+//                 Padding(
+//                   padding: const EdgeInsets.all(8.0),
+//                   child: Icon(
+//                     Icons.heat_pump_outlined,
+//                     color: Colors.red.shade300,
+//                   ),
+//                 )
+//               ],
+//             ),
+//           ),
+//           Card(
+//             child: Row(
+//               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//               // crossAxisAlignment: CrossAxisAlignment,
+//               children: [
+//                 const Padding(
+//                   padding: EdgeInsets.all(8.0),
+//                   child: Column(
+//                     mainAxisAlignment: MainAxisAlignment.start,
+//                     crossAxisAlignment: CrossAxisAlignment.start,
+//                     children: [
+//                       Text(
+//                         "Engine Idle",
+//                         style: TextStyle(
+//                             fontSize: 16, fontWeight: FontWeight.w500),
+//                         softWrap: true,
+//                         overflow: TextOverflow.ellipsis,
+//                         maxLines: 2,
+//                       ),
+//                       Text(
+//                         "0s",
+//                         softWrap: true,
+//                         overflow: TextOverflow.ellipsis,
+//                         maxLines: 2,
+//                       ),
+//                     ],
+//                   ),
+//                 ),
+//                 Padding(
+//                   padding: const EdgeInsets.all(8.0),
+//                   child: Icon(
+//                     Icons.block_sharp,
+//                     color: Colors.red.shade300,
+//                   ),
+//                 )
+//               ],
+//             ),
+//           ),
+//           Card(
+//             child: Row(
+//               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//               // crossAxisAlignment: CrossAxisAlignment,
+//               children: [
+//                 const Padding(
+//                   padding: EdgeInsets.all(8.0),
+//                   child: Column(
+//                     mainAxisAlignment: MainAxisAlignment.start,
+//                     crossAxisAlignment: CrossAxisAlignment.start,
+//                     children: [
+//                       Text(
+//                         "Odometer",
+//                         style: TextStyle(
+//                             fontSize: 16, fontWeight: FontWeight.w500),
+//                       ),
+//                       Text(
+//                         "0s",
+//                         softWrap: true,
+//                         overflow: TextOverflow.ellipsis,
+//                         maxLines: 2,
+//                       ),
+//                     ],
+//                   ),
+//                 ),
+//                 Padding(
+//                   padding: const EdgeInsets.all(8.0),
+//                   child: Icon(
+//                     Icons.timelapse,
+//                     color: Colors.green.shade300,
+//                   ),
+//                 )
+//               ],
+//             ),
+//           ),
+//           Card(
+//             child: Row(
+//               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//               // crossAxisAlignment: CrossAxisAlignment,
+//               children: [
+//                 const Padding(
+//                   padding: EdgeInsets.all(8.0),
+//                   child: Column(
+//                     mainAxisAlignment: MainAxisAlignment.start,
+//                     crossAxisAlignment: CrossAxisAlignment.start,
+//                     children: [
+//                       Text(
+//                         "Engine hour",
+//                         style: TextStyle(
+//                             fontSize: 16, fontWeight: FontWeight.w500),
+//                         softWrap: true,
+//                         overflow: TextOverflow.ellipsis,
+//                         maxLines: 2,
+//                       ),
+//                       Text(
+//                         "0s",
+//                         softWrap: true,
+//                         overflow: TextOverflow.ellipsis,
+//                         maxLines: 2,
+//                       ),
+//                     ],
+//                   ),
+//                 ),
+//                 Padding(
+//                   padding: const EdgeInsets.all(8.0),
+//                   child: Icon(
+//                     Icons.access_alarms,
+//                     color: Colors.green.shade300,
+//                   ),
+//                 )
+//               ],
+//             ),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+// }
+
+///---
 // class DashboardVehicleRouteData extends StatefulWidget {
 // final VehicleRouteHistoryRespEntity vehicle;
 //   const DashboardVehicleRouteData({super.key, required this.vehicle,});

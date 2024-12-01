@@ -25,7 +25,8 @@ class MapPage extends StatefulWidget {
 
 class _MapPageState extends State<MapPage> {
   late GoogleMapController mapController;
-  BitmapDescriptor? _customIcon;
+  BitmapDescriptor? _offlineCustomIcon;
+  BitmapDescriptor? _onlineCustomIcon;
 
   final double _geofenceRadius = 5000;
   PrefUtils prefUtils = PrefUtils();
@@ -50,14 +51,14 @@ class _MapPageState extends State<MapPage> {
   Future<void> _loadInitialData() async {
     try {
       await Future.wait([
-        _setCustomMarkerIcon(),
+        _setOfflineCustomMarkerIcon(),
       ]);
     } catch (e) {
       print('Error during initialization: $e');
     }
   }
 
-  Future<void> _setCustomMarkerIcon() async {
+  Future<void> _setOfflineCustomMarkerIcon() async {
     try {
       final iconSize = 15.0; // Adjust this size as needed
 
@@ -69,7 +70,26 @@ class _MapPageState extends State<MapPage> {
       );
 
       setState(() {
-        _customIcon = image; // Save the custom icon to use on the map
+        _offlineCustomIcon = image; // Save the custom icon to use on the map
+      });
+    } catch (e) {
+      print('Error loading custom marker icon: $e');
+    }
+  }
+
+  Future<void> _setOnlineCustomMarkerIcon() async {
+    try {
+      final iconSize = 15.0; // Adjust this size as needed
+
+      // Load and resize the image
+      final image = await BitmapDescriptor.fromAssetImage(
+        ImageConfiguration(
+            size: Size(iconSize, iconSize)), // Size of the marker icon
+        'assets/images/green_moving_car_01.png', // Your custom image path
+      );
+
+      setState(() {
+        _onlineCustomIcon = image; // Save the custom icon to use on the map
       });
     } catch (e) {
       print('Error loading custom marker icon: $e');
@@ -117,7 +137,9 @@ class _MapPageState extends State<MapPage> {
               child: BlocConsumer<LastLocationBloc, MapState>(
                 listener: (context, state) {
                   if (state is MapFailure) {
-                    Navigator.pushNamed(context, "/login");
+                    if (state.message.contains("Unauthenticated")) {
+                      Navigator.pushNamed(context, "/login");
+                    }
                     ScaffoldMessenger.of(context)
                         .showSnackBar(SnackBar(content: Text(state.message)));
                   }
@@ -139,10 +161,6 @@ class _MapPageState extends State<MapPage> {
                             zoom: 6.0, // Adjust zoom for initialization
                           ),
 
-                          // initialCameraPosition: const CameraPosition(
-                          //   target: LatLng(0.0, 20.0), // Center of Africa
-                          //   zoom: 3.0, // Broad view of Africa
-                          // ),
                           markers: Set<Marker>.of(_markers),
                           polygons: isGeofence && _geofencePolygon != null
                               ? {_geofencePolygon!}
@@ -208,21 +226,6 @@ class _MapPageState extends State<MapPage> {
         target: LatLng(9.0820, 8.6753), // Center of Nigeria
         zoom: 6.0, // Adjust zoom for initialization
       ),
-
-      //   // Optionally move camera to Africa when map loads
-      //   mapController.moveCamera(
-      //     CameraUpdate.newCameraPosition(
-      //       const CameraPosition(
-      //         target: LatLng(0.0, 20.0), // Center of Africa
-      //         zoom: 5.0, // Broad view of Africa
-      //       ),
-      //     ),
-      //   );
-      // },
-      // initialCameraPosition: const CameraPosition(
-      //   target: LatLng(0.0, 20.0), // Center of Africa
-      //   zoom: 3.0, // Broad view of Africa
-      // ),
       markers: Set<Marker>.of(_markers),
       polygons: isGeofence && _geofencePolygon != null
           ? {_geofencePolygon!}
@@ -239,9 +242,9 @@ class _MapPageState extends State<MapPage> {
     required List<VehicleEntity> vehicles,
   }) {
     _markers.clear(); // Clear existing markers
-
     // Add markers for all vehicles' last known locations
     for (var vehicle in allVehicles) {
+      print('object-------------allVehicles');
       if (vehicle.vehicle != null &&
           vehicle.vehicle!.details?.last_location != null) {
         _addGeofencePolygon(vehicle.vehicle?.geofence?.coordinates);
@@ -256,10 +259,10 @@ class _MapPageState extends State<MapPage> {
         // Cache the current position as the "previous position" if not already present
         final numberPlate = vehicle.vehicle!.details!.number_plate!;
         _previousPositions.putIfAbsent(numberPlate, () => currentPosition);
-
+        // _setOfflineCustomMarkerIcon();
         _markers.add(
           Marker(
-            icon: _customIcon!, // Icon for stationary vehicles
+            icon: _offlineCustomIcon!, // Icon for stationary vehicles
             markerId: MarkerId(numberPlate),
             position: currentPosition,
             onTap: () {
@@ -271,14 +274,20 @@ class _MapPageState extends State<MapPage> {
           ),
         );
       }
+
     }
 
     // Update markers for vehicles that have moved
     for (var vehicle in vehicles) {
+      print(">>>>>>>>>>>>>>>> moving vehicle block 01<<<<<<<<<<<<<<<<<<<<<");
+      print('vehicle status: ${vehicle.locationInfo.vehicleStatus}');
+      print('status: ${vehicle.locationInfo.tracker!.status}');
       if (vehicle.locationInfo.vehicleStatus == "Moving" &&
           vehicle.locationInfo.tracker!.position!.latitude != null &&
           vehicle.locationInfo.tracker!.position!.longitude != null) {
         _addGeofencePolygon2(vehicle.locationInfo.withinGeofence!.coordinates);
+
+        print(">>>>>>>>>>>>>>>> moving vehicle block 02<<<<<<<<<<<<<<<<<<<<<");
 
         final currentPosition = LatLng(
           double.parse(
@@ -301,9 +310,11 @@ class _MapPageState extends State<MapPage> {
           bearing = _calculateBearing(previousPosition, currentPosition);
         }
 
+        _setOnlineCustomMarkerIcon();
+
         _markers.add(
           Marker(
-            icon: _customIcon!, // Icon for moving vehicles
+            icon: _onlineCustomIcon!, // Icon for moving vehicles
             markerId: MarkerId(numberPlate),
             position: currentPosition,
             onTap: () {
@@ -316,6 +327,15 @@ class _MapPageState extends State<MapPage> {
                 bearing ?? 0, // Set bearing if available, otherwise default
           ),
         );
+      }
+      else {
+        print('>>>>>>>>>> not moving here <<<<<<<<<<<<<<<<');
+        // ScaffoldMessenger.of(context).showSnackBar(
+        //   SnackBar(
+        //     content: Text('Vehicle is not moving', style: AppStyle.cardfooter,),
+        //     backgroundColor: Colors.red,
+        //   ),
+        // );
       }
     }
   }
@@ -435,7 +455,7 @@ class _MapPageState extends State<MapPage> {
         position: LatLng(
             double.parse(data.vehicle!.details!.last_location!.latitude!),
             double.parse(data.vehicle!.details!.last_location!.longitude!)),
-        icon: _customIcon!,
+        icon: _offlineCustomIcon!,
         onTap: () {
           _showVehicleToolTip(data);
         },
@@ -449,18 +469,19 @@ class _MapPageState extends State<MapPage> {
     // Replace with actual API call to fetch vehicles within the bounds
   }
 
-  // Widget handleLocationUpdate(){
-  //   return  BlocBuilder<VehicleLocationBloc, List<VehicleEntity>>(
-  //     builder: (context, vehicles) {
-  //       if (vehicles.isEmpty) {
-  //         return Container();
-  //       }
-  //       return Container();
-  //     },
-  //   );
-  // }
-}
 
+}
+// Widget handleLocationUpdate(){
+//   return  BlocBuilder<VehicleLocationBloc, List<VehicleEntity>>(
+//     builder: (context, vehicles) {
+//       if (vehicles.isEmpty) {
+//         return Container();
+//       }
+//       return Container();
+//     },
+//   );
+// }
+///
 //   void _updateMarkers(List<LastLocationRespEntity> allVehicles, {required List<VehicleEntity> vehicles}) {
 //     _markers.clear(); // Clear existing markers
 //

@@ -23,6 +23,13 @@ class _LoginPageState extends State<LoginPage> {
 
   bool isPasswordVisible = true;
 
+  @override
+  void dispose() {
+    _passwordController.dispose();
+    _emailController.dispose();
+    super.dispose();
+  }
+
   // Function to save auth_user into SharedPreferences
   Future<void> _saveAuthUser(
       String first_name,
@@ -198,6 +205,9 @@ class _LoginPageState extends State<LoginPage> {
                   ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text(state.resp.message)));
                 } else if (state is AuthFailure) {
+                  // if (state.message.contains("Unauthenticated")) {
+                  // Navigator.pushNamed(context, "/login");
+                  // }
                   ScaffoldMessenger.of(context)
                       .showSnackBar(SnackBar(content: Text(state.message)));
                 }

@@ -63,6 +63,11 @@ class AuthRepositoryImpl implements AuthRepository {
       otp: changePwdReqEntity.otp,
       passwordConfirmation: changePwdReqEntity.passwordConfirmation,
     );
+
+    print("email: ${reqChangePwdReqModel.email}");
+    print("otp: ${ reqChangePwdReqModel.otp}");
+    print("password: ${ reqChangePwdReqModel.password}");
+    print("retype-pwd: ${reqChangePwdReqModel.passwordConfirmation}");
     try {
       return await handleOtpErrorHandling(
           apiClient.changePassword(

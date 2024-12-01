@@ -206,8 +206,8 @@ class TodayDashboardPage extends StatelessWidget {
         },
         listener: (context, state) {
           if (state is VehicleFailure) {
-            if (state.message.contains("401")) {
-              Navigator.pushNamed(context, "/login");
+            if (state.message.contains("Unauthenticated")) {
+            Navigator.pushNamed(context, "/login");
             }
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(state.message)),

@@ -98,7 +98,7 @@ class Datum extends DashDatumEntity {
         tracker: json["tracker"] is Map<String, dynamic>
             ? Tracker.fromJson(json["tracker"])
             : null,
-        last_location: json["tracker"] is Map<String, dynamic>
+        last_location: json["last_location"] is Map<String, dynamic>
             ? LastLocation.fromJson(json["last_location"])
             : null,
       );
@@ -212,7 +212,7 @@ class LastLocation extends DashLastLocationEntity {
     required super.error_check,
     required super.event,
     required super.parse_time,
-    required super.terminal_info,
+    // required super.terminal_info,
     required super.voltage_level,
     required super.gsm_signal_strength,
     required super.response_msg,
@@ -244,7 +244,7 @@ class LastLocation extends DashLastLocationEntity {
         error_check: json["error_check"],
         event: json["event"],
         parse_time: json["parse_time"],
-        terminal_info: json["terminal_info"],
+        // terminal_info: json["terminal_info"],
         voltage_level: json["voltage_level"],
         gsm_signal_strength: json["gsm_signal_strength"],
         response_msg: json["response_msg"],
@@ -276,7 +276,7 @@ class LastLocation extends DashLastLocationEntity {
         "error_check": error_check,
         "event": event,
         "parse_time": parse_time,
-        "terminal_info": terminal_info,
+        // "terminal_info": terminal_info,
         "voltage_level": voltage_level,
         "gsm_signal_strength": gsm_signal_strength,
         "response_msg": response_msg,

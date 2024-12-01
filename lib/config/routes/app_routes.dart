@@ -24,7 +24,7 @@ import '../../modules/profile/presentation/widgets/response_widget.dart';
 final routes = {
   '/': (BuildContext context) => OnboardingPage(),
   '/login': (BuildContext context) => LoginPage(),
-  // '/signup': (BuildContext context) => SignupPage(),
+  '/signup': (BuildContext context) => SignupPage(),
   '/home': (BuildContext context) => const Home(),
   // '/dashboard': (BuildContext context) => const DashboardPage(),
   '/bottomNav': (BuildContext context) =>  BottomNavBar(),
