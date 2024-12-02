@@ -8,9 +8,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../config/theme/app_style.dart';
 
 class ChangePwd extends StatefulWidget {
-  final String? otp;
+  // final String? otp;
   final String email;
-  const ChangePwd({super.key, this.otp, required this.email});
+  const ChangePwd({super.key, /*this.otp, */required this.email});
 
   @override
   State<ChangePwd> createState() => _ChangePwdState();
@@ -21,6 +21,8 @@ class _ChangePwdState extends State<ChangePwd> {
   final TextEditingController _pwdController = TextEditingController();
   final TextEditingController _retypePwdController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final TextEditingController _otpCodeController = TextEditingController();
+
 
   @override
   void dispose() {
@@ -73,21 +75,27 @@ class _ChangePwdState extends State<ChangePwd> {
                     controller: _pwdController,
                     obscureText: isPasswordVisible,
                     cursorColor: Colors.green,
-                    decoration: InputDecoration(
-                      labelText: 'Password',
+                    decoration: customInputDecoration(
+                        labelText: 'Password',
                       hintText: '*********',
-                      hintStyle: AppStyle.cardfooter
-                          .copyWith(fontSize: 12, color: Colors.grey[600]),
-                      labelStyle: AppStyle.cardfooter
-                          .copyWith(fontSize: 12, color: Colors.green[800]),
-                      filled: true,
-                      fillColor: Colors.grey[200],
                       prefixIcon: const Icon(Icons.lock_outline, color: Colors.green),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide.none,
-                      ),
-                    ),
+                    ).copyWith(),
+
+                    // InputDecoration(
+                    //   labelText: 'Password',
+                    //   hintText: '*********',
+                    //   hintStyle: AppStyle.cardfooter
+                    //       .copyWith(fontSize: 12, color: Colors.grey[600]),
+                    //   labelStyle: AppStyle.cardfooter
+                    //       .copyWith(fontSize: 12, color: Colors.green[800]),
+                    //   filled: true,
+                    //   fillColor: Colors.grey[200],
+                    //   prefixIcon: const Icon(Icons.lock_outline, color: Colors.green),
+                    //   border: OutlineInputBorder(
+                    //     borderRadius: BorderRadius.circular(10),
+                    //     borderSide: BorderSide.none,
+                    //   ),
+                    // ),
                     validator: (value) {
                       if (value!.isEmpty) {
                         return "Password cannot be empty";
@@ -105,39 +113,80 @@ class _ChangePwdState extends State<ChangePwd> {
                     controller: _retypePwdController,
                     obscureText: isPasswordVisible,
                     cursorColor: Colors.green,
-                    decoration: InputDecoration(
+                    decoration: customInputDecoration(
                       labelText: 'Retype Password',
                       hintText: '*********',
-                      hintStyle: AppStyle.cardfooter
-                          .copyWith(fontSize: 12, color: Colors.grey[600]),
-                      labelStyle: AppStyle.cardfooter
-                          .copyWith(fontSize: 12, color: Colors.green[800]),
                       prefixIcon: const Icon(Icons.lock_outline, color: Colors.green),
-                      suffix: InkWell(
-                        onTap: () {
-                          setState(() {
-                            isPasswordVisible = !isPasswordVisible;
-                          });
-                        },
-                        child: Icon(
-                          isPasswordVisible
-                              ? Icons.visibility_off
-                              : Icons.visibility,
-                          color: Colors.green,
-                        ),
+                    ).copyWith(suffix: InkWell(
+                      onTap: () {
+                        setState(() {
+                          isPasswordVisible = !isPasswordVisible;
+                        });
+                      },
+                      child: Icon(
+                        isPasswordVisible
+                            ? Icons.visibility_off
+                            : Icons.visibility,
+                        color: Colors.green,
                       ),
-                      filled: true,
-                      fillColor: Colors.grey[200],
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide.none,
-                      ),
-                    ),
+                    ),),
+
+                    // decoration: InputDecoration(
+                    //   labelText: 'Retype Password',
+                    //   hintText: '*********',
+                    //   hintStyle: AppStyle.cardfooter
+                    //       .copyWith(fontSize: 12, color: Colors.grey[600]),
+                    //   labelStyle: AppStyle.cardfooter
+                    //       .copyWith(fontSize: 12, color: Colors.green[800]),
+                    //   prefixIcon: const Icon(Icons.lock_outline, color: Colors.green),
+                    //   suffix: InkWell(
+                    //     onTap: () {
+                    //       setState(() {
+                    //         isPasswordVisible = !isPasswordVisible;
+                    //       });
+                    //     },
+                    //     child: Icon(
+                    //       isPasswordVisible
+                    //           ? Icons.visibility_off
+                    //           : Icons.visibility,
+                    //       color: Colors.green,
+                    //     ),
+                    //   ),
+                    //   filled: true,
+                    //   fillColor: Colors.grey[200],
+                    //   border: OutlineInputBorder(
+                    //     borderRadius: BorderRadius.circular(10),
+                    //     borderSide: BorderSide.none,
+                    //   ),
+                    // ),
                     validator: (value) {
                       if (value!.isEmpty) {
                         return "Retype password cannot be empty";
                       } else if (value != _pwdController.text) {
                         return "Passwords do not match";
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 15),
+                  Text(
+                    "OTP code",
+                    style: AppStyle.cardSubtitle.copyWith(fontSize: 14),
+                  ),
+                  const SizedBox(height: 5),
+                  TextFormField(
+                    controller: _otpCodeController,
+                    obscureText: isPasswordVisible,
+                    cursorColor: Colors.green,
+                    decoration: customInputDecoration(
+                      labelText: 'OTP',
+                      hintText: 'Enter the otp code',
+                      prefixIcon: const Icon(Icons.qr_code, color: Colors.green),
+                    ).copyWith(),
+
+                    validator: (value) {
+                      if (value!.isEmpty) {
+                        return "OTP cannot be empty";
                       }
                       return null;
                     },
@@ -180,9 +229,8 @@ class _ChangePwdState extends State<ChangePwd> {
                               final changePwdReqEntity = ChangePwdReqEntity(
                                 email: widget.email,
                                 password: _pwdController.text.trim(),
-                                otp: widget.otp ?? '',
-                                passwordConfirmation:
-                                _retypePwdController.text.trim(),
+                                otp: _otpCodeController.text.trim() ?? '',
+                                password_confirmation: _retypePwdController.text.trim(),
                               );
                               context.read<ProfileChangePwdBloc>().add(
                                 ProfileChangePwdEvent(changePwdReqEntity),

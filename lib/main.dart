@@ -16,40 +16,6 @@ import 'modules/map/presentation/bloc/map_bloc.dart';
 import 'modules/profile/presentation/bloc/profile_bloc.dart';
 import 'modules/websocket/presentation/bloc/vehicle_location_bloc.dart';
 
-// void main() async {
-//   WidgetsFlutterBinding.ensureInitialized();
-//   await DatabaseHelper().database; // Force database creation
-//   await SystemChrome.setPreferredOrientations([
-//     DeviceOrientation.portraitUp,
-//   ]);
-//
-//   final dbHelper = DatabaseHelper();
-//
-//   // Print all tables in the database
-//   await dbHelper.printTables();
-//   // Initialize the database
-//   // await _initializeDatabase();
-//   // Database db = await _initDatabase();
-//   initializeDependencies();
-//   await checkDatabaseFile();
-//   // Initialize the database and check the tables
-//
-//   // await printTables(db);
-//
-//   runApp(
-//     MultiProvider(
-//       providers: [
-//         ChangeNotifierProvider(create: (_) => GeofenceProvider()),
-//         ChangeNotifierProvider(create: (_) => ShopNowProvider()),
-//         ChangeNotifierProvider(create: (_) => MaintenanceReminderProvider()),
-//         ChangeNotifierProvider(create: (_) => VehicleTripProvider()),
-//       ],
-//       child: const MyApp(),
-//     ),
-//   );
-// }
-
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -145,3 +111,39 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+
+
+
+// void main() async {
+//   WidgetsFlutterBinding.ensureInitialized();
+//   await DatabaseHelper().database; // Force database creation
+//   await SystemChrome.setPreferredOrientations([
+//     DeviceOrientation.portraitUp,
+//   ]);
+//
+//   final dbHelper = DatabaseHelper();
+//
+//   // Print all tables in the database
+//   await dbHelper.printTables();
+//   // Initialize the database
+//   // await _initializeDatabase();
+//   // Database db = await _initDatabase();
+//   initializeDependencies();
+//   await checkDatabaseFile();
+//   // Initialize the database and check the tables
+//
+//   // await printTables(db);
+//
+//   runApp(
+//     MultiProvider(
+//       providers: [
+//         ChangeNotifierProvider(create: (_) => GeofenceProvider()),
+//         ChangeNotifierProvider(create: (_) => ShopNowProvider()),
+//         ChangeNotifierProvider(create: (_) => MaintenanceReminderProvider()),
+//         ChangeNotifierProvider(create: (_) => VehicleTripProvider()),
+//       ],
+//       child: const MyApp(),
+//     ),
+//   );
+// }
+

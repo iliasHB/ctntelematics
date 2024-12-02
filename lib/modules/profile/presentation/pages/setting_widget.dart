@@ -20,6 +20,7 @@ import '../../../../core/utils/pref_util.dart';
 import '../../../websocket/domain/entitties/resp_entities/vehicle_entity.dart';
 import '../../../websocket/presentation/bloc/vehicle_location_bloc.dart';
 import '../widgets/change_dialog.dart';
+import '../widgets/change_pwd_widget.dart';
 import '../widgets/notification_widget.dart';
 import '../widgets/support_widget.dart';
 import '../widgets/term_use_widget.dart';
@@ -291,44 +292,41 @@ class _SettingState extends State<Setting> {
               Card(
                 shadowColor: Colors.white,
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                  padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 10),
                   child: Column(
                     children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(vertical: 10),
-                        child: Row(
-                          children: [
-                            const Icon(
-                              CupertinoIcons.map_pin_ellipse,
-                              color: Colors.green,
-                              size: 20,
-                            ),
-                            const SizedBox(
-                              width: 10,
-                            ),
-                            Text("Geofencing setting",
-                                style: AppStyle.cardfooter),
-                            const Spacer(),
-                            Consumer<GeofenceProvider>(
-                              builder: (context, geofenceProvider, child) {
-                                return Checkbox(
-                                  value: geofenceProvider.isGeofence,
-                                  onChanged: (value) {
-                                    geofenceProvider.toggleGeofence(value ??
-                                        false); // Ensure value isn't null
-                                  },
-                                );
-                              },
-                            ),
-                            // Switch(
-                            //     value: isGeofence,
-                            //     onChanged: (value){
-                            //       setState(() {
-                            //         isGeofence = value;
-                            //       });
-                            //     })
-                          ],
-                        ),
+                      Row(
+                        children: [
+                          const Icon(
+                            CupertinoIcons.map_pin_ellipse,
+                            color: Colors.green,
+                            size: 20,
+                          ),
+                          const SizedBox(
+                            width: 10,
+                          ),
+                          Text("Geofencing setting",
+                              style: AppStyle.cardfooter),
+                          const Spacer(),
+                          Consumer<GeofenceProvider>(
+                            builder: (context, geofenceProvider, child) {
+                              return Checkbox(
+                                value: geofenceProvider.isGeofence,
+                                onChanged: (value) {
+                                  geofenceProvider.toggleGeofence(value ??
+                                      false); // Ensure value isn't null
+                                },
+                              );
+                            },
+                          ),
+                          // Switch(
+                          //     value: isGeofence,
+                          //     onChanged: (value){
+                          //       setState(() {
+                          //         isGeofence = value;
+                          //       });
+                          //     })
+                        ],
                       ),
                       InkWell(
                         onTap: () {
@@ -454,7 +452,7 @@ class _SettingState extends State<Setting> {
               Card(
                 shadowColor: Colors.white,
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                  padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 10.0),
                   child: Column(
                     children: [
                       BlocConsumer<ProfileGenerateOtpBloc, ProfileState>(
@@ -463,8 +461,13 @@ class _SettingState extends State<Setting> {
                             Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                    builder: (_) => VerifyEmailSettingsPage(
-                                        email: email!)));
+                                    builder: (_) =>
+                                        ChangePwd(email: email!)));
+                            // Navigator.push(
+                            //     context,
+                            //     MaterialPageRoute(
+                            //         builder: (_) => VerifyEmailSettingsPage(
+                            //             email: email!)));
                             // ChangePwdDialog.showChangePwdDialog(context, email);
                             ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(content: Text(state.resp.message)));

@@ -264,142 +264,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                       ),
                                     ),
                                   );
-                                  //   GridView.count(
-                                  //   crossAxisCount: 2,
-                                  //   mainAxisSpacing:
-                                  //       10, // Adjust spacing between grid items
-                                  //   crossAxisSpacing: 10,
-                                  //   childAspectRatio: 1.9, //
-                                  //   physics:
-                                  //       const NeverScrollableScrollPhysics(),
-                                  //   children: [
-                                  //     const VehicleStatusPieChart(
-                                  //       onlineCount: 0,
-                                  //       offlineCount: 0,
-                                  //       idlingCount: 0,
-                                  //       parkedCount: 0,
-                                  //     ),
-                                  //     const SizedBox(
-                                  //       height: 10,
-                                  //     ),
-                                  //     Container(
-                                  //         height: 80,
-                                  //         padding: const EdgeInsets.symmetric(
-                                  //             horizontal: 10, vertical: 10),
-                                  //         decoration: BoxDecoration(
-                                  //           borderRadius:
-                                  //               BorderRadius.circular(10),
-                                  //           color: Colors.white,
-                                  //         ),
-                                  //         child: ListView(
-                                  //           scrollDirection: Axis.horizontal,
-                                  //           children: const [
-                                  //             _BuildVehicleStatus(
-                                  //                 title: "Online",
-                                  //                 count: SizedBox(
-                                  //                     height: 15,
-                                  //                     width: 15,
-                                  //                     child:
-                                  //                         CircularProgressIndicator()),
-                                  //                 symbol: CircleAvatar(
-                                  //                   backgroundColor:
-                                  //                       Colors.green,
-                                  //                   radius: 8,
-                                  //                 )),
-                                  //             _BuildVehicleStatus(
-                                  //                 title: "Offline",
-                                  //                 count: SizedBox(
-                                  //                     height: 15,
-                                  //                     width: 15,
-                                  //                     child:
-                                  //                         CircularProgressIndicator()),
-                                  //                 symbol: CircleAvatar(
-                                  //                   backgroundColor: Colors.red,
-                                  //                   radius: 8,
-                                  //                 )),
-                                  //             _BuildVehicleStatus(
-                                  //                 title: "Idling",
-                                  //                 count: SizedBox(
-                                  //                     height: 15,
-                                  //                     width: 15,
-                                  //                     child:
-                                  //                         CircularProgressIndicator()),
-                                  //                 symbol: CircleAvatar(
-                                  //                   backgroundColor:
-                                  //                       Colors.yellow,
-                                  //                   radius: 8,
-                                  //                 )),
-                                  //             _BuildVehicleStatus(
-                                  //                 title: "Parking",
-                                  //                 count: SizedBox(
-                                  //                     height: 15,
-                                  //                     width: 15,
-                                  //                     child:
-                                  //                         CircularProgressIndicator()),
-                                  //                 symbol: CircleAvatar(
-                                  //                   backgroundColor:
-                                  //                       Colors.blueGrey,
-                                  //                   radius: 8,
-                                  //                 ))
-                                  //           ],
-                                  //         ))
-                                  //     // VehicleStatusCard(
-                                  //     //     status: 'Moving',
-                                  //     //     count: Text(
-                                  //     //       '0',
-                                  //     //       style: AppStyle.cardfooter.copyWith(
-                                  //     //           fontWeight: FontWeight.w300),
-                                  //     //       maxLines:
-                                  //     //           1, // Restrict to a single line for count as well
-                                  //     //       overflow: TextOverflow.ellipsis,
-                                  //     //     ),
-                                  //     //     color: Colors.green,
-                                  //     //     icon: const Icon(
-                                  //     //         CupertinoIcons.graph_circle_fill,
-                                  //     //         color: Colors.white)),
-                                  //     // const VehicleStatusCard(
-                                  //     //     status: 'Offline',
-                                  //     //     count: SizedBox(
-                                  //     //       height: 15,
-                                  //     //       width: 15,
-                                  //     //       child: CircularProgressIndicator(
-                                  //     //         strokeWidth: 2.0,
-                                  //     //       ),
-                                  //     //     ),
-                                  //     //     color: Colors.red,
-                                  //     //     icon: Icon(
-                                  //     //       CupertinoIcons.square_fill,
-                                  //     //       color: Colors.white,
-                                  //     //     )),
-                                  //     // const VehicleStatusCard(
-                                  //     //     status: 'Idling',
-                                  //     //     count: SizedBox(
-                                  //     //       height: 15,
-                                  //     //       width: 15,
-                                  //     //       child: CircularProgressIndicator(
-                                  //     //         strokeWidth: 2.0,
-                                  //     //       ),
-                                  //     //     ),
-                                  //     //     color: Colors.yellow,
-                                  //     //     icon: Icon(
-                                  //     //         CupertinoIcons
-                                  //     //             .square_split_2x1_fill,
-                                  //     //         color: Colors.white)),
-                                  //     // const VehicleStatusCard(
-                                  //     //   status: 'Parked',
-                                  //     //   count: SizedBox(
-                                  //     //     height: 15,
-                                  //     //     width: 15,
-                                  //     //     child: CircularProgressIndicator(
-                                  //     //       strokeWidth: 2.0,
-                                  //     //     ),
-                                  //     //   ),
-                                  //     //   color: Colors.black,
-                                  //     //   icon: Icon(CupertinoIcons.wifi_slash,
-                                  //     //       color: Colors.white),
-                                  //     // ),
-                                  //   ],
-                                  // );
+
                                 } else if (state is DashboardDone) {
                                   final vehiclesData = state.resp.data ?? [];
 
@@ -444,38 +309,17 @@ class _DashboardPageState extends State<DashboardPage> {
 
                                               return VehicleStatusPieChart(
                                                 onlineCount: 0,
-                                                offlineCount: vehicleCount,
+                                                offlineCount: offlineLength,
                                                 idlingCount: 0,
                                                 parkedCount: packedCount,
                                               );
                                             }
-
-                                            // final movingVehicles = vehicles
-                                            //     .where((v) =>
-                                            //         v.locationInfo
-                                            //             .vehicleStatus ==
-                                            //         "Moving")
-                                            //     .toList();
-
-                                            final parkedVehicles =
-                                                vehicles.where((v) {
-                                              return v.locationInfo
-                                                          .vehicleStatus ==
-                                                      "Parked" ||
-                                                  v.locationInfo
-                                                              .vehicleStatus ==
-                                                          "Stopped" &&
-                                                      v.locationInfo.tracker
-                                                              ?.status ==
-                                                          "online";
-                                            }).toList();
 
                                             final idlingVehicles =
                                                 vehicles.where((v) {
                                               return v.locationInfo
                                                       .vehicleStatus ==
                                                   "Idling";
-                                              //&& v.locationInfo.tracker?.position?.ignition == "on";
                                             }).toList();
 
                                             final onlineVehicles =
@@ -486,9 +330,8 @@ class _DashboardPageState extends State<DashboardPage> {
                                             }).toList();
 
                                             onlineCount == onlineVehicles.length;
-                                            //packedCount = parkedVehicles.length;
                                             idleCount = idlingVehicles.length;
-                                            offlineCount = vehicleCount - onlineVehicles.length;
+                                            offlineCount = offlineLength - onlineVehicles.length;
 
                                             //List<VehicleEntity> displayedVehicles = _filterVehicles(vehicles);
                                             return VehicleStatusPieChart(
@@ -617,9 +460,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                                                         FontWeight
                                                                             .w300),
                                                             maxLines: 1, // Restrict to a single line for count as well
-                                                            overflow:
-                                                                TextOverflow
-                                                                    .ellipsis,
+                                                            overflow: TextOverflow.ellipsis,
                                                           );
                                                         }
 
@@ -634,7 +475,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
                                                         //List<VehicleEntity> displayedVehicles = _filterVehicles(vehicles);
                                                         return Text(
-                                                          '${state.resp.data!.length - onlineVehicles.length}',
+                                                          '${offlineLength - onlineVehicles.length}',
                                                           style: AppStyle
                                                               .cardfooter
                                                               .copyWith(
@@ -705,6 +546,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                                         Colors.yellow,
                                                     radius: 8,
                                                   )),
+
                                               _BuildVehicleStatus(
                                                   title: "Parking",
                                                   count: BlocBuilder<
@@ -712,12 +554,6 @@ class _DashboardPageState extends State<DashboardPage> {
                                                       List<VehicleEntity>>(
                                                     builder:
                                                         (context, vehicles) {
-                                                      // final vehicleData =  state.resp.data?.length ?? 0;
-                                                      // packedCount = vehicleData
-                                                      //     .where((vehicle) =>
-                                                      // vehicle.last_location?.status ==
-                                                      //     "parked")
-                                                      //     .length;
                                                       if (vehicles.isEmpty) {
                                                         return Text(
                                                           packedCount.toString(),
@@ -730,27 +566,8 @@ class _DashboardPageState extends State<DashboardPage> {
                                                           overflow: TextOverflow.ellipsis,
                                                         );
                                                       }
-
-                                                      final parkedVehicles =
-                                                          vehicles.where((v) {
-                                                        return v.locationInfo
-                                                                    .vehicleStatus ==
-                                                                "Parked" ||
-                                                            v.locationInfo
-                                                                    .vehicleStatus ==
-                                                                "Stopped";
-                                                      }).toList();
-
-                                                      final movingVehicles =
-                                                          vehicles.where((v) {
-                                                        return v.locationInfo
-                                                                .vehicleStatus ==
-                                                            "Moving";
-                                                      }).toList();
-
-                                                      //List<VehicleEntity> displayedVehicles = _filterVehicles(vehicles);
                                                       return Text(
-                                                        '$packedCount',
+                                                        '${packedCount}',
                                                         style: AppStyle
                                                             .cardfooter
                                                             .copyWith(
@@ -1536,38 +1353,6 @@ class _DashboardPageState extends State<DashboardPage> {
                                                                         product
                                                                             .id,
                                                                   )));
-                                                      // Navigator.pushNamed(
-                                                      //     context,
-                                                      //     "/productReview",
-                                                      //     arguments: {
-                                                      //       'productName': state
-                                                      //           .resp
-                                                      //           .products
-                                                      //           .data[index]
-                                                      //           .name,
-                                                      //       'productImage':
-                                                      //           state
-                                                      //               .resp
-                                                      //               .products
-                                                      //               .data[index]
-                                                      //               .image,
-                                                      //       'price': state
-                                                      //           .resp
-                                                      //           .products
-                                                      //           .data[index]
-                                                      //           .price,
-                                                      //       'categoryId': state
-                                                      //           .resp
-                                                      //           .products
-                                                      //           .data[index]
-                                                      //           .category_id,
-                                                      //       'description': state
-                                                      //           .resp
-                                                      //           .products
-                                                      //           .data[index]
-                                                      //           .description,
-                                                      //       'token': token
-                                                      //     });
                                                     },
                                                     child: Container(
                                                       decoration: BoxDecoration(
@@ -1749,175 +1534,6 @@ class _DashboardPageState extends State<DashboardPage> {
                               ],
                             ),
                           ),
-                    // quickLink == false
-                    //     ? const SizedBox(height: 0)
-                    //     : const SizedBox(height: 24),
-                    // quickLink == false
-                    //     ? Container()
-                    //     : Container(
-                    //         padding: const EdgeInsets.all(16.0),
-                    //         // height: 350,
-                    //         decoration: BoxDecoration(
-                    //           color: Colors.grey.shade200,
-                    //           borderRadius: BorderRadius.circular(12),
-                    //         ),
-                    //         child: Column(
-                    //           children: [
-                    //             Container(
-                    //                 padding: const EdgeInsets.all(8.0),
-                    //                 decoration: BoxDecoration(
-                    //                   color: Colors.green.shade200,
-                    //                   borderRadius: BorderRadius.circular(12),
-                    //                 ),
-                    //                 child: DashboardComponentTitle(
-                    //                   title: 'Quick Links',
-                    //                   subTitle:
-                    //                       'Get your vehicle equipments at a stand',
-                    //                 )),
-                    //             const SizedBox(
-                    //               height: 10,
-                    //             ),
-                    //             SizedBox(
-                    //               height: getVerticalSize(300),
-                    //               child: GridView.count(
-                    //                 crossAxisCount: 2,
-                    //                 mainAxisSpacing:
-                    //                     10, // Adjust spacing between grid items
-                    //                 crossAxisSpacing: 10,
-                    //                 childAspectRatio: 1.8, //
-                    //                 physics:
-                    //                     const NeverScrollableScrollPhysics(),
-                    //                 children: const [
-                    //                   VehicleStatusCard1(
-                    //                       status: 'Driver',
-                    //                       count: 'Instructor',
-                    //                       color: Colors.white,
-                    //                       icon: Icon(
-                    //                         CupertinoIcons.car_detailed,
-                    //                         color: Colors.green,
-                    //                         size: 30,
-                    //                       )),
-                    //                   VehicleStatusCard1(
-                    //                       status: 'Get your',
-                    //                       count: 'Licence',
-                    //                       color: Colors.white,
-                    //                       icon: Icon(
-                    //                         CupertinoIcons.car_detailed,
-                    //                         color: Colors.red,
-                    //                         size: 30,
-                    //                       )),
-                    //                   VehicleStatusCard1(
-                    //                       status: 'Traffic',
-                    //                       count: 'Sign',
-                    //                       color: Colors.white,
-                    //                       icon: Icon(
-                    //                         Icons.traffic_outlined,
-                    //                         color: Colors.green,
-                    //                         size: 30,
-                    //                       )),
-                    //                   VehicleStatusCard1(
-                    //                     status: 'BRTA',
-                    //                     count: 'Instruction',
-                    //                     color: Colors.white,
-                    //                     icon: Icon(
-                    //                       CupertinoIcons.car_detailed,
-                    //                       color: Colors.red,
-                    //                       size: 30,
-                    //                     ),
-                    //                   ),
-                    //                   VehicleStatusCard1(
-                    //                       status: 'Car',
-                    //                       count: 'Knowledge',
-                    //                       color: Colors.white,
-                    //                       icon: Icon(CupertinoIcons.square_list,
-                    //                           color: Colors.green)),
-                    //                   VehicleStatusCard1(
-                    //                     status: 'Read',
-                    //                     count: 'Blogs',
-                    //                     color: Colors.white,
-                    //                     icon: Icon(Icons.social_distance,
-                    //                         color: Colors.green),
-                    //                   ),
-                    //                 ],
-                    //               ),
-                    //             )
-                    //           ],
-                    //         ),
-                    //       ),
-                    // faultCodes == false
-                    //     ? const SizedBox(height: 0)
-                    //     : const SizedBox(height: 24),
-                    // faultCodes == false
-                    //     ? Container()
-                    //     : Container(
-                    //         padding: const EdgeInsets.all(16.0),
-                    //         // height: 350,
-                    //         decoration: BoxDecoration(
-                    //           color: Colors.grey.shade200,
-                    //           borderRadius: BorderRadius.circular(12),
-                    //         ),
-                    //         child: Column(
-                    //           children: [
-                    //             Container(
-                    //                 padding: const EdgeInsets.all(8.0),
-                    //                 decoration: BoxDecoration(
-                    //                   color: Colors.green.shade200,
-                    //                   borderRadius: BorderRadius.circular(12),
-                    //                 ),
-                    //                 child: DashboardComponentTitle(
-                    //                   title: 'Fault Code (DTC)',
-                    //                   subTitle:
-                    //                       'Get your vehicle documents at a stand',
-                    //                 )),
-                    //             const SizedBox(
-                    //               height: 10,
-                    //             ),
-                    //             Row(
-                    //               mainAxisAlignment:
-                    //                   MainAxisAlignment.spaceBetween,
-                    //               children: [
-                    //                 Text(
-                    //                   'Tijara -X Trail-OBD Fuel',
-                    //                   style: AppStyle.cardfooter
-                    //                       .copyWith(fontSize: 12),
-                    //                 ),
-                    //                 Text(
-                    //                   'P0420',
-                    //                   style: AppStyle.cardfooter
-                    //                       .copyWith(fontSize: 12),
-                    //                 ),
-                    //               ],
-                    //             ),
-                    //             Container(
-                    //               margin: const EdgeInsets.only(top: 5),
-                    //               padding: const EdgeInsets.all(10.0),
-                    //               decoration: BoxDecoration(
-                    //                   borderRadius: BorderRadius.circular(10),
-                    //                   color: Colors.green.shade100),
-                    //               child: Row(
-                    //                 mainAxisAlignment:
-                    //                     MainAxisAlignment.spaceBetween,
-                    //                 children: [
-                    //                   Expanded(
-                    //                       child: Text(
-                    //                     'Catalyst System Efficiency below Threshold',
-                    //                     textAlign: TextAlign.start,
-                    //                     style: AppStyle.cardfooter
-                    //                         .copyWith(fontSize: 12),
-                    //                   )),
-                    //                   Expanded(
-                    //                       child: Text(
-                    //                     '2024-08-12 09:04:23',
-                    //                     style: AppStyle.cardfooter
-                    //                         .copyWith(fontSize: 12),
-                    //                     textAlign: TextAlign.end,
-                    //                   ))
-                    //                 ],
-                    //               ),
-                    //             )
-                    //           ],
-                    //         ),
-                    //       ),
                     isMaintenanceReminder == false
                         ? const SizedBox(height: 0)
                         : const SizedBox(height: 24),
@@ -2450,6 +2066,144 @@ class _BuildVehicleStatus extends StatelessWidget {
     );
   }
 }
+
+//   GridView.count(
+//   crossAxisCount: 2,
+//   mainAxisSpacing:
+//       10, // Adjust spacing between grid items
+//   crossAxisSpacing: 10,
+//   childAspectRatio: 1.9, //
+//   physics:
+//       const NeverScrollableScrollPhysics(),
+//   children: [
+//     const VehicleStatusPieChart(
+//       onlineCount: 0,
+//       offlineCount: 0,
+//       idlingCount: 0,
+//       parkedCount: 0,
+//     ),
+//     const SizedBox(
+//       height: 10,
+//     ),
+//     Container(
+//         height: 80,
+//         padding: const EdgeInsets.symmetric(
+//             horizontal: 10, vertical: 10),
+//         decoration: BoxDecoration(
+//           borderRadius:
+//               BorderRadius.circular(10),
+//           color: Colors.white,
+//         ),
+//         child: ListView(
+//           scrollDirection: Axis.horizontal,
+//           children: const [
+//             _BuildVehicleStatus(
+//                 title: "Online",
+//                 count: SizedBox(
+//                     height: 15,
+//                     width: 15,
+//                     child:
+//                         CircularProgressIndicator()),
+//                 symbol: CircleAvatar(
+//                   backgroundColor:
+//                       Colors.green,
+//                   radius: 8,
+//                 )),
+//             _BuildVehicleStatus(
+//                 title: "Offline",
+//                 count: SizedBox(
+//                     height: 15,
+//                     width: 15,
+//                     child:
+//                         CircularProgressIndicator()),
+//                 symbol: CircleAvatar(
+//                   backgroundColor: Colors.red,
+//                   radius: 8,
+//                 )),
+//             _BuildVehicleStatus(
+//                 title: "Idling",
+//                 count: SizedBox(
+//                     height: 15,
+//                     width: 15,
+//                     child:
+//                         CircularProgressIndicator()),
+//                 symbol: CircleAvatar(
+//                   backgroundColor:
+//                       Colors.yellow,
+//                   radius: 8,
+//                 )),
+//             _BuildVehicleStatus(
+//                 title: "Parking",
+//                 count: SizedBox(
+//                     height: 15,
+//                     width: 15,
+//                     child:
+//                         CircularProgressIndicator()),
+//                 symbol: CircleAvatar(
+//                   backgroundColor:
+//                       Colors.blueGrey,
+//                   radius: 8,
+//                 ))
+//           ],
+//         ))
+//     // VehicleStatusCard(
+//     //     status: 'Moving',
+//     //     count: Text(
+//     //       '0',
+//     //       style: AppStyle.cardfooter.copyWith(
+//     //           fontWeight: FontWeight.w300),
+//     //       maxLines:
+//     //           1, // Restrict to a single line for count as well
+//     //       overflow: TextOverflow.ellipsis,
+//     //     ),
+//     //     color: Colors.green,
+//     //     icon: const Icon(
+//     //         CupertinoIcons.graph_circle_fill,
+//     //         color: Colors.white)),
+//     // const VehicleStatusCard(
+//     //     status: 'Offline',
+//     //     count: SizedBox(
+//     //       height: 15,
+//     //       width: 15,
+//     //       child: CircularProgressIndicator(
+//     //         strokeWidth: 2.0,
+//     //       ),
+//     //     ),
+//     //     color: Colors.red,
+//     //     icon: Icon(
+//     //       CupertinoIcons.square_fill,
+//     //       color: Colors.white,
+//     //     )),
+//     // const VehicleStatusCard(
+//     //     status: 'Idling',
+//     //     count: SizedBox(
+//     //       height: 15,
+//     //       width: 15,
+//     //       child: CircularProgressIndicator(
+//     //         strokeWidth: 2.0,
+//     //       ),
+//     //     ),
+//     //     color: Colors.yellow,
+//     //     icon: Icon(
+//     //         CupertinoIcons
+//     //             .square_split_2x1_fill,
+//     //         color: Colors.white)),
+//     // const VehicleStatusCard(
+//     //   status: 'Parked',
+//     //   count: SizedBox(
+//     //     height: 15,
+//     //     width: 15,
+//     //     child: CircularProgressIndicator(
+//     //       strokeWidth: 2.0,
+//     //     ),
+//     //   ),
+//     //   color: Colors.black,
+//     //   icon: Icon(CupertinoIcons.wifi_slash,
+//     //       color: Colors.white),
+//     // ),
+//   ],
+// );
+///
 
 // Widget _buildMaintenanceCard() {
 //   return Container(

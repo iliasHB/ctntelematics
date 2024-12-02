@@ -22,7 +22,7 @@ class CreateScheduleRespEntity extends Equatable{
 class ScheduleEntity extends Equatable{
   final String vehicle_vin;
   final String schedule_type;
-  final DateTime start_date;
+  final String start_date;
   final String no_time;
   final String no_kilometer;
   final String no_hours;

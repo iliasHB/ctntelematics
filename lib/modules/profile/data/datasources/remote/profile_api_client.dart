@@ -35,7 +35,7 @@ abstract class ProfileApiClient {
       @Field("email") String email,
       @Field("otp") String otp,
       @Field("password") String password,
-      @Field("password_confirmation") String passwordConfirmation,
+      @Field("password_confirmation") String password_confirmation,
       @Header("source_code") String sourceCode);
 
   @GET("/user/logout")

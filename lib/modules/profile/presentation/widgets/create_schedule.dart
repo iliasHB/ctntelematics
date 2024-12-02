@@ -1,8 +1,10 @@
+import 'package:ctntelematics/core/widgets/custom_button.dart';
 import 'package:ctntelematics/modules/profile/domain/entitties/req_entities/token_req_entity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../config/theme/app_style.dart';
+import '../../../../core/usecase/databse_helper.dart';
 import '../../../../core/utils/pref_util.dart';
 import '../../../../core/widgets/alert_message.dart';
 import '../../../../core/widgets/format_data.dart';
@@ -40,27 +42,29 @@ class _CreateScheduleWidgetState extends State<CreateScheduleWidget> {
   bool isSwitchedByEngineHr = false;
   bool isSwitchedByMileage = false;
   String? _selectedVendor;
-  String? selectedSchedule;
-  PrefUtils prefUtils = PrefUtils();
-  // Function to save auth_user into SharedPreferences
-  Future<void> scheduleUpdate(
-      String byTime,
-      String byTimeReminder,
-      String vehicle_vin,
-      String byHour,
-      String byHourReminder,
-      String no_kilometer,
-      String reminder_advance_km) async {
-    await prefUtils.setStringList('schedule', <String>[
-      byTime,
-      byTimeReminder,
-      vehicle_vin,
-      byHour,
-      byHourReminder,
-      no_kilometer,
-      reminder_advance_km
-    ]);
-  }
+  String selectedSchedule = 'Recurring'; // Default selected value
+  DB_schedule db_schedule = DB_schedule();
+
+  // PrefUtils prefUtils = PrefUtils();
+  // // Function to save auth_user into SharedPreferences
+  // Future<void> scheduleUpdate(
+  //     String byTime,
+  //     String byTimeReminder,
+  //     String vehicle_vin,
+  //     String byHour,
+  //     String byHourReminder,
+  //     String no_kilometer,
+  //     String reminder_advance_km) async {
+  //   await prefUtils.setStringList('schedule', <String>[
+  //     byTime,
+  //     byTimeReminder,
+  //     vehicle_vin,
+  //     byHour,
+  //     byHourReminder,
+  //     no_kilometer,
+  //     reminder_advance_km
+  //   ]);
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -125,10 +129,14 @@ class _CreateScheduleWidgetState extends State<CreateScheduleWidget> {
                   child: BlocConsumer<ProfileVehiclesBloc, ProfileState>(
                     builder: (context, state) {
                       if (state is ProfileLoading) {
-                        return const Center(
+                        return Center(
                           child: Padding(
                             padding: EdgeInsets.only(top: 10.0),
-                            child: CircularProgressIndicator(strokeWidth: 2.0),
+                            child: Container(
+                                height: 30,
+                                width: 30,
+                                child: CircularProgressIndicator(
+                                    strokeWidth: 2.0)),
                           ),
                         );
                       } else if (state is GetVehicleDone) {
@@ -212,7 +220,11 @@ class _CreateScheduleWidgetState extends State<CreateScheduleWidget> {
                     },
                     listener: (context, state) {
                       if (state is ProfileFailure) {
-                        Navigator.pushNamed(context, "/login");
+                        if (state.message.contains("Unauthenticated")) {
+                          Navigator.pushNamedAndRemoveUntil(
+                              context, "/login", (route) => false);
+                        }
+
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(content: Text(state.message)),
                         );
@@ -300,16 +312,15 @@ class _CreateScheduleWidgetState extends State<CreateScheduleWidget> {
                     Expanded(
                       child: ListTile(
                         title: Text(
-                          'Routine Service',
+                          'Recurring',
                           style: AppStyle.cardfooter,
                         ),
                         leading: Radio(
-                          value: 'Routine Service',
+                          value: 'Recurring',
                           groupValue: selectedSchedule,
                           onChanged: (value) {
                             setState(() {
-                              selectedSchedule =
-                                  value; // Update the selected value
+                              selectedSchedule = value!; // Update the selected value
                             });
                           },
                         ),
@@ -326,8 +337,7 @@ class _CreateScheduleWidgetState extends State<CreateScheduleWidget> {
                           groupValue: selectedSchedule,
                           onChanged: (value) {
                             setState(() {
-                              selectedSchedule =
-                                  value; // Update the selected value
+                              selectedSchedule = value!; // Update the selected value
                             });
                           },
                         ),
@@ -659,38 +669,48 @@ class _CreateScheduleWidgetState extends State<CreateScheduleWidget> {
                 BlocConsumer<CreateScheduleBloc, ProfileState>(
                   listener: (context, state) {
                     if (state is CreateScheduleDone) {
-                      // FormatData.convertDurationToDate('${timeController.text.trim()} $dropdownValue1');
-                      // FormatData.convertDurationToDate('${timeReminderAdvController.text.trim()} $dropdownValue2');
-                      // FormatData.calculateReminderTime(int.parse(state.resp.schedule.reminder_advance_hr));
-                      // FormatData.calculateReminderTime(int.parse(state.resp.schedule.reminder_advance_hr));
-                      scheduleUpdate(
+
+                      // scheduleUpdate(
+                      //                           FormatData.convertDurationToDate(
+                      //                               '${state.resp.schedule.no_time} $dropdownValue1'),
+                      //                           FormatData.convertDurationToDate(
+                      //                               '${state.resp.schedule.reminder_advance_days} $dropdownValue2'),
+                      //                           state.resp.schedule.vehicle_vin,
+                      //                           FormatData.calculateReminderTime(int.parse(
+                      //                               state.resp.schedule.reminder_advance_hr)),
+                      //                           // FormatData.calculateReminderTime(int.parse(
+                      //                           //     state.resp.schedule.reminder_advance_hr)),
+                      //                           state.resp.schedule.no_kilometer,
+                      //                           state.resp.schedule.reminder_advance_km);
+                      saveScheduleType(
                           FormatData.convertDurationToDate(
                               '${state.resp.schedule.no_time} $dropdownValue1'),
                           FormatData.convertDurationToDate(
                               '${state.resp.schedule.reminder_advance_days} $dropdownValue2'),
                           state.resp.schedule.vehicle_vin,
-                          FormatData.calculateReminderTime(int.parse(
-                              state.resp.schedule.reminder_advance_hr)),
+                          FormatData.calculateReminderTime(
+                              int.parse(state.resp.schedule.no_hours)),
                           FormatData.calculateReminderTime(int.parse(
                               state.resp.schedule.reminder_advance_hr)),
                           state.resp.schedule.no_kilometer,
-                          state.resp.schedule.reminder_advance_km);
+                          state.resp.schedule.reminder_advance_km,
+                          FormatData.formatTimestamp(
+                              state.resp.schedule.start_date),
+                          state.resp.schedule.schedule_type,
+                          _taskController.text);
 
-                      AlertMessage.showAlertMessageModal(
-                          context, state.resp.message);
+                      AlertMessage.showAlertMessageModal(context, state.resp.message);
 
-                      //Navigator.pop(context);
-                      // Navigator.pushNamedAndRemoveUntil(
-                      //   context,
-                      //   '/bottomNav',
-                      //       (route) => false,
-                      // );
                       ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(content: Text(state.resp.message)));
                     } else if (state is ProfileFailure) {
+                      if (state.message.contains("Unauthenticated")) {
+                        Navigator.pushNamedAndRemoveUntil(
+                            context, "/login", (route) => false);
+                      }
                       ScaffoldMessenger.of(context)
                           .showSnackBar(SnackBar(content: Text(state.message)));
-                      return null;
+                      // return null;
                     }
                   },
                   builder: (context, state) {
@@ -700,7 +720,7 @@ class _CreateScheduleWidgetState extends State<CreateScheduleWidget> {
                           height: 30, // Adjust the height
                           width: 30, // Adjust the width
                           child: CircularProgressIndicator(
-                            strokeWidth: 3, // Adjust the thickness
+                            strokeWidth: 2.0, // Adjust the thickness
                             color: Colors
                                 .green, // Optional: Change the color to match your theme
                           ),
@@ -708,53 +728,107 @@ class _CreateScheduleWidgetState extends State<CreateScheduleWidget> {
                       );
                     }
                     return Align(
-                      alignment: Alignment.topRight,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          print("dropdownValue1:::: ${dropdownValue1}");
-                          print("dropdownValue2:::: ${dropdownValue2}");
-                          print("_selectedVendor:::: ${_selectedVendor}");
-                          print("selectedSchedule:::: ${selectedSchedule}");
-                          print("start_date:::: ${DateTime.now().toString()}");
-                          print("number_kilometer:::: ${mileageController.text.trim()}");
-                          print("number_time:::: ${timeController.text.trim()}");
-                          print("number_hour:::: ${engineHrController.text.trim()}");
-                          print("reminder_advance_days:::: ${timeReminderAdvController.text}");
-                          print("reminder_advance_hr:::: ${engineHrReminderAdvController.text}");
-                          print("reminder_advance_km:::: ${mileageReminderAdvController.text.trim()}");
-                          print("token:::: ${widget.token}");
+                        alignment: Alignment.center,
+                        child: CustomPrimaryButton(
+                          label: 'Save Record',
+                          onPressed: () {
+                            print("dropdownValue1:::: ${dropdownValue1}");
+                            print("dropdownValue2:::: ${dropdownValue2}");
+                            print("_selectedVendor:::: ${_selectedVendor}");
+                            print("selectedSchedule:::: ${selectedSchedule}");
+                            print(
+                                "start_date:::: ${DateTime.now().toString()}");
+                            print(
+                                "number_kilometer:::: ${mileageController.text.trim()}");
+                            print(
+                                "number_time:::: ${timeController.text.trim()}");
+                            print(
+                                "number_hour:::: ${engineHrController.text.trim()}");
+                            print(
+                                "reminder_advance_days:::: ${timeReminderAdvController.text}");
+                            print(
+                                "reminder_advance_hr:::: ${engineHrReminderAdvController.text}");
+                            print(
+                                "reminder_advance_km:::: ${mileageReminderAdvController.text.trim()}");
+                            print("token:::: ${widget.token}");
 
-                          if (_formKey.currentState?.validate() ?? false) {
-                            final createScheduleReqEntity =
-                                CreateScheduleReqEntity(
-                                    description: '',
-                                    vehicle_vin: _selectedVendor!,
-                                    schedule_type: selectedSchedule!,
-                                    start_date: DateTime.now().toString(),
-                                    number_kilometer:
-                                        mileageController.text.trim(),
-                                    number_time: timeController.text.trim(),
-                                    category_time: '2',
-                                    number_hour: engineHrController.text.trim(),
-                                    reminder_advance_days:
-                                        timeReminderAdvController.text,
-                                    reminder_advance_hr:
-                                        engineHrReminderAdvController.text
-                                            .toString(),
-                                    reminder_advance_km:
-                                        mileageReminderAdvController.text
-                                            .trim(),
-                                    token: widget.token!);
-                            context.read<CreateScheduleBloc>().add(
-                                CreateScheduleEvent(createScheduleReqEntity));
-                          }
-                        },
-                        child: Text(
-                          'Save Record',
-                          style: AppStyle.cardfooter.copyWith(fontSize: 14),
-                        ),
-                      ),
-                    );
+                            if (_formKey.currentState?.validate() ?? false) {
+                              final createScheduleReqEntity =
+                                  CreateScheduleReqEntity(
+                                      description: _taskController.text.trim(),
+                                      vehicle_vin: _selectedVendor!,
+                                      schedule_type: selectedSchedule,
+                                      start_date: FormatData.formatTimestamp(
+                                        DateTime.now().toString(),),
+                                      number_kilometer: mileageController.text
+                                          .trim(),
+                                      number_time: timeController.text.trim(),
+                                      category_time: '2',
+                                      number_hour: engineHrController
+                                          .text
+                                          .trim(),
+                                      reminder_advance_days:
+                                          timeReminderAdvController.text,
+                                      reminder_advance_hr:
+                                          engineHrReminderAdvController
+                                              .text
+                                              .toString(),
+                                      reminder_advance_km:
+                                          mileageReminderAdvController.text
+                                              .trim(),
+                                      token: widget.token!);
+                              context.read<CreateScheduleBloc>().add(
+                                  CreateScheduleEvent(createScheduleReqEntity));
+                            }
+                          },
+                        )
+
+                        // ElevatedButton(
+                        //   onPressed: () {
+                        //     print("dropdownValue1:::: ${dropdownValue1}");
+                        //     print("dropdownValue2:::: ${dropdownValue2}");
+                        //     print("_selectedVendor:::: ${_selectedVendor}");
+                        //     print("selectedSchedule:::: ${selectedSchedule}");
+                        //     print("start_date:::: ${DateTime.now().toString()}");
+                        //     print("number_kilometer:::: ${mileageController.text.trim()}");
+                        //     print("number_time:::: ${timeController.text.trim()}");
+                        //     print("number_hour:::: ${engineHrController.text.trim()}");
+                        //     print("reminder_advance_days:::: ${timeReminderAdvController.text}");
+                        //     print("reminder_advance_hr:::: ${engineHrReminderAdvController.text}");
+                        //     print("reminder_advance_km:::: ${mileageReminderAdvController.text.trim()}");
+                        //     print("token:::: ${widget.token}");
+                        //
+                        //     if (_formKey.currentState?.validate() ?? false) {
+                        //       final createScheduleReqEntity =
+                        //           CreateScheduleReqEntity(
+                        //               description: '',
+                        //               vehicle_vin: _selectedVendor!,
+                        //               schedule_type: selectedSchedule!,
+                        //               start_date: DateTime.now().toString(),
+                        //               number_kilometer:
+                        //                   mileageController.text.trim(),
+                        //               number_time: timeController.text.trim(),
+                        //               category_time: '2',
+                        //               number_hour: engineHrController.text.trim(),
+                        //               reminder_advance_days:
+                        //                   timeReminderAdvController.text,
+                        //               reminder_advance_hr:
+                        //                   engineHrReminderAdvController.text
+                        //                       .toString(),
+                        //               reminder_advance_km:
+                        //                   mileageReminderAdvController.text
+                        //                       .trim(),
+                        //               token: widget.token!);
+                        //       context.read<CreateScheduleBloc>().add(
+                        //           CreateScheduleEvent(createScheduleReqEntity));
+                        //     }
+                        //   },
+                        //   child: Text(
+                        //     'Save Record',
+                        //     style: AppStyle.cardfooter.copyWith(fontSize: 14),
+                        //   ),
+                        // ),
+                        );
                   },
                 ),
               ],
@@ -764,7 +838,56 @@ class _CreateScheduleWidgetState extends State<CreateScheduleWidget> {
       ),
     );
   }
+
+  saveScheduleType(
+      String no_time,
+      String reminder_advance_days,
+      String vehicle_vin,
+      String no_hours,
+      String reminder_advance_hr,
+      String no_kilometer,
+      String reminder_advance_km,
+      String start_date,
+      String schedule_type,
+      String service_task) async {
+    bool isSaved = await db_schedule.saveSchedule(
+        vehicle_vin,
+        service_task,
+        schedule_type,
+        no_time,
+        reminder_advance_days,
+        no_hours,
+        reminder_advance_hr,
+        no_kilometer,
+        reminder_advance_km,
+        start_date);
+
+    if (isSaved) {
+      // Show success feedback
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Schedule created successfully!',
+            style: AppStyle.cardfooter,
+          ),
+          backgroundColor: Colors.black,
+        ),
+      );
+    } else {
+      // Show failure feedback
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Failed to create schedule'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
 }
+
+
+
+
 
 // import 'package:flutter/cupertino.dart';
 // import 'package:flutter/material.dart';

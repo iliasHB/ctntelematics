@@ -1,3 +1,4 @@
+import 'package:ctntelematics/config/theme/app_style.dart';
 import 'package:ctntelematics/core/widgets/custom_button.dart';
 import 'package:flutter/material.dart';
 
@@ -12,7 +13,7 @@ class ResponsePage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // Logo and title
-            Image.asset("assets/images/tematics_name.jpeg", height: 100,),
+            Icon(Icons.check_circle_outlined, size: 100, color: Colors.green,),
             const SizedBox(height: 40),
 
             // Forgot Password Heading
@@ -31,7 +32,7 @@ class ResponsePage extends StatelessWidget {
             Text(
               'You have successfully reset your password click continue to login',
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.grey[900]),
+              style: AppStyle.cardfooter
             ),
             const SizedBox(height: 20),
 
@@ -39,22 +40,6 @@ class ResponsePage extends StatelessWidget {
             CustomPrimaryButton(
                 label:  'Continue',
                 onPressed: () => Navigator.pushNamed(context, "/login"),)
-            // ElevatedButton(
-            //   onPressed: () => Navigator.pushNamed(context, "/login"),
-            //   style: ElevatedButton.styleFrom(
-            //     backgroundColor: Colors.green,
-            //     shape: RoundedRectangleBorder(
-            //       borderRadius: BorderRadius.circular(10),
-            //     ),
-            //   ),
-            //   child: const Padding(
-            //     padding: EdgeInsets.symmetric(vertical: 16.0),
-            //     child: Text(
-            //       'Continue',
-            //       style: TextStyle(fontSize: 18),
-            //     ),
-            //   ),
-            // ),
           ],
         ),
       ),
