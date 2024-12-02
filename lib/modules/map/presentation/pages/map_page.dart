@@ -138,7 +138,7 @@ class _MapPageState extends State<MapPage> {
                 listener: (context, state) {
                   if (state is MapFailure) {
                     if (state.message.contains("Unauthenticated")) {
-                      Navigator.pushNamed(context, "/login");
+                      Navigator.pushNamedAndRemoveUntil(context, "/login", (route) => false);
                     }
                     ScaffoldMessenger.of(context)
                         .showSnackBar(SnackBar(content: Text(state.message)));
@@ -241,6 +241,8 @@ class _MapPageState extends State<MapPage> {
     List<LastLocationRespEntity> allVehicles, {
     required List<VehicleEntity> vehicles,
   }) {
+    bool shouldUpdateOfflineIcon = false;
+
     _markers.clear(); // Clear existing markers
     // Add markers for all vehicles' last known locations
     for (var vehicle in allVehicles) {
@@ -258,6 +260,11 @@ class _MapPageState extends State<MapPage> {
 
         // Cache the current position as the "previous position" if not already present
         final numberPlate = vehicle.vehicle!.details!.number_plate!;
+        // Check if the current position is different from the previously stored position
+        if (!_previousPositions.containsKey(numberPlate) ||
+            _previousPositions[numberPlate] != currentPosition) {
+          shouldUpdateOfflineIcon = true;
+        }
         _previousPositions.putIfAbsent(numberPlate, () => currentPosition);
         // _setOfflineCustomMarkerIcon();
         _markers.add(
@@ -275,6 +282,11 @@ class _MapPageState extends State<MapPage> {
         );
       }
 
+    }
+
+    // Update the custom marker icon if needed
+    if (shouldUpdateOfflineIcon) {
+      _setOfflineCustomMarkerIcon();
     }
 
     // Update markers for vehicles that have moved

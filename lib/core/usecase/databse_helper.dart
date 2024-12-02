@@ -25,7 +25,7 @@ class DatabaseHelper {
 
     return openDatabase(
       path,
-      version: 3,
+      version: 4,
       onCreate: (db, version) async {
         // Create the general notifications table
         await db.execute('''
@@ -81,18 +81,41 @@ class DatabaseHelper {
           )
         ''');
 
+        await db.execute('''
+          CREATE TABLE schedule (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            vehicle_vin TEXT NOT NULL,
+            service_task TEXT NOT NULL,
+            schedule TEXT NOT NULL,
+            byTime TEXT,
+            byTimeReminder TEXT,
+            byHour TEXT,
+            byHourReminder TEXT,
+            no_kilometer TEXT,
+            reminder_advance_km TEXT,
+            createdAt TEXT
+            )
+        ''');
+
       },
       onUpgrade: (db, oldVersion, newVersion) async {
-        if (oldVersion < 3) {
+        if (oldVersion < 4) {
 
-          // Create the profile pictures table
+          // Create the schedule table
           await db.execute('''
-          CREATE TABLE profile_picture (
+          CREATE TABLE schedule (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            userId INTEGER NOT NULL,
-            filePath TEXT NOT NULL,
-            uploadedAt TEXT NOT NULL
-          )
+            vehicle_vin TEXT NOT NULL,
+            service_task TEXT NOT NULL,
+            schedule_type TEXT NOT NULL,
+            byTime TEXT,
+            byTimeReminder TEXT,
+            byHour TEXT,
+            byHourReminder TEXT,
+            no_kilometer TEXT,
+            reminder_advance_km TEXT,
+            createdAt TEXT
+            )
         ''');
 
         }
@@ -135,6 +158,12 @@ class DatabaseHelper {
     return db.insert('user_carts', cart);
   }
 
+  // Insert into user schedule table
+  Future<int> insertSchedule(Map<String, dynamic> schedule) async {
+    final db = await database;
+    return db.insert('schedules', schedule);
+  }
+
   // Fetch notifications from the general table
   Future<List<Map<String, dynamic>>> fetchGeofenceNotifications() async {
     final db = await database;
@@ -151,6 +180,12 @@ class DatabaseHelper {
   Future<List<Map<String, dynamic>>> fetchUserCart() async {
     final db = await database;
     return await db.query('user_carts', orderBy: 'createdAt DESC');
+  }
+
+  // Fetch user cart from the general table
+  Future<List<Map<String, dynamic>>> fetchSchedule() async {
+    final db = await database;
+    return await db.query('schedules', orderBy: 'createdAt DESC');
   }
 
   // Delete notification by ID from the general table
@@ -171,6 +206,11 @@ class DatabaseHelper {
     final db = await database;
     return db.delete('user_carts', where: 'id = ?', whereArgs: [id]);
   }
+  // Delete notification by ID from the speed limit table
+  Future<int> deleteSchedule(int id) async {
+    final db = await database;
+    return db.delete('schedules', where: 'id = ?', whereArgs: [id]);
+  }
 
   // Clear all general notifications
   Future<void> clearAllNotifications() async {
@@ -188,6 +228,11 @@ class DatabaseHelper {
   Future<void> clearAllUserCart() async {
     final db = await database;
     await db.delete('user_carts');
+  }
+
+  Future<void> clearAllSchedule() async {
+    final db = await database;
+    await db.delete('schedules');
   }
 
   // Insert a profile picture
@@ -340,6 +385,7 @@ class DB_cart {
     return result > 0; // Returns true if successfully inserted
   }
 
+
   Future<List<CartProducts>> fetchUserCart() async {
     final dbHelper = DatabaseHelper();
 
@@ -361,6 +407,66 @@ class DB_cart {
 
     try {
       int rowsAffected = await dbHelper.deleteUserCart(productId);
+      return rowsAffected > 0; // Return true if deletion was successful
+    } catch (e) {
+      print('Error deleting product from cart: $e');
+      return false; // Return false if there was an error
+    }
+  }
+}
+
+class DB_schedule {
+  Future<bool> saveSchedule(
+      String vehicle_vin,
+      String service_task,
+      String schedule_type,
+      String byTime,
+      String byTimeReminder,
+      String byHour,
+      String byHourReminder,
+      String no_kilometer,
+      String reminder_advance_km,
+      String createdAt,) async {
+    final dbHelper = DatabaseHelper();
+
+// Insert the item into the user_cart table
+    int result = await dbHelper.insertSchedule({
+      'vehicle_vin': vehicle_vin,
+      'service_task': service_task,
+      'schedule_type': schedule_type,
+      'byTime': byTime,
+      'byTimeReminder': byTimeReminder,
+      'byHour': byHour,
+      'byHourReminder': byHourReminder,
+      'no_kilometer': no_kilometer,
+      'reminder_advance_km': reminder_advance_km,
+      'createdAt': createdAt,
+    });
+    // Check the result
+    return result > 0; // Returns true if successfully inserted
+  }
+
+  Future<List<VehicleSchedule>> fetchSchedule() async {
+    final dbHelper = DatabaseHelper();
+
+    final vehicleSchedule = await dbHelper.fetchSchedule();
+
+    // Convert to respective objects
+    List<VehicleSchedule> vehicleSchedules =
+    vehicleSchedule.map((row) => VehicleSchedule.fromJson(row)).toList();
+
+    // Combine lists
+    List<VehicleSchedule> allVehicleSchedule = vehicleSchedules;
+
+    return allVehicleSchedule;
+  }
+
+  // Method to delete a specific product from the cart
+  Future<bool> deleteSchedule(int id) async {
+    final dbHelper = DatabaseHelper();
+
+    try {
+      int rowsAffected = await dbHelper.deleteSchedule(id);
       return rowsAffected > 0; // Return true if deletion was successful
     } catch (e) {
       print('Error deleting product from cart: $e');
@@ -535,6 +641,76 @@ class CartProducts {
     );
   }
 }
+
+
+
+class VehicleSchedule {
+  final int? id;
+  final String? vehicle_vin;
+      final String? service_task;
+  final String? schedule_type;
+      final String? byTime;
+  final String? byTimeReminder;
+      final String? byHour;
+  final String? byHourReminder;
+      final String? no_kilometer;
+  final String? reminder_advance_km;
+      final String? createdAt;
+
+  VehicleSchedule({
+    this.id,
+    this.schedule_type,
+    this.createdAt,
+    this.reminder_advance_km,
+    this.no_kilometer,
+    this.byHourReminder,
+    this.byHour,
+    this.vehicle_vin,
+    this.byTimeReminder,
+    this.byTime,
+    this.service_task
+  });
+
+  /// Converts the CartProducts object into a JSON map
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'vehicle_vin': vehicle_vin,
+      'service_task': service_task,
+      'schedule_type': schedule_type,
+      'byTime': byTime,
+      'byTimeReminder': byTimeReminder,
+      'byHour': byHour,
+      'byHourReminder': byHourReminder,
+      'no_kilometer': no_kilometer,
+      'reminder_advance_km': reminder_advance_km,
+      'createdAt': createdAt,
+    };
+  }
+
+  /// Creates a CartProducts object from a JSON map
+  factory VehicleSchedule.fromJson(Map<String, dynamic> map) {
+    return VehicleSchedule(
+      id: map['id'],
+      vehicle_vin: map['vehicle_vin'],
+      service_task: map['service_task'], // Matches the database key
+      byTime: map['byTime'],
+      byTimeReminder: map['byTimeReminder'],
+      byHour: map['byHour'],
+      byHourReminder: map['byHourReminder'],
+      no_kilometer: map['no_kilometer'],
+      reminder_advance_km: map['reminder_advance_km'],
+      createdAt: map['createdAt'] ?? '',
+    );
+  }
+}
+
+
+
+
+
+
+
 
 
 // //

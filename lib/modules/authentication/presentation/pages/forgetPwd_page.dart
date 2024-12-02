@@ -69,7 +69,7 @@ class ForgotPasswordPage extends StatelessWidget {
               listener: (context, state) {
                 if (state is AuthDone) {
                   Navigator.pushNamedAndRemoveUntil(
-                      context, "/verifyEmail", (route) => false,
+                      context, "/resetPassword", (route) => false,
                       arguments: {'email': _emailController.text.trim()});
                   ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text(state.resp.message)));
@@ -89,7 +89,7 @@ class ForgotPasswordPage extends StatelessWidget {
                   );
                 }
                 return CustomPrimaryButton(
-                  label: 'Submit mail',
+                  label: 'Submit Mail',
                   onPressed: () {
                     if (_formKey.currentState?.validate() ?? false) {
                       final genOtpReqEntity =

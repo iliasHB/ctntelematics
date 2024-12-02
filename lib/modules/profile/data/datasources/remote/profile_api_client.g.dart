@@ -95,7 +95,7 @@ class _ProfileApiClient implements ProfileApiClient {
     String email,
     String otp,
     String password,
-    String passwordConfirmation,
+    String password_confirmation,
     String sourceCode,
   ) async {
     final _extra = <String, dynamic>{};
@@ -106,7 +106,7 @@ class _ProfileApiClient implements ProfileApiClient {
       'email': email,
       'otp': otp,
       'password': password,
-      'password_confirmation': passwordConfirmation,
+      'password_confirmation': password_confirmation,
     };
     final _options = _setStreamType<ProfileRespModel>(Options(
       method: 'POST',

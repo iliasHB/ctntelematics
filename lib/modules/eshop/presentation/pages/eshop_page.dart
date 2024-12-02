@@ -508,6 +508,7 @@ class _AllCategoryState extends State<AllCategory> {
                               }
                               return Center(
                                 child: CircularProgressIndicator(
+                                  strokeWidth: 2.0,
                                   value: loadingProgress.expectedTotalBytes !=
                                           null
                                       ? loadingProgress.cumulativeBytesLoaded /
@@ -630,16 +631,16 @@ class _AllCategoryState extends State<AllCategory> {
     if (isSaved) {
       // Show success feedback
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Product added to cart successfully!'),
-          backgroundColor: Colors.green,
+        SnackBar(
+          content: Text('Product added to cart successfully!', style: AppStyle.cardfooter,),
+          backgroundColor: Colors.black,
         ),
       );
     } else {
       // Show failure feedback
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Failed to add product to cart.'),
+        SnackBar(
+          content: Text('Failed to add product to cart.', style: AppStyle.cardfooter),
           backgroundColor: Colors.red,
         ),
       );
@@ -733,6 +734,7 @@ class _AllProductState extends State<AllProduct> {
                               }
                               return Center(
                                 child: CircularProgressIndicator(
+                                  strokeWidth: 2.0,
                                   value: loadingProgress.expectedTotalBytes !=
                                           null
                                       ? loadingProgress.cumulativeBytesLoaded /
@@ -932,6 +934,7 @@ class _AllCartProductState extends State<AllCartProduct> {
                               }
                               return Center(
                                 child: CircularProgressIndicator(
+                                  strokeWidth: 2.0,
                                   value: loadingProgress.expectedTotalBytes !=
                                       null
                                       ? loadingProgress.cumulativeBytesLoaded /

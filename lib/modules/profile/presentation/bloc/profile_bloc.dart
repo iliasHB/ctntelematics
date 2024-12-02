@@ -66,6 +66,7 @@ class ProfileChangePwdBloc extends Bloc<ProfileEvent, ProfileState> {
       final user = await changePasswordUseCase(event.changePwdReqEntity);
       yield ProfileDone(user); // Emit success state after getting the user
     } catch (error) {
+      print("error:::::: $error");
       if (error is ApiErrorException) {
         // print('object----eeee:::: ${e.message}');
         yield ProfileFailure(error.message); // Emit API error message
@@ -158,14 +159,14 @@ class GetScheduleBloc extends Bloc<ProfileEvent, ProfileState> {
       yield GetScheduleDone(user); // Emit success state after getting the user
     } catch (error) {
       print('rrrrrrr::::: $error');
-      // if (error is ApiErrorException) {
-      //   yield ProfileFailure(error.message); // Emit API error message
-      // } else if (error is NetworkException) {
-      //   yield ProfileFailure(error.message); // Emit network failure message
-      // }
-      // else {
-      //   yield const ProfileFailure("An unexpected error occurred. Please try again."); // Emit generic error message
-      // }
+      if (error is ApiErrorException) {
+        yield ProfileFailure(error.message); // Emit API error message
+      } else if (error is NetworkException) {
+        yield ProfileFailure(error.message); // Emit network failure message
+      }
+      else {
+        yield const ProfileFailure("An unexpected error occurred. Please try again."); // Emit generic error message
+      }
     }
   }
 }
@@ -190,14 +191,14 @@ class CreateScheduleBloc extends Bloc<ProfileEvent, ProfileState> {
       yield CreateScheduleDone(user); // Emit success state after getting the user
     } catch (error) {
       print('rrrrrrr::::: $error');
-      // if (error is ApiErrorException) {
-      //   yield ProfileFailure(error.message); // Emit API error message
-      // } else if (error is NetworkException) {
-      //   yield ProfileFailure(error.message); // Emit network failure message
-      // }
-      // else {
-      //   yield const ProfileFailure("An unexpected error occurred. Please try again."); // Emit generic error message
-      // }
+      if (error is ApiErrorException) {
+        yield ProfileFailure(error.message); // Emit API error message
+      } else if (error is NetworkException) {
+        yield ProfileFailure(error.message); // Emit network failure message
+      }
+      else {
+        yield const ProfileFailure("An unexpected error occurred. Please try again."); // Emit generic error message
+      }
     }
   }
 }
@@ -232,15 +233,15 @@ class ProfileVehiclesBloc extends Bloc<ProfileEvent, ProfileState> {
 
     } catch (error) {
       print("error:: $error");
-      // if (error is ApiErrorException) {
-      //   yield ProfileFailure(error.message); // Emit API error message
-      // } else if (error is NetworkException) {
-      //   yield ProfileFailure(error.message); // Emit network failure message
-      // }
-      // else {
+      if (error is ApiErrorException) {
+        yield ProfileFailure(error.message); // Emit API error message
+      } else if (error is NetworkException) {
+        yield ProfileFailure(error.message); // Emit network failure message
+      }
+      else {
         yield const ProfileFailure(
             "An unexpected error occurred. Please try again."); // Emit generic error message
-      // }
+      }
     }
   }
 }

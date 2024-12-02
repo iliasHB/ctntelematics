@@ -15,6 +15,7 @@ import '../../../../core/resources/profile_data_state.dart';
 // import '../../domain/entitties/req_entities/token_req_entity.dart';
 import '../../domain/repositories/profile_repository.dart';
 import '../datasources/remote/profile_api_client.dart';
+import '../models/resp_models/create_schedule_resp_model.dart';
 import '../models/resp_models/get_schedule_resp_model.dart';
 import '../models/resp_models/profile_resp_model.dart';
 
@@ -49,20 +50,23 @@ class ProfileRepositoryImpl implements ProfileRepository {
       email: changePwdReqEntity.email,
       password: changePwdReqEntity.password,
       otp: changePwdReqEntity.otp,
-      passwordConfirmation: changePwdReqEntity.passwordConfirmation,
+      password_confirmation: changePwdReqEntity.password_confirmation,
     );
     print("email: ${reqChangePwdReqModel.email}");
     print("otp: ${ reqChangePwdReqModel.otp}");
     print("password: ${ reqChangePwdReqModel.password}");
-    print("retype-pwd: ${reqChangePwdReqModel.passwordConfirmation}");
+    print("password_confirmation: ${reqChangePwdReqModel.password_confirmation}");
+    print("source-code: ${sourceCode}");
     try {
-      return await handleProfileErrorHandling(apiClient.changePassword(
-          reqChangePwdReqModel.email,
-          reqChangePwdReqModel.otp,
-          reqChangePwdReqModel.password,
-          reqChangePwdReqModel.passwordConfirmation,
-          sourceCode));
-    } on ApiErrorException catch (e) {
+      return await handleProfileErrorHandling(
+          apiClient.changePassword(
+          reqChangePwdReqModel.email.trim(),
+          reqChangePwdReqModel.otp.trim(),
+          reqChangePwdReqModel.password.trim(),
+          reqChangePwdReqModel.password_confirmation.trim(), sourceCode)
+    );
+    }
+    on ApiErrorException catch (e) {
       print('object----eeee:::: ${e.message}');
       throw ApiErrorException(e.message); // Propagate the error with the API message
     } on NetworkException catch (e) {
@@ -116,12 +120,12 @@ class ProfileRepositoryImpl implements ProfileRepository {
     TokenReqModel tokenReqModel = TokenReqModel(token: tokenReqEntity.token);
     print("token:::::::--- ${tokenReqModel.token}");
     try {
-      //return await handleProfileErrorHandling(
-      return apiClient.getSchedule(tokenReqModel.token);
-      // } on ApiErrorException catch (e) {
-      //   throw ApiErrorException(e.message); // Propagate the error with the API message
-      // } on NetworkException catch (e) {
-      //   throw NetworkException(); // Propagate network-specific errors
+      return await handleGetScheduleErrorHandling(
+       apiClient.getSchedule(tokenReqModel.token));
+      } on ApiErrorException catch (e) {
+        throw ApiErrorException(e.message); // Propagate the error with the API message
+      } on NetworkException catch (e) {
+        throw NetworkException(); // Propagate network-specific errors
     } catch (e) {
       print("error::::: $e");
       throw Exception("An error occurred while changing password.");
@@ -129,7 +133,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
   }
 
   @override
-  Future<CreateScheduleRespEntity> onCreateSchedule(CreateScheduleReqEntity createScheduleReqEntity) async {
+  Future<CreateScheduleRespModel> onCreateSchedule(CreateScheduleReqEntity createScheduleReqEntity) async {
     CreateScheduleReqModel createScheduleReqModel = CreateScheduleReqModel(
         description: createScheduleReqEntity.description,
         vehicle_vin: createScheduleReqEntity.vehicle_vin,
@@ -144,8 +148,8 @@ class ProfileRepositoryImpl implements ProfileRepository {
         reminder_advance_km: createScheduleReqEntity.reminder_advance_km,
         token: createScheduleReqEntity.token);
     try {
-      //return await handleProfileErrorHandling(
-      return apiClient.createSchedule(
+      return await handleCreateScheduleErrorHandling(
+          apiClient.createSchedule(
           createScheduleReqModel.description,
           createScheduleReqModel.vehicle_vin,
           createScheduleReqModel.schedule_type,
@@ -157,11 +161,11 @@ class ProfileRepositoryImpl implements ProfileRepository {
           createScheduleReqModel.reminder_advance_days,
           createScheduleReqModel.reminder_advance_hr,
           createScheduleReqModel.reminder_advance_km,
-          createScheduleReqModel.token);
-      // } on ApiErrorException catch (e) {
-      //   throw ApiErrorException(e.message); // Propagate the error with the API message
-      // } on NetworkException catch (e) {
-      //   throw NetworkException(); // Propagate network-specific errors
+          createScheduleReqModel.token));
+      } on ApiErrorException catch (e) {
+        throw ApiErrorException(e.message); // Propagate the error with the API message
+      } on NetworkException catch (e) {
+        throw NetworkException(); // Propagate network-specific errors
     } catch (e) {
       print("error::::: $e");
       throw Exception("An error occurred while changing password.");
@@ -179,15 +183,16 @@ class ProfileRepositoryImpl implements ProfileRepository {
     print("token: ${vehicleReqModel.token}");
     print("contentType: ${vehicleReqModel.contentType}");
     try {
-      // return await handleVehicleErrorHandling(
-          return apiClient.getAllVehicles(vehicleReqModel.token, vehicleReqModel.contentType!);
-      // );
+      return await handleProfileVehicleErrorHandling(
+        apiClient.getAllVehicles(vehicleReqModel.token, vehicleReqModel.contentType!)
+      );
+
     }
-    // on ApiErrorException catch (e) {
-    //   throw ApiErrorException(e.message); // Propagate the error with the API message
-    // } on NetworkException catch (e) {
-    //   throw NetworkException(); // Propagate network-specific errors
-    // }
+    on ApiErrorException catch (e) {
+      throw ApiErrorException(e.message); // Propagate the error with the API message
+    } on NetworkException catch (e) {
+      throw NetworkException(); // Propagate network-specific errors
+    }
     catch (e) {
       print("error:- $e");
       throw Exception("An error occurred while logging in: $e");

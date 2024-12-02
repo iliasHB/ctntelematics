@@ -40,7 +40,7 @@ class Schedule extends ScheduleEntity {
   factory Schedule.fromJson(Map<String, dynamic> json) => Schedule(
     vehicle_vin: json["vehicle_vin"],
     schedule_type: json["schedule_type"],
-    start_date: DateTime.parse(json["start_date"]),
+    start_date: json["start_date"],
     no_time: json["no_time"],
     no_kilometer: json["no_kilometer"],
     no_hours: json["no_hours"],

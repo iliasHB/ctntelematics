@@ -17,7 +17,7 @@ class ChangePwdReqEntity extends Equatable{
     return ChangePwdReqEntity(
       email: json['email'] ?? "",
       password: json['password'] ?? "",
-      passwordConfirmation: json['passwordConfirmation'] ?? "",
+      passwordConfirmation: json['password_confirmation'] ?? "",
       otp: json['otp'] ?? "",
     );
   }
