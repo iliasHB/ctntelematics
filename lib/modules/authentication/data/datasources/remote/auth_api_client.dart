@@ -26,11 +26,11 @@ abstract class AuthApiClient {
   Future<AuthRespModel> generateOtp(@Field("email") String email,
       @Header("source_code") String sourceCode);
 
-  @POST("/user/verify/email")
-  @FormUrlEncoded()
-  Future<AuthRespModel> verifyEmail(@Field("email") String email,
-      @Field("otp") String otp,
-      @Header("source_code") String sourceCode);
+  // @POST("/user/verify/email")
+  // @FormUrlEncoded()
+  // Future<AuthRespModel> verifyEmail(@Field("email") String email,
+  //     @Field("otp") String otp,
+  //     @Header("source_code") String sourceCode);
 
   @POST("/user/change/password")
   @FormUrlEncoded()

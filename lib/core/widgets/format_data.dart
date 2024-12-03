@@ -19,6 +19,11 @@ class FormatData {
       return timestamp; // Return the original string if parsing fails
     }
   }
+  static String formatTimestampToDate(String timestamp) {
+    final DateTime dateTime = DateTime.parse(timestamp);
+    final DateFormat formatter = DateFormat('yyyy-MM-dd');
+    return formatter.format(dateTime);
+  }
 
   static String convertDurationToDate(String duration) {
     final now = DateTime.now(); // Current date

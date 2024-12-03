@@ -6,6 +6,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_datetime_picker_plus/flutter_datetime_picker_plus.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../core/widgets/format_data.dart';
@@ -24,8 +25,10 @@ class DashVehicleAnalytics extends StatefulWidget {
 }
 
 class _DashVehicleAnalyticsState extends State<DashVehicleAnalytics> {
-  final List<String> _tabs = ["Today","Yesterday", "3 Days", "1 Week"];
+  final List<String> _tabs = ["Today","Yesterday", "3 Days", "1 Week", "Custom"];
   int _selectedTabIndex = 0;
+  DateTime? _customTimeFrom;
+  DateTime? _customTimeTo;
 
   // Function to generate date range for analytics
   Map<String, String> _getDateRange(String tab) {
@@ -49,6 +52,10 @@ class _DashVehicleAnalyticsState extends State<DashVehicleAnalytics> {
       case "1 Week":
         timeFrom = now.subtract(const Duration(days: 7)); // 7 days ago
         break;
+      case "Custom":
+        timeFrom = _customTimeFrom ?? now.subtract(const Duration(days: 1));
+        timeTo = _customTimeTo ?? now;
+        break;
       default:
         timeFrom = now; // Default to now (should not occur in this context)
     }
@@ -59,6 +66,48 @@ class _DashVehicleAnalyticsState extends State<DashVehicleAnalytics> {
       "time_from": formatter.format(timeFrom),
       "time_to": formatter.format(timeTo),
     };
+  }
+
+
+  _pickCustomDateRange() async {
+    DateTime? customTimeFrom;
+    DateTime? customTimeTo;
+
+    // Pick Start DateTime
+    await DatePicker.showDateTimePicker(
+      context,
+      showTitleActions: true,
+      minTime: DateTime(2000, 1, 1),
+      maxTime: DateTime.now(),
+      onConfirm: (date) {
+        customTimeFrom = date;
+      },
+      currentTime: DateTime.now(),
+      locale: LocaleType.en,
+    );
+
+    if (customTimeFrom != null) {
+      // Pick End DateTime
+      await DatePicker.showDateTimePicker(
+        context,
+        showTitleActions: true,
+        minTime: customTimeFrom,
+        maxTime: DateTime.now(),
+        onConfirm: (date) {
+          customTimeTo = date;
+        },
+        currentTime: customTimeFrom,
+        locale: LocaleType.en,
+      );
+    }
+
+    if (customTimeFrom != null && customTimeTo != null) {
+      setState(() {
+        _customTimeFrom = customTimeFrom!;
+        _customTimeTo = customTimeTo!;
+        _selectedTabIndex = _tabs.indexOf("Custom");
+      });
+    }
   }
 
   @override
@@ -94,6 +143,13 @@ class _DashVehicleAnalyticsState extends State<DashVehicleAnalytics> {
           token: widget.token,
           dashboardRoute: widget.dashboardRoute
       ),
+      FilterByDateTime(
+          timeFrom: dateRange["time_from"]!,
+          timeTo: dateRange["time_to"]!,
+          vin: widget.vin,
+          token: widget.token,
+          dashboardRoute: widget.dashboardRoute
+      ),
     ];
 
     return Padding(
@@ -108,10 +164,14 @@ class _DashVehicleAnalyticsState extends State<DashVehicleAnalytics> {
                 itemCount: _tabs.length,
                 itemBuilder: (context, index) {
                   return GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        _selectedTabIndex = index;
-                      });
+                    onTap: () async {
+                      if (_tabs[index] == "Custom") {
+                        await _pickCustomDateRange(); // Ensure the custom picker is invoked
+                      } else {
+                        setState(() {
+                          _selectedTabIndex = index; // Set other tabs as usual
+                        });
+                      }
                     },
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 8.0),
@@ -134,7 +194,6 @@ class _DashVehicleAnalyticsState extends State<DashVehicleAnalytics> {
                 },
               ),
             ),
-
             // Display selected page
             Expanded(
               child: pages[_selectedTabIndex],
@@ -142,6 +201,69 @@ class _DashVehicleAnalyticsState extends State<DashVehicleAnalytics> {
           ],
         ),
       );
+  }
+}
+
+class FilterByDateTime extends StatelessWidget {
+  final String timeFrom;
+  final String timeTo, vin, token;
+  final int? dashboardRoute;
+
+  const FilterByDateTime({
+    Key? key,
+    required this.timeFrom,
+    required this.timeTo,
+    required this.vin,
+    required this.token, this.dashboardRoute,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    // final routeHistoryReqEntity = VehicleRouteHistoryReqEntity(
+    //     vehicle_vin: widget.vin!,
+    //     time_from:
+    //     fromDate.toString().split('.').first ?? "N/A",
+    //     time_to: toDate.toString().split('.').first ?? "N/A",
+    //     token: widget.token!);
+
+    return BlocProvider(
+      create: (_) => sl<VehicleRouteHistoryBloc>()
+        ..add(VehicleRouteHistoryEvent(VehicleRouteHistoryReqEntity(
+            vehicle_vin: vin,//'1HGBH41JXMN109186',//vin,
+            time_from: timeFrom,//'2024-10-29 11:41:00',//timeFrom,
+            time_to: timeTo,//'2024-10-30 11:42:00',//timeTo,
+            token: token))),
+      child: BlocConsumer<VehicleRouteHistoryBloc, VehicleState>(
+        builder: (context, state) {
+          print('vin- : $vin');
+          print('timeFrom- : $timeFrom');
+          print('timeTo- : $timeTo');
+          print('token- : $token');
+          if (state is VehicleLoading) {
+            return const Center(
+              child: Padding(
+                padding: EdgeInsets.only(top: 10.0),
+                child: CircularProgressIndicator(strokeWidth: 2.0, color: Colors.green,),
+              ),
+            );
+          } else if (state is GetVehicleRouteHistoryDone) {
+            return VehicleRouteDataAnalytics(vehicles: state.resp.data, vin: vin);
+          } else {
+            return Container();
+          }
+        },
+        listener: (context, state) {
+          if (state is VehicleFailure) {
+            if (state.message.contains("Unauthenticated")) {
+              Navigator.pushNamedAndRemoveUntil(context, "/login", (route) => false);
+            }
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(state.message)),
+            );
+          }
+        },
+      ),
+    );
   }
 }
 
@@ -184,7 +306,7 @@ class TodayDashboardPage extends StatelessWidget {
             return const Center(
               child: Padding(
                 padding: EdgeInsets.only(top: 10.0),
-                child: CircularProgressIndicator(strokeWidth: 2.0),
+                child: CircularProgressIndicator(strokeWidth: 2.0, color: Colors.green,),
               ),
             );
           } else if (state is GetVehicleRouteHistoryDone) {
@@ -195,8 +317,8 @@ class TodayDashboardPage extends StatelessWidget {
         },
         listener: (context, state) {
           if (state is VehicleFailure) {
-            if (state.message.contains("401")) {
-              Navigator.pushNamed(context, "/login");
+            if (state.message.contains("Unauthenticated")) {
+              Navigator.pushNamedAndRemoveUntil(context, "/login", (route) => false);
             }
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(state.message)),
@@ -240,7 +362,7 @@ class ThreeDaysDashboardPage extends StatelessWidget {
             return const Center(
               child: Padding(
                 padding: EdgeInsets.only(top: 10.0),
-                child: CircularProgressIndicator(strokeWidth: 2.0),
+                child: CircularProgressIndicator(strokeWidth: 2.0, color: Colors.green,),
               ),
             );
           } else if (state is GetVehicleRouteHistoryDone) {
@@ -298,7 +420,7 @@ class OneWeekDashboardPage extends StatelessWidget {
             return const Center(
               child: Padding(
                 padding: EdgeInsets.only(top: 10.0),
-                child: CircularProgressIndicator(strokeWidth: 2.0),
+                child: CircularProgressIndicator(strokeWidth: 2.0, color: Colors.green,),
               ),
             );
           } else if (state is GetVehicleRouteHistoryDone) {
@@ -309,8 +431,8 @@ class OneWeekDashboardPage extends StatelessWidget {
         },
         listener: (context, state) {
           if (state is VehicleFailure) {
-            if (state.message.contains("401")) {
-              Navigator.pushNamed(context, "/login");
+            if (state.message.contains("Unauthenticated")) {
+              Navigator.pushNamedAndRemoveUntil(context, "/login", (route) => false);
             }
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(state.message)),
@@ -354,7 +476,7 @@ class YesterdayDashboardPage extends StatelessWidget {
             return const Center(
               child: Padding(
                 padding: EdgeInsets.only(top: 10.0),
-                child: CircularProgressIndicator(strokeWidth: 2.0),
+                child: CircularProgressIndicator(strokeWidth: 2.0, color: Colors.green,),
               ),
             );
           } else if (state is GetVehicleRouteHistoryDone) {
@@ -365,8 +487,8 @@ class YesterdayDashboardPage extends StatelessWidget {
         },
         listener: (context, state) {
           if (state is VehicleFailure) {
-            if (state.message.contains("401")) {
-              Navigator.pushNamed(context, "/login");
+            if (state.message.contains("Unauthenticated")) {
+              Navigator.pushNamedAndRemoveUntil(context, "/login", (route) => false);
             }
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(state.message)),
@@ -377,7 +499,6 @@ class YesterdayDashboardPage extends StatelessWidget {
     );
   }
 }
-
 
 class VehicleRouteDataAnalytics extends StatefulWidget {
   final List<DatumEntity> vehicles;
@@ -413,16 +534,16 @@ class _VehicleRouteDataAnalyticsState extends State<VehicleRouteDataAnalytics> {
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: analytics == null
-            ? const Center(child: CircularProgressIndicator())
+            ? const Center(child: CircularProgressIndicator(color: Colors.green,))
             : SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Vehicle Analytics ', style: AppStyle.cardSubtitle.copyWith(fontSize: 14),),
+              Text('Vehicle Analytics ', style: AppStyle.cardSubtitle.copyWith(fontSize: 12),),
               Row(
                 children: [
 
-                  Text('VIN: ', style: AppStyle.cardSubtitle.copyWith(fontSize: 14),),
+                  Text('VIN: ', style: AppStyle.cardSubtitle.copyWith(fontSize: 12),),
                   Text(widget.vin, style: AppStyle.cardfooter,),
                 ],
               ),
@@ -434,7 +555,7 @@ class _VehicleRouteDataAnalyticsState extends State<VehicleRouteDataAnalytics> {
                     radius: 5,
                   ),
                   const SizedBox(width: 10,),
-                  Text('Online',
+                  Text('online',
                       style: AppStyle.cardSubtitle.copyWith(fontSize: 14))
                 ],
               ),
@@ -561,7 +682,7 @@ Widget DashboardComponentTitle(
             children: [
               Text(
                 title,
-                style: AppStyle.cardSubtitle,
+                style: AppStyle.cardSubtitle.copyWith(fontSize: 12),
               ),
               Text(
                 subTitle,
@@ -577,7 +698,6 @@ Widget DashboardComponentTitle(
     ],
   );
 }
-
 
 class Analytics {
   final int onlineCount;

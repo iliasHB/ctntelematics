@@ -44,13 +44,13 @@ class ChangePasswordUseCase extends UseCase<void, ChangePwdReqEntity>{
   }
 }
 
-class VerifyEmailUseCase extends UseCase<void, VerifyEmailReqEntity>{
-  final AuthRepository repository;
-
-  VerifyEmailUseCase(this.repository);
-
-  @override
-  Future<AuthRespEntity> call(VerifyEmailReqEntity params) async {
-    return await repository.onVerifyEmail(params);
-  }
-}
+// class VerifyEmailUseCase extends UseCase<void, VerifyEmailReqEntity>{
+//   final AuthRepository repository;
+//
+//   VerifyEmailUseCase(this.repository);
+//
+//   @override
+//   Future<AuthRespEntity> call(VerifyEmailReqEntity params) async {
+//     return await repository.onVerifyEmail(params);
+//   }
+// }

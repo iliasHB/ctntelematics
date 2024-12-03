@@ -32,6 +32,40 @@ class DashVehicleRespEntity extends Equatable{
     required this.total,
   });
 
+  // Adding the copyWith method
+  DashVehicleRespEntity copyWith({
+    int? current_page,
+    List<DashDatumEntity>? data,
+    String? first_page_url,
+    int? from,
+    int? last_page,
+    String? last_page_url,
+    List<DashLinkEntity>? links,
+    String? next_page_url,
+    String? path,
+    int? per_page,
+    String? prev_page_url,
+    int? to,
+    int? total,
+  }) {
+    return DashVehicleRespEntity(
+      current_page: current_page ?? this.current_page,
+      data: data ?? this.data,
+      first_page_url: first_page_url ?? this.first_page_url,
+      from: from ?? this.from,
+      last_page: last_page ?? this.last_page,
+      last_page_url: last_page_url ?? this.last_page_url,
+      links: links ?? this.links,
+      next_page_url: next_page_url ?? this.next_page_url,
+      path: path ?? this.path,
+      per_page: per_page ?? this.per_page,
+      prev_page_url: prev_page_url ?? this.prev_page_url,
+      to: to ?? this.to,
+      total: total ?? this.total,
+    );
+  }
+
+
   @override
   // TODO: implement props
   List<Object?> get props => [

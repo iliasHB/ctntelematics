@@ -1,6 +1,7 @@
 import 'package:ctntelematics/core/utils/app_export_util.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_datetime_picker_plus/flutter_datetime_picker_plus.dart';
 import 'package:intl/intl.dart';
 
 import '../../../map/presentation/widgets/vehicle_dashboard.dart';
@@ -8,17 +9,17 @@ import '../../../map/presentation/widgets/vehicle_dashboard.dart';
 
 class VehicleDashboard extends StatefulWidget {
   final String token, vin;
-  const VehicleDashboard({Key? key, required this.token, required this.vin})
-      : super(key: key);
+  const VehicleDashboard({super.key, required this.token, required this.vin});
 
   @override
   State<VehicleDashboard> createState() => _VehicleDashboardState();
 }
 
 class _VehicleDashboardState extends State<VehicleDashboard> {
-  final List<String> _tabs = ["Today","Yesterday", "3 Days", "1 Week"];
+  final List<String> _tabs = ["Today","Yesterday", "3 Days", "1 Week", "Custom"];
   int _selectedTabIndex = 0;
-
+  DateTime? _customTimeFrom;
+  DateTime? _customTimeTo;
   // Function to generate date range for analytics
   Map<String, String> _getDateRange(String tab) {
     final now = DateTime.now();
@@ -41,6 +42,10 @@ class _VehicleDashboardState extends State<VehicleDashboard> {
       case "1 Week":
         timeFrom = now.subtract(const Duration(days: 7)); // 7 days ago
         break;
+      case "Custom":
+        timeFrom = _customTimeFrom ?? now.subtract(const Duration(days: 1));
+        timeTo = _customTimeTo ?? now;
+        break;
       default:
         timeFrom = now; // Default to now (should not occur in this context)
     }
@@ -52,6 +57,75 @@ class _VehicleDashboardState extends State<VehicleDashboard> {
       "time_to": formatter.format(timeTo),
     };
   }
+
+
+  // _pickCustomDateRange() async {
+  //   final pickedFrom = await showDatePicker(
+  //     context: context,
+  //     initialDate: DateTime.now(),
+  //     firstDate: DateTime(2000),
+  //     lastDate: DateTime.now(),
+  //   );
+  //
+  //   if (pickedFrom != null) {
+  //     final pickedTo = await showDatePicker(
+  //       context: context,
+  //       initialDate: pickedFrom,
+  //       firstDate: pickedFrom,
+  //       lastDate: DateTime.now(),
+  //     );
+  //
+  //     if (pickedTo != null) {
+  //       setState(() {
+  //         _customTimeFrom = pickedFrom;
+  //         _customTimeTo = pickedTo;
+  //         _selectedTabIndex = 4; // Switch to Custom tab
+  //       });
+  //     }
+  //   }
+  // }
+
+  _pickCustomDateRange() async {
+    DateTime? customTimeFrom;
+    DateTime? customTimeTo;
+
+    // Pick Start DateTime
+    await DatePicker.showDateTimePicker(
+      context,
+      showTitleActions: true,
+      minTime: DateTime(2000, 1, 1),
+      maxTime: DateTime.now(),
+      onConfirm: (date) {
+        customTimeFrom = date;
+      },
+      currentTime: DateTime.now(),
+      locale: LocaleType.en,
+    );
+
+    if (customTimeFrom != null) {
+      // Pick End DateTime
+      await DatePicker.showDateTimePicker(
+        context,
+        showTitleActions: true,
+        minTime: customTimeFrom,
+        maxTime: DateTime.now(),
+        onConfirm: (date) {
+          customTimeTo = date;
+        },
+        currentTime: customTimeFrom,
+        locale: LocaleType.en,
+      );
+    }
+
+    if (customTimeFrom != null && customTimeTo != null) {
+      setState(() {
+        _customTimeFrom = customTimeFrom!;
+        _customTimeTo = customTimeTo!;
+        _selectedTabIndex = _tabs.indexOf("Custom");
+      });
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -74,6 +148,11 @@ class _VehicleDashboardState extends State<VehicleDashboard> {
           vin: widget.vin,
           token: widget.token),
       OneWeekDashboardPage(
+          timeFrom: dateRange["time_from"]!,
+          timeTo: dateRange["time_to"]!,
+          vin: widget.vin,
+          token: widget.token),
+      FilterByDateTime(
           timeFrom: dateRange["time_from"]!,
           timeTo: dateRange["time_to"]!,
           vin: widget.vin,
@@ -101,11 +180,21 @@ class _VehicleDashboardState extends State<VehicleDashboard> {
               itemCount: _tabs.length,
               itemBuilder: (context, index) {
                 return GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _selectedTabIndex = index;
-                    });
+                  onTap: () async {
+                    if (_tabs[index] == "Custom") {
+                      await _pickCustomDateRange(); // Ensure the custom picker is invoked
+                    } else {
+                      setState(() {
+                        _selectedTabIndex = index; // Set other tabs as usual
+                      });
+                    }
                   },
+                  // onTap: () {
+                  //   setState(() {
+                  //     _selectedTabIndex = index;
+                  //   });
+                  // },
+
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 8.0),
                     child: Chip(

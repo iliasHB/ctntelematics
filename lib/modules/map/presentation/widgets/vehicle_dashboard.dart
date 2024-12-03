@@ -4,6 +4,7 @@ import 'package:ctntelematics/modules/vehincle/domain/entities/resp_entities/rou
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_datetime_picker_plus/flutter_datetime_picker_plus.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../service_locator.dart';
@@ -20,9 +21,10 @@ class VehicleDashboard extends StatefulWidget {
 }
 
 class _VehicleDashboardState extends State<VehicleDashboard> {
-  final List<String> _tabs = ["Today","Yesterday", "3 Days", "1 Week"];
+  final List<String> _tabs = ["Today","Yesterday", "3 Days", "1 Week", "Custom"];
   int _selectedTabIndex = 0;
-
+  DateTime? _customTimeFrom;
+  DateTime? _customTimeTo;
   // Function to generate date range for analytics
   Map<String, String> _getDateRange(String tab) {
     final now = DateTime.now();
@@ -45,6 +47,10 @@ class _VehicleDashboardState extends State<VehicleDashboard> {
       case "1 Week":
         timeFrom = now.subtract(const Duration(days: 7)); // 7 days ago
         break;
+      case "Custom":
+        timeFrom = _customTimeFrom ?? now.subtract(const Duration(days: 1));
+        timeTo = _customTimeTo ?? now;
+        break;
       default:
         timeFrom = now; // Default to now (should not occur in this context)
     }
@@ -55,6 +61,47 @@ class _VehicleDashboardState extends State<VehicleDashboard> {
       "time_from": formatter.format(timeFrom),
       "time_to": formatter.format(timeTo),
     };
+  }
+
+  _pickCustomDateRange() async {
+    DateTime? customTimeFrom;
+    DateTime? customTimeTo;
+
+    // Pick Start DateTime
+    await DatePicker.showDateTimePicker(
+      context,
+      showTitleActions: true,
+      minTime: DateTime(2000, 1, 1),
+      maxTime: DateTime.now(),
+      onConfirm: (date) {
+        customTimeFrom = date;
+      },
+      currentTime: DateTime.now(),
+      locale: LocaleType.en,
+    );
+
+    if (customTimeFrom != null) {
+      // Pick End DateTime
+      await DatePicker.showDateTimePicker(
+        context,
+        showTitleActions: true,
+        minTime: customTimeFrom,
+        maxTime: DateTime.now(),
+        onConfirm: (date) {
+          customTimeTo = date;
+        },
+        currentTime: customTimeFrom,
+        locale: LocaleType.en,
+      );
+    }
+
+    if (customTimeFrom != null && customTimeTo != null) {
+      setState(() {
+        _customTimeFrom = customTimeFrom!;
+        _customTimeTo = customTimeTo!;
+        _selectedTabIndex = _tabs.indexOf("Custom");
+      });
+    }
   }
 
   @override
@@ -78,6 +125,11 @@ class _VehicleDashboardState extends State<VehicleDashboard> {
           vin: widget.vin,
           token: widget.token),
       OneWeekDashboardPage(
+          timeFrom: dateRange["time_from"]!,
+          timeTo: dateRange["time_to"]!,
+          vin: widget.vin,
+          token: widget.token),
+      FilterByDateTime(
           timeFrom: dateRange["time_from"]!,
           timeTo: dateRange["time_to"]!,
           vin: widget.vin,
@@ -108,10 +160,14 @@ class _VehicleDashboardState extends State<VehicleDashboard> {
               itemCount: _tabs.length,
               itemBuilder: (context, index) {
                 return GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _selectedTabIndex = index;
-                    });
+                  onTap: () async {
+                    if (_tabs[index] == "Custom") {
+                      await _pickCustomDateRange(); // Ensure the custom picker is invoked
+                    } else {
+                      setState(() {
+                        _selectedTabIndex = index; // Set other tabs as usual
+                      });
+                    }
                   },
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 8.0),
@@ -183,7 +239,7 @@ class TodayDashboardPage extends StatelessWidget {
             return const Center(
               child: Padding(
                 padding: EdgeInsets.only(top: 10.0),
-                child: CircularProgressIndicator(strokeWidth: 2.0),
+                child: CircularProgressIndicator(strokeWidth: 2.0, color: Colors.green,),
               ),
             );
           } else if (state is GetVehicleRouteHistoryDone) {
@@ -238,7 +294,7 @@ class ThreeDaysDashboardPage extends StatelessWidget {
             return const Center(
               child: Padding(
                 padding: EdgeInsets.only(top: 10.0),
-                child: CircularProgressIndicator(strokeWidth: 2.0),
+                child: CircularProgressIndicator(strokeWidth: 2.0, color: Colors.green,),
               ),
             );
           } else if (state is GetVehicleRouteHistoryDone) {
@@ -269,12 +325,12 @@ class OneWeekDashboardPage extends StatelessWidget {
   final String token;
 
   const OneWeekDashboardPage({
-    Key? key,
+    super.key,
     required this.timeFrom,
     required this.timeTo,
     required this.vin,
     required this.token,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -295,7 +351,7 @@ class OneWeekDashboardPage extends StatelessWidget {
             return const Center(
               child: Padding(
                 padding: EdgeInsets.only(top: 10.0),
-                child: CircularProgressIndicator(strokeWidth: 2.0),
+                child: CircularProgressIndicator(strokeWidth: 2.0, color: Colors.green,),
               ),
             );
           } else if (state is GetVehicleRouteHistoryDone) {
@@ -324,12 +380,12 @@ class YesterdayDashboardPage extends StatelessWidget {
   final String timeTo, vin, token;
 
   const YesterdayDashboardPage({
-    Key? key,
+    super.key,
     required this.timeFrom,
     required this.timeTo,
     required this.vin,
     required this.token,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -350,7 +406,7 @@ class YesterdayDashboardPage extends StatelessWidget {
             return const Center(
               child: Padding(
                 padding: EdgeInsets.only(top: 10.0),
-                child: CircularProgressIndicator(strokeWidth: 2.0),
+                child: CircularProgressIndicator(strokeWidth: 2.0, color: Colors.green,),
               ),
             );
           } else if (state is GetVehicleRouteHistoryDone) {
@@ -374,6 +430,63 @@ class YesterdayDashboardPage extends StatelessWidget {
   }
 }
 
+
+class FilterByDateTime extends StatelessWidget {
+  final String timeFrom;
+  final String timeTo;
+  final String vin;
+  final String token;
+
+  const FilterByDateTime({
+    super.key,
+    required this.timeFrom,
+    required this.timeTo,
+    required this.vin,
+    required this.token,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (_) => sl<VehicleRouteHistoryBloc>()
+        ..add(VehicleRouteHistoryEvent(VehicleRouteHistoryReqEntity(
+            vehicle_vin: vin,
+            time_from: timeFrom,
+            time_to: timeTo,
+            token: token))),
+      child: BlocConsumer<VehicleRouteHistoryBloc, VehicleState>(
+        builder: (context, state) {
+          print('vin- : $vin');
+          print('timeFrom- : $timeFrom');
+          print('timeTo- : $timeTo');
+          print('token- : $token');
+          if (state is VehicleLoading) {
+            return const Center(
+              child: Padding(
+                padding: EdgeInsets.only(top: 10.0),
+                child: CircularProgressIndicator(strokeWidth: 2.0, color: Colors.green,),
+              ),
+            );
+          } else if (state is GetVehicleRouteHistoryDone) {
+            return DashboardVehicleRouteData(vehicle: state.resp);
+          } else {
+            return Container();
+          }
+        },
+        listener: (context, state) {
+          if (state is VehicleFailure) {
+            if (state.message.contains("Unauthenticated")) {
+              Navigator.pushNamed(context, "/login");
+            }
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(state.message)),
+            );
+          }
+        },
+      ),
+    );
+  }
+}
 
 class GpsProcessor {
 
@@ -609,7 +722,7 @@ class _DashboardVehicleRouteDataState extends State<DashboardVehicleRouteData> {
             _buildMetricCard(
               title: "Max Speed",
               value: metrics['maxSpeed'] != null
-                  ? "${metrics['maxSpeed']} km/h"
+                  ? "${metrics['maxSpeed'].toStringAsFixed(2)} km/h"
                   : "N/A",
               icon: Icon(
                 Icons.route,
@@ -630,7 +743,7 @@ class _DashboardVehicleRouteDataState extends State<DashboardVehicleRouteData> {
             _buildMetricCard(
               title: "Avg Speed",
               value: metrics['averageSpeed'] != null
-                  ? "${metrics['averageSpeed']} km/h"
+                  ? "${metrics['averageSpeed'].toStringAsFixed(2)} km/h"
                   : "N/A",
               icon: Icon(
                 Icons.timer,
@@ -690,6 +803,11 @@ class _DashboardVehicleRouteDataState extends State<DashboardVehicleRouteData> {
     );
   }
 }
+
+
+
+
+
 
 // Page for "Today" analytics
 // class TodayRouteHistory extends StatelessWidget {

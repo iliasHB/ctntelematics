@@ -28,7 +28,7 @@ class _VehicleInformationState extends State<VehicleInformation> {
       appBar: AppBar(
         title: Text(
           "Vehicle Information",
-          style: AppStyle.cardSubtitle,
+          style: AppStyle.cardSubtitle.copyWith(fontSize: 14),
         ),
       ),
       body: SingleChildScrollView(
@@ -74,7 +74,7 @@ class _VehicleInformationState extends State<VehicleInformation> {
 
             Container(
               padding: const EdgeInsets.all(8.0),
-              margin: const EdgeInsets.symmetric(horizontal: 20),
+              margin: const EdgeInsets.only(right: 20, left: 20, top: 20),
               decoration: BoxDecoration(
                 color: Colors.green.shade200,
                 borderRadius: BorderRadius.circular(12),
@@ -93,7 +93,7 @@ class _VehicleInformationState extends State<VehicleInformation> {
                     return const Center(
                       child: Padding(
                         padding: EdgeInsets.only(top: 0.0),
-                        child: CircularProgressIndicator(strokeWidth: 2.0),
+                        child: CircularProgressIndicator(strokeWidth: 2.0, color: Colors.green,),
                       ),
                     );
                   } else if (state is VehicleTripDone) {

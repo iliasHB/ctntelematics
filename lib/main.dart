@@ -79,7 +79,7 @@ class MyApp extends StatelessWidget {
         Provider<LoginBloc>(create: (_) => sl<LoginBloc>()),
         Provider<GenerateOtpBloc>(create: (_) => sl<GenerateOtpBloc>()),
         Provider<ChangePwdBloc>(create: (_) => sl<ChangePwdBloc>()),
-        Provider<EmailVerifyBloc>(create: (_) => sl<EmailVerifyBloc>()),
+        // Provider<EmailVerifyBloc>(create: (_) => sl<EmailVerifyBloc>()),
         Provider<DashVehiclesBloc>(create: (_) => sl<DashVehiclesBloc>()),
         // Provider<VehiclesBloc>(create: (_) => sl<VehiclesBloc>()),
         Provider<ProfileGenerateOtpBloc>(create: (_) => sl<ProfileGenerateOtpBloc>()),

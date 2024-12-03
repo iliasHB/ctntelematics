@@ -20,18 +20,18 @@ class CreateScheduleRespEntity extends Equatable{
 }
 
 class ScheduleEntity extends Equatable{
-  final String vehicle_vin;
-  final String schedule_type;
-  final String start_date;
-  final String no_time;
-  final String no_kilometer;
-  final String no_hours;
+  final String? vehicle_vin;
+  final String? schedule_type;
+  final String? start_date;
+  final String? no_time;
+  final String? no_kilometer;
+  final String? no_hours;
   final dynamic category_time;
-  final String reminder_advance_days;
-  final String reminder_advance_km;
-  final String reminder_advance_hr;
-  final DateTime updated_at;
-  final DateTime created_at;
+  final String? reminder_advance_days;
+  final String? reminder_advance_km;
+  final String? reminder_advance_hr;
+  final String updated_at;
+  final String created_at;
   final int id;
 
   ScheduleEntity({

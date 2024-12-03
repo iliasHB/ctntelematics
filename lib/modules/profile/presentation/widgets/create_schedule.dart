@@ -2,6 +2,7 @@ import 'package:ctntelematics/core/widgets/custom_button.dart';
 import 'package:ctntelematics/modules/profile/domain/entitties/req_entities/token_req_entity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
 
 import '../../../../config/theme/app_style.dart';
 import '../../../../core/usecase/databse_helper.dart';
@@ -42,7 +43,7 @@ class _CreateScheduleWidgetState extends State<CreateScheduleWidget> {
   bool isSwitchedByEngineHr = false;
   bool isSwitchedByMileage = false;
   String? _selectedVendor;
-  String selectedSchedule = 'Recurring'; // Default selected value
+  String selectedSchedule = 'recurring'; // Default selected value
   DB_schedule db_schedule = DB_schedule();
 
   // PrefUtils prefUtils = PrefUtils();
@@ -316,11 +317,12 @@ class _CreateScheduleWidgetState extends State<CreateScheduleWidget> {
                           style: AppStyle.cardfooter,
                         ),
                         leading: Radio(
-                          value: 'Recurring',
+                          value: 'recurring',
                           groupValue: selectedSchedule,
                           onChanged: (value) {
                             setState(() {
-                              selectedSchedule = value!; // Update the selected value
+                              selectedSchedule =
+                                  value!; // Update the selected value
                             });
                           },
                         ),
@@ -333,11 +335,12 @@ class _CreateScheduleWidgetState extends State<CreateScheduleWidget> {
                           style: AppStyle.cardfooter,
                         ),
                         leading: Radio(
-                          value: 'Custom',
+                          value: 'custom',
                           groupValue: selectedSchedule,
                           onChanged: (value) {
                             setState(() {
-                              selectedSchedule = value!; // Update the selected value
+                              selectedSchedule =
+                                  value!; // Update the selected value
                             });
                           },
                         ),
@@ -669,7 +672,6 @@ class _CreateScheduleWidgetState extends State<CreateScheduleWidget> {
                 BlocConsumer<CreateScheduleBloc, ProfileState>(
                   listener: (context, state) {
                     if (state is CreateScheduleDone) {
-
                       // scheduleUpdate(
                       //                           FormatData.convertDurationToDate(
                       //                               '${state.resp.schedule.no_time} $dropdownValue1'),
@@ -682,24 +684,25 @@ class _CreateScheduleWidgetState extends State<CreateScheduleWidget> {
                       //                           //     state.resp.schedule.reminder_advance_hr)),
                       //                           state.resp.schedule.no_kilometer,
                       //                           state.resp.schedule.reminder_advance_km);
+                      ///-----
                       saveScheduleType(
                           FormatData.convertDurationToDate(
                               '${state.resp.schedule.no_time} $dropdownValue1'),
                           FormatData.convertDurationToDate(
                               '${state.resp.schedule.reminder_advance_days} $dropdownValue2'),
-                          state.resp.schedule.vehicle_vin,
+                          state.resp.schedule.vehicle_vin ?? "",
                           FormatData.calculateReminderTime(
-                              int.parse(state.resp.schedule.no_hours)),
+                              int.parse(state.resp.schedule.no_hours ?? "0")),
                           FormatData.calculateReminderTime(int.parse(
-                              state.resp.schedule.reminder_advance_hr)),
-                          state.resp.schedule.no_kilometer,
-                          state.resp.schedule.reminder_advance_km,
-                          FormatData.formatTimestamp(
-                              state.resp.schedule.start_date),
-                          state.resp.schedule.schedule_type,
+                              state.resp.schedule.reminder_advance_hr ?? "0")),
+                          state.resp.schedule.no_kilometer ?? "",
+                          state.resp.schedule.reminder_advance_km ?? "",
+                          state.resp.schedule.start_date ?? "",
+                          state.resp.schedule.schedule_type ?? "",
                           _taskController.text);
 
-                      AlertMessage.showAlertMessageModal(context, state.resp.message);
+                      AlertMessage.showAlertMessageModal(
+                          context, state.resp.message);
 
                       ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(content: Text(state.resp.message)));
@@ -758,20 +761,17 @@ class _CreateScheduleWidgetState extends State<CreateScheduleWidget> {
                                       description: _taskController.text.trim(),
                                       vehicle_vin: _selectedVendor!,
                                       schedule_type: selectedSchedule,
-                                      start_date: FormatData.formatTimestamp(
-                                        DateTime.now().toString(),),
-                                      number_kilometer: mileageController.text
-                                          .trim(),
+                                      start_date: FormatData.formatTimestampToDate(DateTime.now().toString()),
+                                      number_kilometer:
+                                          mileageController.text.trim(),
                                       number_time: timeController.text.trim(),
-                                      category_time: '2',
-                                      number_hour: engineHrController
-                                          .text
-                                          .trim(),
+                                      category_time: "",
+                                      number_hour:
+                                          engineHrController.text.trim(),
                                       reminder_advance_days:
                                           timeReminderAdvController.text,
                                       reminder_advance_hr:
-                                          engineHrReminderAdvController
-                                              .text
+                                          engineHrReminderAdvController.text
                                               .toString(),
                                       reminder_advance_km:
                                           mileageReminderAdvController.text
@@ -884,10 +884,6 @@ class _CreateScheduleWidgetState extends State<CreateScheduleWidget> {
     }
   }
 }
-
-
-
-
 
 // import 'package:flutter/cupertino.dart';
 // import 'package:flutter/material.dart';
