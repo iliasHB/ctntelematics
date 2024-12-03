@@ -137,33 +137,33 @@ class ChangePwdBloc extends Bloc<AuthEvent, AuthState> {
 }
 
 
-class EmailVerifyBloc extends Bloc<AuthEvent, AuthState> {
-  final VerifyEmailUseCase verifyEmailUseCase;
-
-  EmailVerifyBloc(this.verifyEmailUseCase) : super(AuthInitial()) {
-    on<VerifyEmailEvent>((event, emit) => emit.forEach<AuthState>(
-      mapEventToState(event),
-      onData: (state) => state,
-      onError: (error, stackTrace) => AuthFailure(error.toString()), // Handle error cases
-    ));
-  }
-
-  Stream<AuthState> mapEventToState(VerifyEmailEvent event) async* {
-    yield AuthLoading(); // Emit loading state
-    try {
-      // Use yield* to delegate stream handling to loginUseCase
-      final user = await verifyEmailUseCase(event.verifyEmailReqEntity);
-      yield AuthDone(user); // Emit success state after getting the user
-
-    } catch (error) {
-      if (error is ApiErrorException) {
-        yield AuthFailure(error.message); // Emit API error message
-      } else if (error is NetworkException) {
-        yield AuthFailure(error.message); // Emit network failure message
-      }
-      else {
-        yield const AuthFailure("An unexpected error occurred. Please try again."); // Emit generic error message
-      }
-    }
-  }
-}
+// class EmailVerifyBloc extends Bloc<AuthEvent, AuthState> {
+//   final VerifyEmailUseCase verifyEmailUseCase;
+//
+//   EmailVerifyBloc(this.verifyEmailUseCase) : super(AuthInitial()) {
+//     on<VerifyEmailEvent>((event, emit) => emit.forEach<AuthState>(
+//       mapEventToState(event),
+//       onData: (state) => state,
+//       onError: (error, stackTrace) => AuthFailure(error.toString()), // Handle error cases
+//     ));
+//   }
+//
+//   Stream<AuthState> mapEventToState(VerifyEmailEvent event) async* {
+//     yield AuthLoading(); // Emit loading state
+//     try {
+//       // Use yield* to delegate stream handling to loginUseCase
+//       final user = await verifyEmailUseCase(event.verifyEmailReqEntity);
+//       yield AuthDone(user); // Emit success state after getting the user
+//
+//     } catch (error) {
+//       if (error is ApiErrorException) {
+//         yield AuthFailure(error.message); // Emit API error message
+//       } else if (error is NetworkException) {
+//         yield AuthFailure(error.message); // Emit network failure message
+//       }
+//       else {
+//         yield const AuthFailure("An unexpected error occurred. Please try again."); // Emit generic error message
+//       }
+//     }
+//   }
+// }

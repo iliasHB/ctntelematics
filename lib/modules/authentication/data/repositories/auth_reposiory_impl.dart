@@ -84,26 +84,26 @@ class AuthRepositoryImpl implements AuthRepository {
       throw Exception("An error occurred while changing password.");
     }
   }
-
-  @override
-  Future<AuthRespModel> onVerifyEmail(VerifyEmailReqEntity verifyEmailReqEntity) async {
-    VerifyEmailReqEntity reqVerifyEmailReqEntity = VerifyEmailReqEntity(
-      email: verifyEmailReqEntity.email,
-      otp: verifyEmailReqEntity.otp,
-    );
-    try {
-      return await handleOtpErrorHandling(
-          apiClient.verifyEmail(
-              reqVerifyEmailReqEntity.email,
-              reqVerifyEmailReqEntity.otp,
-              sourceCode));
-    } on ApiErrorException catch (e) {
-      throw ApiErrorException(e.message); // Propagate the error with the API message
-    } on NetworkException catch (e) {
-      throw NetworkException(); // Propagate network-specific errors
-    } catch (e) {
-      throw Exception("An error occurred while changing password.");
-    }
-  }
+  //
+  // @override
+  // Future<AuthRespModel> onVerifyEmail(VerifyEmailReqEntity verifyEmailReqEntity) async {
+  //   VerifyEmailReqEntity reqVerifyEmailReqEntity = VerifyEmailReqEntity(
+  //     email: verifyEmailReqEntity.email,
+  //     otp: verifyEmailReqEntity.otp,
+  //   );
+  //   try {
+  //     return await handleOtpErrorHandling(
+  //         apiClient.verifyEmail(
+  //             reqVerifyEmailReqEntity.email,
+  //             reqVerifyEmailReqEntity.otp,
+  //             sourceCode));
+  //   } on ApiErrorException catch (e) {
+  //     throw ApiErrorException(e.message); // Propagate the error with the API message
+  //   } on NetworkException catch (e) {
+  //     throw NetworkException(); // Propagate network-specific errors
+  //   } catch (e) {
+  //     throw Exception("An error occurred while changing password.");
+  //   }
+  // }
 
 }

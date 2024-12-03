@@ -16,6 +16,6 @@ abstract class AuthRepository{
 
   Future<AuthRespEntity>onChangePassword(ChangePwdReqEntity changePwdReqEntity);
 
-  Future<AuthRespEntity>onVerifyEmail(VerifyEmailReqEntity verifyEmailReqEntity);
+  // Future<AuthRespEntity>onVerifyEmail(VerifyEmailReqEntity verifyEmailReqEntity);
 
 }

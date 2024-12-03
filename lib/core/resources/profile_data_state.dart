@@ -146,8 +146,10 @@ Future<CreateScheduleRespModel> handleCreateScheduleErrorHandling(Future<CreateS
 
       throw ApiErrorException(errorResponse['message'] ?? "Access token expired");
     } else if(error.response?.statusCode == 422){
+
       // Parse the error response for a 422 Unprocessable Entity error
       final errorResponse = error.response?.data;
+      print('errorrrr:::::: ${errorResponse.toString()}');
       if (errorResponse != null && errorResponse['errors'] != null) {
         // Extract the specific validation error, e.g., vehicle_vin
         final errors = errorResponse['errors'];

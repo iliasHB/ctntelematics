@@ -167,8 +167,8 @@ class ProfileRepositoryImpl implements ProfileRepository {
       } on NetworkException catch (e) {
         throw NetworkException(); // Propagate network-specific errors
     } catch (e) {
-      print("error::::: $e");
-      throw Exception("An error occurred while changing password.");
+      print("error:::---:: $e");
+      throw Exception("An error occurred while creating schedule.");
     }
   }
 

@@ -65,7 +65,7 @@ Future<void> initializeDependencies() async {
   sl.registerSingleton<LoginUseCase>(LoginUseCase(sl()));
   sl.registerSingleton<GenerateOtpUseCase>(GenerateOtpUseCase(sl()));
   sl.registerSingleton<ChangePasswordUseCase>(ChangePasswordUseCase(sl()));
-  sl.registerSingleton<VerifyEmailUseCase>(VerifyEmailUseCase(sl()));
+  // sl.registerSingleton<VerifyEmailUseCase>(VerifyEmailUseCase(sl()));
   sl.registerSingleton<DashboardUseCase>(DashboardUseCase(sl()));
   sl.registerSingleton<VehicleUseCase>(VehicleUseCase(sl()));
   sl.registerSingleton<ProfileGenerateOtpUseCase>(ProfileGenerateOtpUseCase(sl()));
@@ -93,7 +93,7 @@ Future<void> initializeDependencies() async {
   sl.registerFactory(() => LoginBloc(sl()));
   sl.registerFactory(() => GenerateOtpBloc(sl()));
   sl.registerFactory(() => ChangePwdBloc(sl()));
-  sl.registerFactory(() => EmailVerifyBloc(sl()));
+  // sl.registerFactory(() => EmailVerifyBloc(sl()));
   sl.registerFactory(() => DashVehiclesBloc(sl()));
   // sl.registerFactory(() => VehiclesBloc(sl()));
   sl.registerFactory(() => ProfileGenerateOtpBloc(sl()));

@@ -65,7 +65,7 @@ class ResetPasswordPage extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(horizontal: 5),
                       child: Text(
                         overflow: TextOverflow.ellipsis,
-                        '- Password must include alphabet numeric & \ncharacter',
+                        '- Password must include alphabet numeric & character',
                         textAlign: TextAlign.start,
                         style: AppStyle.cardfooter
                             .copyWith(color: Colors.grey[500], fontSize: 12),

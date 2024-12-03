@@ -48,8 +48,8 @@ class Schedule extends ScheduleEntity {
     reminder_advance_days: json["reminder_advance_days"],
     reminder_advance_km: json["reminder_advance_km"],
     reminder_advance_hr: json["reminder_advance_hr"],
-    updated_at: DateTime.parse(json["updated_at"]),
-    created_at: DateTime.parse(json["created_at"]),
+    updated_at: json["updated_at"],
+    created_at: json["created_at"],
     id: json["id"],
   );
 
