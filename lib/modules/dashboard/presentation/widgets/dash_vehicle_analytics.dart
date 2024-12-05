@@ -298,10 +298,10 @@ class TodayDashboardPage extends StatelessWidget {
             token: token))),
       child: BlocConsumer<VehicleRouteHistoryBloc, VehicleState>(
         builder: (context, state) {
-          print('vin- : $vin');
-          print('timeFrom- : $timeFrom');
-          print('timeTo- : $timeTo');
-          print('token- : $token');
+          print('today_vin- : $vin');
+          print('today_timeFrom- : $timeFrom');
+          print('today_timeTo- : $timeTo');
+          print('today_token- : $token');
           if (state is VehicleLoading) {
             return const Center(
               child: Padding(
@@ -310,6 +310,7 @@ class TodayDashboardPage extends StatelessWidget {
               ),
             );
           } else if (state is GetVehicleRouteHistoryDone) {
+            print("hhhhhhhhoooooooooooo");
             return VehicleRouteDataAnalytics(vehicles: state.resp.data, vin: vin);
           } else {
             return Container();
@@ -373,8 +374,8 @@ class ThreeDaysDashboardPage extends StatelessWidget {
         },
         listener: (context, state) {
           if (state is VehicleFailure) {
-            if (state.message.contains("401")) {
-              Navigator.pushNamed(context, "/login");
+            if (state.message.contains("Unauthenticated")) {
+              Navigator.pushNamedAndRemoveUntil(context, "/login", (route) => false);
             }
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(state.message)),
@@ -710,9 +711,9 @@ class Analytics {
     int offlineCount = 0;
 
     for (var vehicle in vehicles) {
-      if (vehicle.connected == 'online') {
+      if (vehicle.connected == 'online' || vehicle.connected == 'Online') {
         onlineCount++;
-      } else if (vehicle.connected == 'offline') {
+      } else if (vehicle.connected == 'offline' || vehicle.connected == 'Offline') {
         offlineCount++;
       }
     }

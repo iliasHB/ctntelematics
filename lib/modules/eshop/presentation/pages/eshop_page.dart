@@ -105,7 +105,7 @@ class _EshopPageState extends State<EshopPage> {
                 child: TextFormField(
                   decoration: const InputDecoration(
                     prefixIcon: Icon(CupertinoIcons.search),
-                    suffixIcon: Icon(CupertinoIcons.mic_fill),
+                    // suffixIcon: Icon(CupertinoIcons.mic_fill),
                     border: OutlineInputBorder(borderSide: BorderSide.none),
                   ),
                 ),

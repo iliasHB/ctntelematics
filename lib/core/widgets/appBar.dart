@@ -101,7 +101,8 @@ class _AnimatedAppBarState extends State<AnimatedAppBar>
 
     if (pickedFile != null) {
       final filePath = pickedFile.path;
-      final uploadedAt = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
+      final uploadedAt =
+          DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
 
       // Save to the database
       final dbHelper = DatabaseHelper();
@@ -128,7 +129,8 @@ class _AnimatedAppBarState extends State<AnimatedAppBar>
 
     if (pickedFile != null) {
       final filePath = pickedFile.path;
-      final uploadedAt = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
+      final uploadedAt =
+          DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
 
       print('UserId: $userId');
 
@@ -152,13 +154,14 @@ class _AnimatedAppBarState extends State<AnimatedAppBar>
     }
   }
 
-
   Future<String?> fetchUserProfilePicture(int userId) async {
     final dbHelper = DatabaseHelper();
-    final picture = await dbHelper.fetchLatestProfilePicture(userId); // Fetch the latest picture as a single map
+    final picture = await dbHelper.fetchLatestProfilePicture(
+        userId); // Fetch the latest picture as a single map
 
     if (picture != null) {
-      return picture['filePath'] as String?; // Return the file path if available
+      return picture['filePath']
+          as String?; // Return the file path if available
     }
 
     return null; // Return null if no picture is found
@@ -186,52 +189,64 @@ class _AnimatedAppBarState extends State<AnimatedAppBar>
                 child: Row(
                   children: [
                     isLoading
-                        ? Center(child: Container(
-                        height: 20,
-                        width: 20,
-                        child: const CircularProgressIndicator(
-                          strokeWidth: 2.0,
-                        )))
-                        :  FutureBuilder<String?>(
-                          future: fetchUserProfilePicture(int.parse(userId ?? '0')),
-                          builder: (context, snapshot) {
-                            if (snapshot.connectionState == ConnectionState.waiting) {
-                              return Container(
-                                height: 15,
-                                width: 15,
-                                child: const CircularProgressIndicator(
-                                  strokeWidth: 2.0,
-                                ),
-                              ); // Loading indicator
-                            } else if (snapshot.hasError) {
-                              return const Icon(Icons.error, color: Colors.red); // Error state
-                            } else if (!snapshot.hasData || snapshot.data == null) {
-                              return InkWell(
-                                onTap: (){
-                                  pickAndSaveProfilePicture(int.parse(userId!));
-                                  //pickAndUpdateProfilePicture(int.parse(userId!));
-                                },
-                                child: CircleAvatar(
-                                  radius: 30,
-                                  // backgroundImage: AssetImage("assets/images/avatar.jpeg"),
-                                  child: ClipOval(
-                                    child: Image.asset("assets/images/avatar.jpeg", height: 40, width: 40,),
-                                  ),// Default avatar
-                                ),
-                              );
-                            } else {
-                              return InkWell(
-                                    onTap: (){
-                                      pickAndUpdateProfilePicture(int.parse(userId!));
-                                    },
-                                child: CircleAvatar(
-                                  radius: 30,
-                                  backgroundImage: FileImage(File(snapshot.data!)), // Fetched image
-                                ),
-                              );
-                            }
-                          },
-                        ),
+                        ? const Center(
+                            child: SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2.0, color: Colors.green,
+                                )))
+                        : FutureBuilder<String?>(
+                            future: fetchUserProfilePicture(
+                                int.parse(userId ?? '0')),
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState ==
+                                  ConnectionState.waiting) {
+                                return const SizedBox(
+                                  height: 15,
+                                  width: 15,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2.0, color: Colors.green,
+                                  ),
+                                ); // Loading indicator
+                              } else if (snapshot.hasError) {
+                                return const Icon(Icons.error,
+                                    color: Colors.red); // Error state
+                              } else if (!snapshot.hasData ||
+                                  snapshot.data == null) {
+                                return InkWell(
+                                  onTap: () {
+                                    pickAndSaveProfilePicture(
+                                        int.parse(userId!));
+                                    //pickAndUpdateProfilePicture(int.parse(userId!));
+                                  },
+                                  child: CircleAvatar(
+                                    radius: 30,
+                                    // backgroundImage: AssetImage("assets/images/avatar.jpeg"),
+                                    child: ClipOval(
+                                      child: Image.asset(
+                                        "assets/images/avatar.jpeg",
+                                        height: 40,
+                                        width: 40,
+                                      ),
+                                    ), // Default avatar
+                                  ),
+                                );
+                              } else {
+                                return InkWell(
+                                  onTap: () {
+                                    pickAndUpdateProfilePicture(
+                                        int.parse(userId!));
+                                  },
+                                  child: CircleAvatar(
+                                    radius: 30,
+                                    backgroundImage: FileImage(
+                                        File(snapshot.data!)), // Fetched image
+                                  ),
+                                );
+                              }
+                            },
+                          ),
                     const SizedBox(width: 10),
                     Text(
                       "Welcome, ${widget.firstname}",
@@ -247,7 +262,7 @@ class _AnimatedAppBarState extends State<AnimatedAppBar>
             padding: const EdgeInsets.only(right: 8.0),
             child: InkWell(
               onTap: () {
-                //Navigator.pushNamed(context, '/service');
+                Navigator.pushNamed(context, '/service');
               },
               child: CircleAvatar(
                 backgroundColor: Colors.green.shade100,
@@ -274,20 +289,6 @@ class _AnimatedAppBarState extends State<AnimatedAppBar>
             ),
           ),
 
-          // Padding(
-          //   padding: const EdgeInsets.only(right: 8.0),
-          //   child: InkWell(
-          //     onTap: () {
-          //       //Navigator.pushNamed(context, '/setting');
-          //       DashboardDialogUtility.showVehicleSearchDialog(context);
-          //     },
-          //     child: CircleAvatar(
-          //       backgroundColor: Colors.green.shade100,
-          //       child: const Icon(CupertinoIcons.rectangle_grid_2x2, size: 20,),
-          //     ),
-          //   ),
-          // ),
-
           Align(
             alignment: Alignment.topLeft,
             child: PopupMenuButton(
@@ -305,12 +306,14 @@ class _AnimatedAppBarState extends State<AnimatedAppBar>
                 itemBuilder: (context) => [
                       PopupMenuItem(
                         child: Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text('Customize your dashboard',
-                                style: AppStyle.cardSubtitle),
+                                style: AppStyle.cardSubtitle.copyWith(fontSize: 14)),
                             Text(
                               'Select the information you want to display on your dashboard',
-                              style: AppStyle.cardfooter,
+                              style: AppStyle.cardfooter.copyWith(fontSize: 12),
                               // softWrap: true,
                             ),
                           ],
@@ -337,6 +340,8 @@ class _AnimatedAppBarState extends State<AnimatedAppBar>
                               Consumer<ShopNowProvider>(
                                 builder: (context, shopNowProvider, child) {
                                   return Checkbox(
+                                    activeColor: Colors.green,
+                                    checkColor: Colors.white,
                                       value: shopNowProvider.isShopNow,
                                       onChanged: (value) {
                                         shopNowProvider.toggleShopNow(value!);
@@ -439,12 +444,14 @@ class _AnimatedAppBarState extends State<AnimatedAppBar>
                               const Text("Maintenance Reminder"),
                               const Spacer(),
                               Consumer<MaintenanceReminderProvider>(
-                                builder: (context, maintenanceReminderProvider, child) {
+                                builder: (context, maintenanceReminderProvider,
+                                    child) {
                                   return Checkbox(
-                                      value: maintenanceReminderProvider.isMaintenanceReminder,
+                                      value: maintenanceReminderProvider
+                                          .isMaintenanceReminder,
                                       onChanged: (value) {
-                                        maintenanceReminderProvider.toggleMaintenanceReminder(value!);
-
+                                        maintenanceReminderProvider
+                                            .toggleMaintenanceReminder(value!);
                                       });
                                 },
                               )
@@ -478,11 +485,14 @@ class _AnimatedAppBarState extends State<AnimatedAppBar>
                                 const Text("Vehicle Trip"),
                                 const Spacer(),
                                 Consumer<VehicleTripProvider>(
-                                  builder: (context, vehicleTripProvider, child) {
+                                  builder:
+                                      (context, vehicleTripProvider, child) {
                                     return Checkbox(
-                                        value: vehicleTripProvider.isVehicleTrip,
+                                        value:
+                                            vehicleTripProvider.isVehicleTrip,
                                         onChanged: (value) {
-                                          vehicleTripProvider.toggleVehicleTrip(value!);
+                                          vehicleTripProvider
+                                              .toggleVehicleTrip(value!);
                                         });
                                   },
                                 )
@@ -723,7 +733,7 @@ class DashboardDialogUtility {
 //           padding: const EdgeInsets.only(right: 8.0),
 //           child: InkWell(
 //             onTap: (){
-//                 // Navigator.pushNamed(context, "/report");
+//                 // Navigator.pushNamed(context, "/service");
 //                 showModalBottomSheet(
 //                     context: context,
 //                     isDismissible: false,

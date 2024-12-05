@@ -4,6 +4,7 @@ import 'package:ctntelematics/core/utils/app_export_util.dart';
 // import 'package:ctntelematics/core/widgets/advert.dart';
 import 'package:ctntelematics/core/widgets/appBar.dart';
 import 'package:ctntelematics/core/widgets/custom_button.dart';
+import 'package:ctntelematics/modules/dashboard/domain/entitties/resp_entities/dash_vehicle_resp_entity.dart';
 import 'package:ctntelematics/modules/eshop/presentation/widgets/eshop_widget.dart';
 import 'package:ctntelematics/modules/profile/presentation/widgets/maintenance.dart';
 import 'package:ctntelematics/modules/websocket/domain/entitties/resp_entities/vehicle_entity.dart';
@@ -94,6 +95,71 @@ class _DashboardPageState extends State<DashboardPage> {
       isLoading = false;
     });
   }
+
+  // Helper function to compute counts
+  Map<String, int> _computeVehicleCounts(List<DashDatumEntity> vehicles) {
+    return {
+      'online': vehicles
+          .where((v) =>
+              v.last_location?.status == "online" ||
+              v.last_location?.status == "Online")
+          .length,
+      'offline': vehicles
+          .where((v) =>
+              v.last_location?.status == "offline" ||
+              v.last_location?.status == "Offline")
+          .length,
+      'idling': vehicles
+          .where((v) =>
+              v.last_location?.status == "idling" ||
+              v.last_location?.status == "Idling")
+          .length,
+      'parked': vehicles
+          .where((v) =>
+              v.last_location?.status == "parked" ||
+              v.last_location?.status == "Parked")
+          .length,
+    };
+  }
+
+  // Helper function to compute counts
+  Map<String, int> _computeVehicleSocketCounts(List<VehicleEntity> vehicles) {
+    return {
+      'moving': vehicles
+          .where((v) =>
+      v.locationInfo.tracker!.status == "Moving" ||
+          v.locationInfo.tracker!.status == "moving")
+          .length,
+      'online': vehicles
+          .where((v) =>
+              v.locationInfo.tracker!.status == "Online" ||
+              v.locationInfo.tracker!.status == "online")
+          .length,
+      'offline': vehicles
+          .where((v) =>
+              v.locationInfo.vehicleStatus == "Offline" ||
+              v.locationInfo.vehicleStatus == "offline")
+          .length,
+      'idling': vehicles
+          .where((v) =>
+              v.locationInfo.vehicleStatus == "Idling" ||
+              v.locationInfo.vehicleStatus == "idling")
+          .length,
+      'parked': vehicles
+          .where((v) =>
+              v.locationInfo.vehicleStatus == "Parked" ||
+              v.locationInfo.vehicleStatus == "parked")
+          .length,
+    };
+  }
+
+  // void _updateVehicleStatus(VehicleEntity vehicle, String newStatus) {
+  //   if (vehicle.locationInfo.tracker == null) {
+  //     vehicle.locationInfo.tracker = newStatus; // Set the initial status
+  //   }
+  //   vehicle.previousStatus = vehicle.locationInfo?.vehicleStatus;
+  //   vehicle.locationInfo?.vehicleStatus = newStatus;
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -261,84 +327,47 @@ class _DashboardPageState extends State<DashboardPage> {
                                     child: Center(
                                       child: CircularProgressIndicator(
                                         strokeWidth: 2.0,
+                                        color: Colors.green,
                                       ),
                                     ),
                                   );
-
                                 } else if (state is DashboardDone) {
                                   final vehiclesData = state.resp.data ?? [];
-
-                                  vehicleCount = vehiclesData.length;
-
-                                  offlineLength = vehiclesData
-                                          .where((vehicle) =>
-                                              vehicle.last_location?.status ==
-                                                  'offline')
-                                          .length ?? 0;
-
-                                  packedCount = vehiclesData
-                                      .where((vehicle) =>
-                                          vehicle.last_location?.status ==
-                                          "parked")
-                                      .length;
-
-                                  // idleCount = state.resp.data?.where((vehicle) => vehicle.status == 'Idle').length ?? 0;
-                                  // packedCount = state.resp.data?.where((vehicle) => vehicle.status == 'Parked').length ?? 0;
-
-                                  WidgetsBinding.instance
-                                      .addPostFrameCallback((_) {
-                                    setState(() {
-                                      vehicleCount;
-                                    });
-                                  });
+                                  final vehicleCounts =
+                                      _computeVehicleCounts(vehiclesData);
 
                                   return Column(
                                     children: [
                                       BlocListener<VehicleLocationBloc,
                                           List<VehicleEntity>>(
                                         listener: (context, vehicles) {
-                                          // _updateVehicleCounts(vehicles);
-                                          setState(() {
-                                            vehicles;
-                                          });
+                                          // setState(() {
+                                          //   vehicles.forEach((vehicle) {
+                                          //     // Simulate status update
+                                          //     final newStatus = _fetchNewStatusForVehicle(vehicle.locationInfo.vin);
+                                          //     _updateVehicleStatus(vehicle, newStatus);
+                                          //   });
+                                          // });
                                         },
                                         child: BlocBuilder<VehicleLocationBloc,
                                             List<VehicleEntity>>(
                                           builder: (context, vehicles) {
                                             if (vehicles.isEmpty) {
-
                                               return VehicleStatusPieChart(
-                                                onlineCount: 0,
-                                                offlineCount: offlineLength,
-                                                idlingCount: 0,
-                                                parkedCount: packedCount,
+                                                onlineCount: vehicleCounts['online'] ?? 0,
+                                                offlineCount: vehicleCounts['offline'] ?? 0,
+                                                idlingCount: vehicleCounts['idling'] ?? 0,
+                                                parkedCount: vehicleCounts['parked'] ?? 0,
                                               );
                                             }
 
-                                            final idlingVehicles =
-                                                vehicles.where((v) {
-                                              return v.locationInfo
-                                                      .vehicleStatus ==
-                                                  "Idling";
-                                            }).toList();
+                                            final vehicleWebsocketCounts = _computeVehicleSocketCounts(vehicles);
 
-                                            final onlineVehicles =
-                                                vehicles.where((v) {
-                                              return v.locationInfo.tracker
-                                                      ?.status ==
-                                                  "online";
-                                            }).toList();
-
-                                            onlineCount == onlineVehicles.length;
-                                            idleCount = idlingVehicles.length;
-                                            offlineCount = offlineLength - onlineVehicles.length;
-
-                                            //List<VehicleEntity> displayedVehicles = _filterVehicles(vehicles);
                                             return VehicleStatusPieChart(
-                                                onlineCount: onlineCount,
-                                                offlineCount: offlineCount,
-                                                idlingCount: idleCount,
-                                                parkedCount: packedCount);
+                                                onlineCount: vehicleWebsocketCounts['online'] ?? 0,
+                                                offlineCount: vehicleCounts['offline'] ?? 0,
+                                                idlingCount: vehicleWebsocketCounts['idling'] ?? 0,
+                                                parkedCount: vehicleCounts['parked'] ?? 0);
                                           },
                                         ),
                                       ),
@@ -362,11 +391,12 @@ class _DashboardPageState extends State<DashboardPage> {
                                                   count: BlocListener<
                                                       VehicleLocationBloc,
                                                       List<VehicleEntity>>(
-                                                    listener: (context, vehicles) {
+                                                    listener:
+                                                        (context, vehicles) {
                                                       // _updateVehicleCounts(vehicles);
-                                                      // setState(() {
-                                                      //   vehicles;
-                                                      // });
+                                                      setState(() {
+                                                        vehicles;
+                                                      });
                                                     },
                                                     child: BlocBuilder<
                                                         VehicleLocationBloc,
@@ -375,7 +405,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                                           (context, vehicles) {
                                                         if (vehicles.isEmpty) {
                                                           return Text(
-                                                            '0',
+                                                            '${vehicleCounts['online'] ?? 0}',
                                                             style: AppStyle
                                                                 .cardfooter
                                                                 .copyWith(
@@ -389,20 +419,11 @@ class _DashboardPageState extends State<DashboardPage> {
                                                                     .ellipsis,
                                                           );
                                                         }
-
-                                                        final onlineVehicles =
-                                                            vehicles.where((v) {
-                                                          return v
-                                                                  .locationInfo
-                                                                  .tracker
-                                                                  ?.status ==
-                                                              "online";
-                                                        }).toList();
-
-                                                        //List<VehicleEntity> displayedVehicles = _filterVehicles(vehicles);
+                                                        final vehicleWebsocketCounts =
+                                                            _computeVehicleSocketCounts(
+                                                                vehicles);
                                                         return Text(
-                                                          onlineVehicles.length
-                                                              .toString(),
+                                                          "${vehicleWebsocketCounts['online'] ?? 0}",
                                                           style: AppStyle
                                                               .cardfooter
                                                               .copyWith(
@@ -439,28 +460,20 @@ class _DashboardPageState extends State<DashboardPage> {
                                                         List<VehicleEntity>>(
                                                       builder:
                                                           (context, vehicles) {
-                                                        int offlineLength = state
-                                                                .resp.data
-                                                                ?.where((vehicle) =>
-                                                                    vehicle.last_location
-                                                                            ?.status ==
-                                                                        'offline')
-                                                                .length ??
-                                                            0;
-
                                                         if (vehicles.isEmpty) {
                                                           return Text(
-                                                            offlineLength.toString(),
-                                                            // state.resp.data!.length
-                                                            //     .toString(),
+                                                            '${vehicleCounts['offline'] ?? 0}',
                                                             style: AppStyle
                                                                 .cardfooter
                                                                 .copyWith(
                                                                     fontWeight:
                                                                         FontWeight
                                                                             .w300),
-                                                            maxLines: 1, // Restrict to a single line for count as well
-                                                            overflow: TextOverflow.ellipsis,
+                                                            maxLines:
+                                                                1, // Restrict to a single line for count as well
+                                                            overflow:
+                                                                TextOverflow
+                                                                    .ellipsis,
                                                           );
                                                         }
 
@@ -472,10 +485,8 @@ class _DashboardPageState extends State<DashboardPage> {
                                                                   .status ==
                                                               "online";
                                                         }).toList();
-
-                                                        //List<VehicleEntity> displayedVehicles = _filterVehicles(vehicles);
                                                         return Text(
-                                                          '${offlineLength - onlineVehicles.length}',
+                                                          '${vehicleCounts['offline'] ?? 0}',
                                                           style: AppStyle
                                                               .cardfooter
                                                               .copyWith(
@@ -496,14 +507,23 @@ class _DashboardPageState extends State<DashboardPage> {
                                                   )),
                                               _BuildVehicleStatus(
                                                   title: "Idling",
-                                                  count: BlocBuilder<
-                                                      VehicleLocationBloc,
-                                                      List<VehicleEntity>>(
+                                                  count: BlocListener<
+                                                          VehicleLocationBloc,
+                                                          List<VehicleEntity>>(
+                                                      listener:
+                                                          (context, vehicles) {
+                                                    setState(() {
+                                                      vehicles;
+                                                    });
+                                                  }, child: BlocBuilder<
+                                                          VehicleLocationBloc,
+                                                          List<VehicleEntity>>(
                                                     builder:
                                                         (context, vehicles) {
                                                       if (vehicles.isEmpty) {
+                                                        print('object idling ::: ${vehicleCounts['idling'] ?? 0}');
                                                         return Text(
-                                                          '0',
+                                                          '${vehicleCounts['idling'] ?? 0}',
                                                           style: AppStyle
                                                               .cardfooter
                                                               .copyWith(
@@ -517,17 +537,19 @@ class _DashboardPageState extends State<DashboardPage> {
                                                         );
                                                       }
 
-                                                      final idlingVehicles =
-                                                          vehicles.where((v) {
-                                                        return v.locationInfo
-                                                                .vehicleStatus ==
-                                                            "Idling";
-                                                        // && v.locationInfo.tracker?.position?.ignition == "on";
-                                                      }).toList();
+                                                      // final idlingVehicles =
+                                                      //     vehicles.where((v) {
+                                                      //   return v.locationInfo
+                                                      //           .vehicleStatus ==
+                                                      //       "Idling";
+                                                      //   // && v.locationInfo.tracker?.position?.ignition == "on";
+                                                      // }).toList();
 
-                                                      //List<VehicleEntity> displayedVehicles = _filterVehicles(vehicles);
+                                                      final vehicleWebsocketCounts = _computeVehicleSocketCounts(vehicles);
+
+                                                      print('object websocket idling ::: ${vehicleWebsocketCounts['idling'] ?? 0}');
                                                       return Text(
-                                                        '${idlingVehicles.length}',
+                                                        '${vehicleWebsocketCounts['idling']}',
                                                         style: AppStyle
                                                             .cardfooter
                                                             .copyWith(
@@ -540,34 +562,45 @@ class _DashboardPageState extends State<DashboardPage> {
                                                             .ellipsis,
                                                       );
                                                     },
-                                                  ),
+                                                  )),
                                                   symbol: const CircleAvatar(
                                                     backgroundColor:
                                                         Colors.yellow,
                                                     radius: 8,
                                                   )),
-
                                               _BuildVehicleStatus(
-                                                  title: "Parking",
-                                                  count: BlocBuilder<
-                                                      VehicleLocationBloc,
-                                                      List<VehicleEntity>>(
+                                                  title: "Parked",
+                                                  count: BlocListener<
+                                                          VehicleLocationBloc,
+                                                          List<VehicleEntity>>(
+                                                      listener:
+                                                          (context, vehicles) {
+                                                    // _updateVehicleCounts(vehicles);
+                                                    setState(() {
+                                                      vehicles;
+                                                    });
+                                                  }, child: BlocBuilder<
+                                                          VehicleLocationBloc,
+                                                          List<VehicleEntity>>(
                                                     builder:
                                                         (context, vehicles) {
                                                       if (vehicles.isEmpty) {
                                                         return Text(
-                                                          packedCount.toString(),
+                                                          '${vehicleCounts['parked'] ?? 0}',
                                                           style: AppStyle
                                                               .cardfooter
                                                               .copyWith(
                                                                   fontWeight:
-                                                                      FontWeight.w300),
-                                                          maxLines: 1, // Restrict to a single line for count as well
-                                                          overflow: TextOverflow.ellipsis,
+                                                                      FontWeight
+                                                                          .w300),
+                                                          maxLines:
+                                                              1, // Restrict to a single line for count as well
+                                                          overflow: TextOverflow
+                                                              .ellipsis,
                                                         );
                                                       }
                                                       return Text(
-                                                        '${packedCount}',
+                                                        '${vehicleCounts['parked'] ?? 0}',
                                                         style: AppStyle
                                                             .cardfooter
                                                             .copyWith(
@@ -580,7 +613,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                                             .ellipsis,
                                                       );
                                                     },
-                                                  ),
+                                                  )),
                                                   symbol: const CircleAvatar(
                                                     backgroundColor:
                                                         Colors.blueGrey,
@@ -590,271 +623,15 @@ class _DashboardPageState extends State<DashboardPage> {
                                           ))
                                     ],
                                   );
-
-                                  ///------------------
-                                  // GridView.count(
-                                  //   crossAxisCount: 2,
-                                  //   mainAxisSpacing:
-                                  //       10, // Adjust spacing between grid items
-                                  //   crossAxisSpacing: 10,
-                                  //   childAspectRatio: 1.9, //
-                                  //   physics:
-                                  //       const NeverScrollableScrollPhysics(),
-                                  //   children: [
-                                  //     VehicleStatusCard(
-                                  //         status: 'Moving',
-                                  //         count: BlocListener<
-                                  //             VehicleLocationBloc,
-                                  //             List<VehicleEntity>>(
-                                  //           listener: (context, vehicles) {
-                                  //             // _updateVehicleCounts(vehicles);
-                                  //             setState(() {
-                                  //               vehicles;
-                                  //             });
-                                  //           },
-                                  //           child: BlocBuilder<
-                                  //               VehicleLocationBloc,
-                                  //               List<VehicleEntity>>(
-                                  //             builder: (context, vehicles) {
-                                  //               if (vehicles.isEmpty) {
-                                  //                 return Text(
-                                  //                   '0',
-                                  //                   style: AppStyle.cardfooter
-                                  //                       .copyWith(
-                                  //                           fontWeight:
-                                  //                               FontWeight
-                                  //                                   .w300),
-                                  //                   maxLines:
-                                  //                       1, // Restrict to a single line for count as well
-                                  //                   overflow:
-                                  //                       TextOverflow.ellipsis,
-                                  //                 );
-                                  //               }
-                                  //
-                                  //               final movingVehicles =
-                                  //                   vehicles.where((v) {
-                                  //                 return v.locationInfo
-                                  //                         .vehicleStatus ==
-                                  //                     "Moving";
-                                  //               }).toList();
-                                  //
-                                  //               //List<VehicleEntity> displayedVehicles = _filterVehicles(vehicles);
-                                  //               return Text(
-                                  //                 movingVehicles.length
-                                  //                     .toString(),
-                                  //                 style: AppStyle.cardfooter
-                                  //                     .copyWith(
-                                  //                         fontWeight:
-                                  //                             FontWeight.w300),
-                                  //                 maxLines:
-                                  //                     1, // Restrict to a single line for count as well
-                                  //                 overflow:
-                                  //                     TextOverflow.ellipsis,
-                                  //               );
-                                  //             },
-                                  //           ),
-                                  //         ),
-                                  //         color: Colors.green,
-                                  //         icon: const Icon(
-                                  //             CupertinoIcons.graph_circle_fill,
-                                  //             color: Colors.white)),
-                                  //     VehicleStatusCard(
-                                  //         status: 'offline',
-                                  //         count: BlocListener<
-                                  //             VehicleLocationBloc,
-                                  //             List<VehicleEntity>>(
-                                  //           listener: (context, vehicles) {
-                                  //             // _updateVehicleCounts(vehicles);
-                                  //             setState(() {
-                                  //               vehicles;
-                                  //             });
-                                  //           },
-                                  //           child: BlocBuilder<
-                                  //               VehicleLocationBloc,
-                                  //               List<VehicleEntity>>(
-                                  //             builder: (context, vehicles) {
-                                  //               int offlineLength = state
-                                  //                       .resp.data
-                                  //                       ?.where((vehicle) =>
-                                  //                           vehicle.last_location
-                                  //                                   ?.status ==
-                                  //                               'offline' ||
-                                  //                           vehicle.last_location
-                                  //                                   ?.status !=
-                                  //                               "online")
-                                  //                       .length ??
-                                  //                   0;
-                                  //
-                                  //               if (vehicles.isEmpty) {
-                                  //                 return Text(
-                                  //                   offlineLength.toString(),
-                                  //                   // state.resp.data!.length
-                                  //                   //     .toString(),
-                                  //                   style: AppStyle.cardfooter
-                                  //                       .copyWith(
-                                  //                           fontWeight:
-                                  //                               FontWeight
-                                  //                                   .w300),
-                                  //                   maxLines:
-                                  //                       1, // Restrict to a single line for count as well
-                                  //                   overflow:
-                                  //                       TextOverflow.ellipsis,
-                                  //                 );
-                                  //               }
-                                  //
-                                  //               final onlineVehicles =
-                                  //                   vehicles.where((v) {
-                                  //                 return v.locationInfo.tracker!
-                                  //                         .status ==
-                                  //                     "online";
-                                  //               }).toList();
-                                  //
-                                  //               //List<VehicleEntity> displayedVehicles = _filterVehicles(vehicles);
-                                  //               return Text(
-                                  //                 '${state.resp.data!.length - onlineVehicles.length}',
-                                  //                 style: AppStyle.cardfooter
-                                  //                     .copyWith(
-                                  //                         fontWeight:
-                                  //                             FontWeight.w300),
-                                  //                 maxLines:
-                                  //                     1, // Restrict to a single line for count as well
-                                  //                 overflow:
-                                  //                     TextOverflow.ellipsis,
-                                  //               );
-                                  //             },
-                                  //           ),
-                                  //         ),
-                                  //
-                                  //         color: Colors.red,
-                                  //         icon: const Icon(
-                                  //           CupertinoIcons.square_fill,
-                                  //           color: Colors.white,
-                                  //         )),
-                                  //     VehicleStatusCard(
-                                  //         status: 'Idling',
-                                  //         count: BlocBuilder<
-                                  //             VehicleLocationBloc,
-                                  //             List<VehicleEntity>>(
-                                  //           builder: (context, vehicles) {
-                                  //             if (vehicles.isEmpty) {
-                                  //               return Text(
-                                  //                 '0',
-                                  //                 style: AppStyle.cardfooter
-                                  //                     .copyWith(
-                                  //                         fontWeight:
-                                  //                             FontWeight.w300),
-                                  //                 maxLines:
-                                  //                     1, // Restrict to a single line for count as well
-                                  //                 overflow:
-                                  //                     TextOverflow.ellipsis,
-                                  //               );
-                                  //             }
-                                  //
-                                  //             final idlingVehicles =
-                                  //                 vehicles.where((v) {
-                                  //               return v.locationInfo
-                                  //                       .vehicleStatus ==
-                                  //                   "Idling";
-                                  //               // && v.locationInfo.tracker?.position?.ignition == "on";
-                                  //             }).toList();
-                                  //
-                                  //             //List<VehicleEntity> displayedVehicles = _filterVehicles(vehicles);
-                                  //             return Text(
-                                  //               '${idlingVehicles.length}',
-                                  //               style: AppStyle.cardfooter
-                                  //                   .copyWith(
-                                  //                       fontWeight:
-                                  //                           FontWeight.w300),
-                                  //               maxLines:
-                                  //                   1, // Restrict to a single line for count as well
-                                  //               overflow: TextOverflow.ellipsis,
-                                  //             );
-                                  //           },
-                                  //         ),
-                                  //
-                                  //         // Text(
-                                  //         //   state.resp.data!.length.toString(),
-                                  //         //   style: AppStyle.cardfooter.copyWith(
-                                  //         //       fontWeight: FontWeight.w300),
-                                  //         //   maxLines: 1, // Restrict to a single line for count as well
-                                  //         //   overflow: TextOverflow.ellipsis,
-                                  //         // ),
-                                  //
-                                  //         color: Colors.yellow,
-                                  //         icon: const Icon(
-                                  //             CupertinoIcons
-                                  //                 .square_split_2x1_fill,
-                                  //             color: Colors.white)),
-                                  //     VehicleStatusCard(
-                                  //       status: 'Parked',
-                                  //       count: BlocBuilder<VehicleLocationBloc,
-                                  //           List<VehicleEntity>>(
-                                  //         builder: (context, vehicles) {
-                                  //           String packedLength = state
-                                  //               .resp.data!.length.toString();
-                                  //
-                                  //           if (vehicles.isEmpty) {
-                                  //             return Text(
-                                  //               packedLength,
-                                  //               style: AppStyle.cardfooter
-                                  //                   .copyWith(
-                                  //                       fontWeight:
-                                  //                           FontWeight.w300),
-                                  //               maxLines:
-                                  //                   1, // Restrict to a single line for count as well
-                                  //               overflow: TextOverflow.ellipsis,
-                                  //             );
-                                  //           }
-                                  //
-                                  //           final parkedVehicles =
-                                  //               vehicles.where((v) {
-                                  //             return v.locationInfo
-                                  //                         .vehicleStatus ==
-                                  //                     "Parked" ||
-                                  //                 v.locationInfo.vehicleStatus == "Stopped";
-                                  //           }).toList();
-                                  //
-                                  //           final movingVehicles =
-                                  //           vehicles.where((v) {
-                                  //             return v.locationInfo.vehicleStatus == "Moving";
-                                  //           }).toList();
-                                  //
-                                  //           //List<VehicleEntity> displayedVehicles = _filterVehicles(vehicles);
-                                  //           return Text(
-                                  //             '${state.resp.data!.length - movingVehicles.length}',
-                                  //             style: AppStyle.cardfooter
-                                  //                 .copyWith(
-                                  //                     fontWeight:
-                                  //                         FontWeight.w300),
-                                  //             maxLines:
-                                  //                 1, // Restrict to a single line for count as well
-                                  //             overflow: TextOverflow.ellipsis,
-                                  //           );
-                                  //         },
-                                  //       ),
-                                  //       // Text(
-                                  //       //   state.resp.data!.length.toString(),
-                                  //       //   style: AppStyle.cardfooter.copyWith(
-                                  //       //       fontWeight: FontWeight.w300),
-                                  //       //   maxLines:
-                                  //       //       1, // Restrict to a single line for count as well
-                                  //       //   overflow: TextOverflow.ellipsis,
-                                  //       // ),
-                                  //       color: Colors.black,
-                                  //       icon: const Icon(
-                                  //           CupertinoIcons.wifi_slash,
-                                  //           color: Colors.white),
-                                  //     ),
-                                  //   ],
-                                  // );
                                 } else {
-                                  return const Center(
-                                      child: Text('No records found'));
+                                  return Center(
+                                      child: Text('No records found', style: AppStyle.cardfooter,));
                                 }
                               }, listener: (context, state) {
                                 if (state is DashboardFailure) {
-                                  if (state.message.contains("Unauthenticated")) {
-                                    Navigator.pushNamed(context, "/login");
+                                  if (state.message
+                                      .contains("Unauthenticated")) {
+                                    Navigator.pushNamedAndRemoveUntil(context, "/login", (route) => false);
                                   }
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(content: Text(state.message)),
@@ -1282,7 +1059,9 @@ class _DashboardPageState extends State<DashboardPage> {
                                           child: Padding(
                                             padding: EdgeInsets.only(top: 10.0),
                                             child: CircularProgressIndicator(
-                                                strokeWidth: 2.0),
+                                              strokeWidth: 2.0,
+                                              color: Colors.green,
+                                            ),
                                           ),
                                         );
                                       } else if (state
@@ -1406,6 +1185,8 @@ class _DashboardPageState extends State<DashboardPage> {
                                                                     width: 20,
                                                                     child:
                                                                         CircularProgressIndicator(
+                                                                      color: Colors
+                                                                          .green,
                                                                       strokeWidth:
                                                                           2.0,
                                                                       value: loadingProgress.expectedTotalBytes !=
@@ -1519,8 +1300,10 @@ class _DashboardPageState extends State<DashboardPage> {
                                     },
                                     listener: (context, state) {
                                       if (state is EshopFailure) {
-                                        if (state.message.contains("Unauthenticated")) {
-                                          Navigator.pushNamed(context, "/login");
+                                        if (state.message
+                                            .contains("Unauthenticated")) {
+                                          Navigator.pushNamedAndRemoveUntil(
+                                              context, "/login", (route) => false);
                                         }
                                         ScaffoldMessenger.of(context)
                                             .showSnackBar(
@@ -1887,7 +1670,10 @@ class MotorShieldCard extends StatelessWidget {
             return const Center(
               child: Padding(
                 padding: EdgeInsets.only(top: 10.0),
-                child: CircularProgressIndicator(strokeWidth: 2.0),
+                child: CircularProgressIndicator(
+                  strokeWidth: 2.0,
+                  color: Colors.green,
+                ),
               ),
             );
           } else if (state is VehicleTripDone) {
@@ -1930,7 +1716,8 @@ class MotorShieldCard extends StatelessWidget {
         listener: (context, state) {
           if (state is DashboardFailure) {
             if (state.message.contains("Unauthenticated")) {
-              Navigator.pushNamed(context, "/login");
+              Navigator.pushNamedAndRemoveUntil(
+                  context, "/login", (route) => false);
             }
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(state.message)),
@@ -1983,6 +1770,10 @@ class VehicleStatusPieChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print('online:::::: $onlineCount');
+    print('offlineCount:::::: $offlineCount');
+    // print('idlingCount:::::: $idlingCount');
+    print('parkedCount:::::: $parkedCount');
     final total = onlineCount + offlineCount + idlingCount + parkedCount;
     if (total == 0) {
       return const Center(child: Text('No data available'));
@@ -1994,16 +1785,16 @@ class VehicleStatusPieChart extends StatelessWidget {
         PieChartData(
           sections: [
             PieChartSectionData(
+              value: offlineCount.toDouble(),
+              color: Colors.red,
+              title: '',
+              radius: 50,
+            ),
+            PieChartSectionData(
               value: onlineCount.toDouble(),
               color: Colors.green,
               title: '',
               //title: '${(movingCount / total * 100).toStringAsFixed(1)}%',
-              radius: 50,
-            ),
-            PieChartSectionData(
-              value: offlineCount.toDouble(),
-              color: Colors.red,
-              title: '',
               radius: 50,
             ),
             PieChartSectionData(

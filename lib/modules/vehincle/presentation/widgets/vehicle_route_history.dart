@@ -167,9 +167,10 @@ class _VehicleRouteHistoryState extends State<VehicleRouteHistory> {
                 }
               }, listener: (context, state) {
                 if (state is VehicleFailure) {
-                  // if (state.message.contains("401")) {
-                  Navigator.pushNamed(context, "/login");
-                  // }
+                  if (state.message.contains("Unauthenticated")) {
+                    Navigator.pushNamedAndRemoveUntil(
+                        context, "/login", (route) => false);
+                  }
                   ScaffoldMessenger.of(context)
                       .showSnackBar(SnackBar(content: Text(state.message)));
                 }
@@ -646,7 +647,7 @@ class _RouteHistoryMapState extends State<RouteHistoryMap> {
                               ),
                               RouteWidget(
                                   title: "Max Speed",
-                                  subTitle: "${maxSpeed} kph",
+                                  subTitle: "$maxSpeed kph",
                                   color: Colors.purpleAccent)
                             ],
                           )),
@@ -831,15 +832,26 @@ class _RouteHistoryMapState extends State<RouteHistoryMap> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(addresses.length > index
-                                  ? addresses[index]
-                                  : "Loading...", style: AppStyle.cardfooter,),
-                              Text(widget.resp.data[index].created_at!, style: AppStyle.cardfooter,),
+                              Text(
+                                addresses.length > index
+                                    ? addresses[index]
+                                    : "Loading...",
+                                style: AppStyle.cardfooter,
+                              ),
+                              Text(
+                                widget.resp.data[index].fix_time ??
+                                    widget.resp.data[index].updated_at,
+                                style: AppStyle.cardfooter,
+                              ),
                               const SizedBox(height: 20),
                               Text(addresses.length > index + 1
                                   ? addresses[index + 1]
                                   : "Loading..."),
-                              Text(widget.resp.data[index].created_at!, style: AppStyle.cardfooter,),
+                              Text(
+                                widget.resp.data[index].fix_time ??
+                                    widget.resp.data[index].updated_at,
+                                style: AppStyle.cardfooter,
+                              ),
                             ],
                           ),
                         ),

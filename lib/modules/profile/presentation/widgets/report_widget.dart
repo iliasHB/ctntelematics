@@ -95,7 +95,7 @@ class _ReportState extends State<Report> {
                     // Add any additional logic like fetching data for selected vehicle
                   },
                   decoration: InputDecoration(
-                    labelText: 'Choose report type',
+                    labelText: 'Choose service type',
                     labelStyle: AppStyle.cardfooter,
                     filled: true,
                     fillColor: Colors.grey[200],
@@ -212,11 +212,11 @@ class _ReportState extends State<Report> {
                             // Check if filteredReports is empty
                             if (filteredReports.isEmpty) {
                               AlertMessage.showAlertMessageModal(
-                                  context, 'No report found for this vehicle');
+                                  context, 'No service found for this vehicle');
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
                                     content: Text(
-                                        "No report found for this vehicle")),
+                                        "No service found for this vehicle")),
                               );
                             } else {
                               Navigator.push(
@@ -302,11 +302,11 @@ class _ReportState extends State<Report> {
                                 // Check if filteredReports is empty
                                 if (filteredReports.isEmpty) {
                                   AlertMessage.showAlertMessageModal(context,
-                                      'No report found for this vehicle');
+                                      'No service found for this vehicle');
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
                                         content: Text(
-                                            "No report found for this vehicle")),
+                                            "No service found for this vehicle")),
                                   );
                                 } else {
                                   Navigator.push(

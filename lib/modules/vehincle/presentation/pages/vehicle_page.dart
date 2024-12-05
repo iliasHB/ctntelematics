@@ -60,56 +60,69 @@ class _VehiclePageState extends State<VehiclePage> {
         userId = authUser[5].isEmpty ? null : authUser[5];
       }
       if (token != null && userId != null) {
-        // if (!sl.isRegistered<PusherService>()) {
-        //   sl.registerSingleton<PusherService>(PusherService(token!, userId!));
-        //   final pusherService = sl<PusherService>();
-        //   pusherService.initializePusher();
-        // }
-        sl<DashVehiclesBloc>().add(DashVehicleEvent(
-            DashVehicleReqEntity(token: token!, contentType: 'application/json')));
+        sl<DashVehiclesBloc>().add(DashVehicleEvent(DashVehicleReqEntity(
+            token: token!, contentType: 'application/json')));
       }
       isLoading = false;
     });
   }
 
-  List<VehicleEntity> _filterVehicles(List<VehicleEntity> vehicles) {
-    switch (_selectedTabIndex) {
-      case 1:
-        return vehicles
-            .where((v) => v.locationInfo.vehicleStatus == "Moving")
-            .toList();
-      // case 2:
-      //   return vehicles
-      //       .where((v) => v.locationInfo.vehicleStatus == "Stopped")
-      //       .toList();
-      // case 3:
-      //   return vehicles
-      //       .where((v) => v.locationInfo.vehicleStatus == "Idle")
-      //       .toList();
-      //
-      // case 4:
-      //   return vehicles
-      //       .where((v) => v.locationInfo.vehicleStatus == "Parked")
-      //       .toList();
-      default:
-        return vehicles;
-    }
+  Map<String, int> _computeVehicleCounts(List<DashDatumEntity> vehicles) {
+    return {
+      'online': vehicles
+          .where((v) =>
+              v.last_location?.status == "online" ||
+              v.last_location?.status == "Online")
+          .length,
+      'offline': vehicles
+          .where((v) =>
+              v.last_location?.status == "offline" ||
+              v.last_location?.status == "Offline")
+          .length,
+      'idling': vehicles
+          .where((v) =>
+              v.last_location?.status == "idling" ||
+              v.last_location?.status == "Idling")
+          .length,
+      'parked': vehicles
+          .where((v) =>
+              v.last_location?.status == "parked" ||
+              v.last_location?.status == "Parked")
+          .length,
+      'vehicles': vehicles.length
+    };
   }
 
-  void _updateVehicleCounts(List<VehicleEntity> vehicles) {
-    movingCount = vehicles
-        .where((vehicle) => vehicle.locationInfo.vehicleStatus == 'Moving')
-        .length;
-    // stoppedCount = vehicles
-    //     .where((vehicle) => vehicle.locationInfo.vehicleStatus == 'Stopped')
-    //     .length;
-    // idleCount = vehicles
-    //     .where((vehicle) => vehicle.locationInfo.vehicleStatus == 'Idle')
-    //     .length;
-    // packedCount = vehicles
-    //     .where((vehicle) => vehicle.locationInfo.vehicleStatus == 'Parked')
-    //     .length;
-    // vehicleCount = vehicles.length;
+  // Helper function to compute counts
+  Map<String, int> _computeVehicleSocketCounts(List<VehicleEntity> vehicles) {
+    return {
+      'moving': vehicles
+          .where((v) =>
+              (v.locationInfo.vehicleStatus == "Moving" ||
+                  v.locationInfo.vehicleStatus == "moving") &&
+              (v.locationInfo.tracker!.status == "Online" ||
+                  v.locationInfo.tracker!.status == "online"))
+          .length,
+      'offline': vehicles
+          .where((v) =>
+              v.locationInfo.vehicleStatus == "Offline" ||
+              v.locationInfo.vehicleStatus == "offline")
+          .length,
+      'idling': vehicles
+          .where((v) =>
+              (v.locationInfo.vehicleStatus == "Idling" ||
+                  v.locationInfo.vehicleStatus == "idling") &&
+              (v.locationInfo.tracker!.status == "Online" ||
+                  v.locationInfo.tracker!.status == "online"))
+          .length,
+      'parked': vehicles
+          .where((v) =>
+              (v.locationInfo.vehicleStatus == "Parked" ||
+                  v.locationInfo.vehicleStatus == "parked") &&
+              (v.locationInfo.tracker!.status == "Online" ||
+                  v.locationInfo.tracker!.status == "online"))
+          .length,
+    };
   }
 
   @override
@@ -127,7 +140,11 @@ class _VehiclePageState extends State<VehiclePage> {
         firstname: first_name ?? "",
       ),
       body: isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(
+              child: CircularProgressIndicator(
+              strokeWidth: 2.0,
+              color: Colors.green,
+            ))
           : Column(
               children: [
                 SizedBox(
@@ -171,7 +188,10 @@ class _VehiclePageState extends State<VehiclePage> {
                         return const Center(
                           child: Padding(
                             padding: EdgeInsets.only(top: 10.0),
-                            child: CircularProgressIndicator(strokeWidth: 2.0),
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.0,
+                              color: Colors.green,
+                            ),
                           ),
                         );
                       } else if (state is DashboardDone) {
@@ -186,60 +206,49 @@ class _VehiclePageState extends State<VehiclePage> {
                           );
                         }
 
-                        vehicleCount = state.resp.data?.length ?? 0;
+                        final vehiclesData = state.resp.data ?? [];
+                        final vehicleCounts =
+                            _computeVehicleCounts(vehiclesData);
 
-                        offlineLength = state.resp.data
-                                ?.where((vehicle) =>
-                                    vehicle.last_location?.status == 'offline')
-                                .length ??
-                            0;
-
-                        packedCount = state.resp.data
-                                ?.where((vehicle) =>
-                                    vehicle.last_location?.status == 'parked')
-                                .length ?? 0;
+                        vehicleCount = vehicleCounts['vehicles'] ?? 0;
+                        idleCount = vehicleCounts['idling'] ?? 0;
+                        packedCount = vehicleCounts['parked'] ?? 0;
+                        offlineLength = vehicleCounts['offline'] ?? 0;
 
                         WidgetsBinding.instance.addPostFrameCallback((_) {
                           setState(() {
                             vehicleCount;
+                            idleCount;
+                            packedCount;
+                            offlineLength;
                           });
                         });
 
                         BlocListener<VehicleLocationBloc, List<VehicleEntity>>(
                           listener: (context, vehicles) {
                             // _updateVehicleCounts(vehicles);
-                              setState(() {
-                                vehicles;
-                              });
+                            setState(() {
+                              vehicles;
+                            });
                           },
                           child: BlocBuilder<VehicleLocationBloc,
                               List<VehicleEntity>>(
                             builder: (context, vehicles) {
-                              if (vehicles.isEmpty) {
-                                //return const Text("No moving vehicle");
-                              }
-                              final movingVehicles = vehicles
-                                  .where((v) =>
-                                      v.locationInfo.vehicleStatus == "Moving")
-                                  .toList();
+                              if (vehicles.isEmpty) {}
 
-                              final idlingVehicles = vehicles.where((v) {
-                                return v.locationInfo.vehicleStatus == "Idling";
-                              }).toList();
+                              final vehicleWebsocketCounts = _computeVehicleSocketCounts(vehicles);
 
-                              final onlineVehicles = vehicles.where((v) {
-                                return v.locationInfo.tracker?.status ==
-                                    "online";
-                              }).toList();
+                              // int _idleCount = vehicleWebsocketCounts['idling'] ?? 0;
+                              // int _movingCount = vehicleWebsocketCounts['moving'] ?? 0;
+                              // WidgetsBinding.instance.addPostFrameCallback((_) {
+                              //   setState(() {
+                                  // vehicleCount;
+                                  idleCount = vehicleWebsocketCounts['idling'] ?? 0;
+                                  // packedCount;
+                                  movingCount =  vehicleWebsocketCounts['moving'] ?? 0;
+                              //   });
+                              // });
 
-
-                              movingCount == movingVehicles.length;
-                              packedCount = packedCount;//vehicleCount - movingVehicles.length;
-                              idleCount = idlingVehicles.length;
-                              offlineLength = offlineLength - onlineVehicles.length;
-
-                              //List<VehicleEntity> displayedVehicles =_filterVehicles(vehicles);
-                              // _updateVehicleCounts(vehicles);
                               return Container();
                             },
                           ),
@@ -291,7 +300,8 @@ class _VehiclePageState extends State<VehiclePage> {
                     listener: (context, state) {
                       if (state is DashboardFailure) {
                         if (state.message.contains("Unauthenticated")) {
-                        Navigator.pushNamed(context, "/login");
+                          Navigator.pushNamedAndRemoveUntil(
+                              context, "/login", (route) => false);
                         }
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(content: Text(state.message)),
@@ -311,13 +321,20 @@ class AllVehiclesPage extends StatelessWidget {
   final List<DashDatumEntity> vehicles;
   final String? token;
 
-  const AllVehiclesPage({super.key, this.token, required this.vehicles, /*required this.vehicles*/});
+  const AllVehiclesPage({
+    super.key,
+    this.token,
+    required this.vehicles,
+    /*required this.vehicles*/
+  });
 
   @override
   Widget build(BuildContext context) {
-    return VehicleListItem(
-      data: vehicles,
-      token: token,
+    return Expanded(
+      child: VehicleListItem(
+        data: vehicles,
+        token: token,
+      ),
     );
   }
 }
@@ -350,13 +367,19 @@ class _MovingVehiclesPageState extends State<MovingVehiclesPage> {
             return const Text("No moving vehicle");
           }
           final movingVehicles = vehicles
-              .where((v) => v.locationInfo.vehicleStatus == "Moving")
+              .where((v) =>
+                  (v.locationInfo.vehicleStatus == "Moving" ||
+                      v.locationInfo.vehicleStatus == "moving") &&
+                  (v.locationInfo.tracker?.status == "online" ||
+                      v.locationInfo.tracker?.status == "Online"))
               .toList();
 
           //List<VehicleEntity> displayedVehicles = _filterVehicles(vehicles);
-          return VehicleUpdateListener(
-            vehicles: movingVehicles,
-            token: widget.token,
+          return Expanded(
+            child: VehicleUpdateListener(
+              vehicles: movingVehicles,
+              token: widget.token,
+            ),
           );
         },
       ),
@@ -377,32 +400,46 @@ class OfflineVehiclesPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<VehicleLocationBloc, List<VehicleEntity>>(
-      listener: (context, vehicles) {},
-      child: BlocBuilder<VehicleLocationBloc, List<VehicleEntity>>(
-        builder: (context, vehicles) {
-         final  offlineLength = data.where((vehicle) =>
-          vehicle.last_location?.status == 'offline').toList();
-
-          if (vehicles.isEmpty) {
-            return VehicleOffline(
-              data: offlineLength,
-              token: token,
-            );
-          }
-          final offlineVehicles = vehicles
-              .where((v) => v.locationInfo.tracker?.status != "offline")
-              .toList();
-
-          //List<VehicleEntity> displayedVehicles = _filterVehicles(vehicles);
-          return VehicleOffline(
-            data: data,
-            vehicles: offlineVehicles,
-            token: token,
-          );
-        },
+    final offlineLength = data
+        .where((vehicle) =>
+            vehicle.last_location?.status == 'offline' ||
+            vehicle.last_location?.status == 'Offline')
+        .toList();
+    return Expanded(
+      child: VehicleOffline(
+        data: offlineLength,
+        // vehicles: onlineVehicles,
+        token: token,
       ),
     );
+
+    //   BlocListener<VehicleLocationBloc, List<VehicleEntity>>(
+    //   listener: (context, vehicles) {},
+    //   child: BlocBuilder<VehicleLocationBloc, List<VehicleEntity>>(
+    //     builder: (context, vehicles) {
+    //       final offlineLength = data
+    //           .where((vehicle) => vehicle.last_location?.status == 'offline' || vehicle.last_location?.status == 'Offline')
+    //           .toList();
+    //
+    //       if (vehicles.isEmpty) {
+    //         return VehicleOffline(
+    //           data: offlineLength,
+    //           token: token,
+    //         );
+    //       }
+    //       // final onlineVehicles = vehicles
+    //       //     .where((v) => v.locationInfo.tracker?.status != "online" || v.locationInfo.tracker?.status != "Online")
+    //       //     .toList();
+    //
+    //       //List<VehicleEntity> displayedVehicles = _filterVehicles(vehicles);
+    //       return VehicleOffline(
+    //         data: data,
+    //         // vehicles: onlineVehicles,
+    //         token: token,
+    //       );
+    //     },
+    //   ),
+    // );
   }
 }
 
@@ -412,7 +449,8 @@ class IdleVehiclesPage extends StatelessWidget {
   final String? token;
   const IdleVehiclesPage({
     // required this.data,
-    this.token, required this.data,
+    this.token,
+    required this.data,
   });
 
   @override
@@ -422,15 +460,24 @@ class IdleVehiclesPage extends StatelessWidget {
       child: BlocBuilder<VehicleLocationBloc, List<VehicleEntity>>(
         builder: (context, vehicles) {
           if (vehicles.isEmpty) {
-            return const Text("No Idle vehicle");
+            return Text(
+              "No Idle vehicle",
+              style: AppStyle.cardfooter,
+            );
           }
           final idleVehicles = vehicles
-              .where((v) => v.locationInfo.vehicleStatus == "Idling")
+              .where((v) =>
+                  (v.locationInfo.vehicleStatus == "Idling" ||
+                      v.locationInfo.vehicleStatus == "idling") &&
+                  (v.locationInfo.tracker?.status == "Online" ||
+                      v.locationInfo.tracker?.status == "online"))
               .toList();
-          return VehicleIdleItem(
-            // data: data,
-            vehicles: idleVehicles,
-            token: token,
+          return Expanded(
+            child: VehicleIdleItem(
+              // data: data,
+              vehicles: idleVehicles,
+              token: token,
+            ),
           );
         },
       ),
@@ -438,7 +485,7 @@ class IdleVehiclesPage extends StatelessWidget {
   }
 }
 
-class PackedVehiclesPage extends StatelessWidget {
+class PackedVehiclesPage extends StatefulWidget {
   // final List<DatumEntity> data;
   final List<DashDatumEntity> data;
   final String? token;
@@ -446,53 +493,63 @@ class PackedVehiclesPage extends StatelessWidget {
   const PackedVehiclesPage({super.key, this.token, required this.data});
 
   @override
-  Widget build(BuildContext context) {
-    return BlocListener<VehicleLocationBloc, List<VehicleEntity>>(
-      listener: (context, vehicles) {},
-      child: BlocBuilder<VehicleLocationBloc, List<VehicleEntity>>(
-        builder: (context, vehicles) {
-          if (vehicles.isEmpty) {
-            final packedCount = data.where((vehicle) =>
-            vehicle.last_location?.status == 'parked').toList();
+  State<PackedVehiclesPage> createState() => _PackedVehiclesPageState();
+}
 
-            return VehicleParked(
-              data: packedCount,
-              token: token,
-            );
-          }
-          final parkedVehicles = vehicles
-              .where((v) => v.locationInfo.tracker?.status != "parked")
-              .toList();
-          return VehicleParked(
-            data: data,
-            vehicles: parkedVehicles,
-            token: token,
-          );
-        },
+class _PackedVehiclesPageState extends State<PackedVehiclesPage> {
+  // // Helper function to compute counts
+  // Map<String, List<DashDatumEntity>> _computeVehicleCounts(List<DashDatumEntity> vehicles) {
+  //   return {
+  //     'parked': vehicles
+  //         .where((v) =>
+  //     v.last_location?.status == "parked" ||
+  //         v.last_location?.status == "Parked").toList()
+  //   };
+  // }
+
+  @override
+  Widget build(BuildContext context) {
+    final packedVehicles = widget.data
+        .where((v) =>
+            v.last_location?.status == "Parked" ||
+            v.last_location?.status == "parked")
+        .toList();
+    return Expanded(
+      child: VehicleParked(
+        data: packedVehicles,
+        // vehicles: parkedVehicles,
+        token: widget.token,
       ),
     );
-    //   BlocListener<VehicleLocationBloc, List<VehicleEntity>>(
-    //   listener: (context, vehicles) {
-    //     // _updateVehicleCounts(vehicles);
-    //     // setState(() {
-    //     //   vehicles;
-    //     // });
-    //   },
+
+    //     BlocListener<VehicleLocationBloc, List<VehicleEntity>>(
+    //   listener: (context, vehicles) {},
     //   child: BlocBuilder<VehicleLocationBloc, List<VehicleEntity>>(
     //     builder: (context, vehicles) {
-    //       if (vehicles.isEmpty) {
-    //         return const Text("No Packed vehicle");
-    //       }
     //
-    //       final packedVehicles = vehicles
+    //       if (vehicles.isEmpty) {
+    //         final packedCount = widget.data
+    //             .where((vehicle) => vehicle.last_location?.status == 'parked' || vehicle.last_location?.status == 'Parked')
+    //             .toList();
+    //
+    //         WidgetsBinding.instance.addPostFrameCallback((_) {
+    //           setState(() {
+    //             packedCount;
+    //           });
+    //         });
+    //         return VehicleParked(
+    //           data: vehicleCounts['parked'],
+    //           token: widget.token,
+    //         );
+    //       }
+    //       final parkedVehicles = vehicles
     //           .where((v) => v.locationInfo.vehicleStatus == "Parked")
     //           .toList();
     //
-    //       // List<VehicleEntity> displayedVehicles = _filterVehicles(vehicles);
-    //
-    //       return VehicleUpdateListener(
-    //         vehicles: packedVehicles,
-    //         token: token,
+    //       return VehicleParked(
+    //         data: widget.data,
+    //         vehicles: parkedVehicles,
+    //         token: widget.token,
     //       );
     //     },
     //   ),
@@ -508,7 +565,8 @@ class VehicleListItem extends StatefulWidget {
   const VehicleListItem({
     super.key,
     // this.data,
-    this.token, required this.data,
+    this.token,
+    required this.data,
     /*this.displayedVehicles*/
   });
 
@@ -521,10 +579,9 @@ class _VehicleListItemState extends State<VehicleListItem> {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10.0),
-      child: SizedBox(
-        // height: 600,
+      child: Expanded(
         child: ListView.builder(
-          shrinkWrap: true,
+          // shrinkWrap: true,
           padding: EdgeInsets.zero,
           itemCount: widget.data.length,
           itemBuilder: (context, index) {
@@ -548,8 +605,8 @@ class _VehicleListItemState extends State<VehicleListItem> {
                                       brand: widget.data[index].brand!,
                                       model: widget.data[index].model!,
                                       vin: widget.data[index].vin!,
-                                      latitude: widget.data[index]
-                                                  .last_location?.latitude !=
+                                      latitude: widget.data[index].last_location
+                                                  ?.latitude !=
                                               null
                                           ? double.tryParse(widget.data[index]
                                               .last_location!.latitude!)
@@ -566,17 +623,15 @@ class _VehicleListItemState extends State<VehicleListItem> {
                                           .toString(),
                                       name: widget.data[index].driver?.name ??
                                           "N/A",
-                                      email:
-                                          widget.data[index].driver?.email ??
-                                              "N/A",
-                                      phone:
-                                          widget.data[index].driver?.phone ??
-                                              "N/A",
+                                      email: widget.data[index].driver?.email ??
+                                          "N/A",
+                                      phone: widget.data[index].driver?.phone ??
+                                          "N/A",
                                       status: widget.data[index].last_location!
                                               .status ??
                                           "N/A",
-                                      updated_at:
-                                          widget.data[index].updated_at!,
+                                      updated_at: widget.data[index]
+                                          .last_location!.created_at!,
                                       speed: widget.data[index].last_location
                                                   ?.speed !=
                                               null
@@ -656,8 +711,10 @@ class _VehicleListItemState extends State<VehicleListItem> {
                                             Column(
                                               children: [
                                                 Text(
-                                                  widget.data[index]
-                                                          .last_location?.status ??
+                                                  widget
+                                                          .data[index]
+                                                          .last_location
+                                                          ?.status ??
                                                       "N/A",
                                                   // widget.data![index]?.last_location!.status ?? vehicle!.locationInfo.tracker!.status ?? "N/A",
                                                   //widget.data![index].last_location!.status == null ? "" : widget.data![index].last_location!.status!,
@@ -666,10 +723,11 @@ class _VehicleListItemState extends State<VehicleListItem> {
                                                 ),
                                                 Text(
                                                     FormatData.formatTimeAgo(
-                                                        widget.data[index]
-                                                            .updated_at
-                                                            // .last_location!
-                                                            // .updated_at
+                                                        widget
+                                                            .data[index]
+                                                            // .created_at
+                                                            .last_location!
+                                                            .created_at
                                                             .toString()),
                                                     style: AppStyle.cardfooter
                                                         .copyWith(
@@ -807,8 +865,7 @@ class _VehicleListItemState extends State<VehicleListItem> {
                                             .position!
                                             .speed!
                                             .toStringAsFixed(2) ??
-                                        widget
-                                            .data[index].last_location!.speed!
+                                        widget.data[index].last_location!.speed!
                                     : '0.00',
                                 // widget.data![index].last_location
                                 //     ?.speed !=
@@ -917,7 +974,11 @@ class _VehicleListItemState extends State<VehicleListItem> {
                                                     FormatData.formatTimeAgo(
                                                         vehicles[0]
                                                             .locationInfo
-                                                            .updatedAt),
+                                                            .tracker!
+                                                            .lastUpdate!
+                                                        // .locationInfo
+                                                        // .updatedAt
+                                                        ),
                                                     style: AppStyle.cardfooter),
                                               ],
                                             ),
@@ -1038,26 +1099,27 @@ class VehicleUpdateListener extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Use `data` if it has elements; otherwise, use `displayedVehicles`
-    final effectiveDisplayedVehicles =
-        vehicles != null && vehicles!.isNotEmpty ? vehicles : null;
-
-    // Calculate itemCount based on which list is non-null and non-empty
-    final itemCount = effectiveDisplayedVehicles?.length ?? 0;
+    // final effectiveDisplayedVehicles =
+    //     vehicles != null && vehicles!.isNotEmpty ? vehicles : null;
+    //
+    // // Calculate itemCount based on which list is non-null and non-empty
+    // final itemCount = effectiveDisplayedVehicles?.length ?? 0;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10.0),
-      child: SizedBox(
+      child: Expanded(
         // height: 600,
         child: ListView.builder(
           shrinkWrap: true,
           padding: EdgeInsets.zero,
-          itemCount: itemCount,
+          itemCount: vehicles!.length,
           itemBuilder: (context, index) {
             // Use `effectiveData` if available, otherwise `effectiveDisplayedVehicles`
             // final widget.data![index] = effectiveData != null ? effectiveData[index] : null;
-            final vehicle = effectiveDisplayedVehicles != null
-                ? effectiveDisplayedVehicles[index]
-                : null;
+            // final vehicle = effectiveDisplayedVehicles != null
+            //     ? effectiveDisplayedVehicles[index]
+            //     : null;
+            final vehicle = vehicles![index];
 
             // Check if we have valid data; if not, skip rendering
             // if (widget.data![index] == null && vehicle == null) {
@@ -1088,7 +1150,7 @@ class VehicleUpdateListener extends StatelessWidget {
                         .toString(),
                     speed: vehicle.locationInfo.tracker!.position!.speed
                         .toString(),
-                    updated_at: vehicle.locationInfo.updatedAt,
+                    updated_at: vehicle.locationInfo.tracker!.lastUpdate!,
                     status: vehicle.locationInfo.tracker!.status.toString(),
                     // ?? vehicle!.locationInfo.numberPlate,
                   ),
@@ -1109,7 +1171,7 @@ class VehicleUpdateListener extends StatelessWidget {
                       // ),
 
                       Text(
-                        vehicle!.locationInfo.tracker?.position?.speed != null
+                        vehicle.locationInfo.tracker?.position?.speed != null
                             ? double.tryParse(vehicle
                                         .locationInfo.tracker!.position!.speed
                                         .toString())
@@ -1156,8 +1218,8 @@ class VehicleUpdateListener extends StatelessWidget {
                                           fontSize: 14.0),
                                     ),
                                     Text(
-                                        FormatData.formatTimeAgo(
-                                            vehicle.locationInfo.updatedAt),
+                                        FormatData.formatTimeAgo(vehicle
+                                            .locationInfo.tracker!.lastUpdate!),
                                         style: TextStyle(fontSize: 14.0)),
                                   ],
                                 ),
@@ -1166,8 +1228,8 @@ class VehicleUpdateListener extends StatelessWidget {
                           ),
                           const SizedBox(height: 5.0),
                           Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 8.0),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10.0, vertical: 10),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
@@ -1187,7 +1249,20 @@ class VehicleUpdateListener extends StatelessWidget {
                                       children: [
                                         const Icon(Icons.wifi,
                                             color: Colors.green),
-                                        Text("GSM",
+                                        Text(
+                                            vehicles![index]
+                                                        .locationInfo
+                                                        .tracker
+                                                        ?.position
+                                                        ?.gsmRssi !=
+                                                    null
+                                                ? vehicles![index]
+                                                    .locationInfo
+                                                    .tracker!
+                                                    .position!
+                                                    .gsmRssi
+                                                    .toString()
+                                                : 'N/A',
                                             style: AppStyle.cardfooter
                                                 .copyWith(fontSize: 10)),
                                       ],
@@ -1197,25 +1272,19 @@ class VehicleUpdateListener extends StatelessWidget {
                                       children: [
                                         const Icon(Icons.power,
                                             color: Colors.green),
-                                        Text("Ignition",
+                                        Text(
+                                            vehicles![index]
+                                                    .locationInfo
+                                                    .tracker!
+                                                    .position
+                                                    ?.ignition ??
+                                                "OFF",
                                             style: AppStyle.cardfooter
                                                 .copyWith(fontSize: 10)),
                                       ],
                                     ),
                                   ],
                                 ),
-                                // Column(
-                                //   children: [
-                                //     Text("Expires On",
-                                //         style: AppStyle.cardfooter),
-                                //     Chip(
-                                //       backgroundColor: Colors.green.shade200,
-                                //       label: Text("Unlimited",
-                                //           style: AppStyle.cardfooter
-                                //               .copyWith(fontSize: 11)),
-                                //     ),
-                                //   ],
-                                // ),
                               ],
                             ),
                           ),
@@ -1281,7 +1350,7 @@ class _VehicleIdleItemState extends State<VehicleIdleItem> {
     final itemCount = widget.vehicles.isEmpty ? 0 : widget.vehicles.length;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10.0),
-      child: Container(
+      child: Expanded(
         // height: 600,
         child: ListView.builder(
           shrinkWrap: true, // Prevents ListView from expanding infinitely
@@ -1413,7 +1482,7 @@ class _VehicleIdleItemState extends State<VehicleIdleItem> {
 
   Widget _buildVehicleStats(VehicleEntity vehicle) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 10),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -1446,16 +1515,16 @@ class _VehicleIdleItemState extends State<VehicleIdleItem> {
 }
 
 class VehicleParked extends StatefulWidget {
-  // final List<DatumEntity>? data;
   final List<DashDatumEntity> data;
   final String? token;
-  final List<VehicleEntity>? vehicles;
+  // final List<VehicleEntity>? vehicles;
 
   const VehicleParked({
     super.key,
     // this.data,
     this.token,
-    this.vehicles, required this.data,
+    // this.vehicles,
+    required this.data,
     // required this.data,
     // /*this.displayedVehicles*/
   });
@@ -1479,25 +1548,23 @@ class _VehicleParkedState extends State<VehicleParked> {
     //     widget.vehicles != null && widget.vehicles!.isNotEmpty
     //         ? widget.vehicles
     //         : null;
-
-    final displayedVehicles =
-        widget.data != null && widget.data.isNotEmpty ? widget.data : null;
-
-    final itemCount = widget.vehicles == null
-        ? widget.data.length
-        : widget.vehicles!.length;
+    ///----
+    // final displayedVehicles =
+    //     widget.data != null && widget.data.isNotEmpty ? widget.data : null;
+    //
+    // final itemCount =
+    //     widget.vehicles == null ? widget.data.length : widget.vehicles!.length;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10.0),
-      child: Container(
+      child: Expanded(
         // height: 600,
         child: ListView.builder(
           shrinkWrap: true, // Prevents ListView from expanding infinitely
           padding: EdgeInsets.zero,
-          itemCount: itemCount,
+          itemCount: widget.data.length,
           itemBuilder: (context, index) {
-            // final vehicle = effectiveDisplayedVehicles![index];
-            final vehicle = displayedVehicles![index];
+            final vehicle = widget.data[index]; //displayedVehicles![index];
 
             return InkWell(
               onTap: () {
@@ -1531,7 +1598,10 @@ class _VehicleParkedState extends State<VehicleParked> {
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('Vehicle coordinate is not found!', style: AppStyle.cardfooter,),
+                      content: Text(
+                        'Vehicle coordinate is not found!',
+                        style: AppStyle.cardfooter,
+                      ),
                     ),
                   );
                 }
@@ -1575,7 +1645,7 @@ class _VehicleParkedState extends State<VehicleParked> {
     );
   }
 
-  Widget _buildVehicleDetails(DashDatumEntity vehicle/*DatumEntity vehicle*/) {
+  Widget _buildVehicleDetails(DashDatumEntity vehicle /*DatumEntity vehicle*/) {
     // print('TimeStamp : ${vehicle.last_location?.updated_at.toString()}');
     return Padding(
       padding: const EdgeInsets.only(bottom: 10.0),
@@ -1616,7 +1686,7 @@ class _VehicleParkedState extends State<VehicleParked> {
     );
   }
 
-  Widget _buildVehicleStats(DashDatumEntity vehicle/*DatumEntity vehicle*/) {
+  Widget _buildVehicleStats(DashDatumEntity vehicle /*DatumEntity vehicle*/) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8.0),
       child: Row(
@@ -2057,12 +2127,13 @@ class VehicleOffline extends StatefulWidget {
   // final List<DatumEntity>? data;
   final List<DashDatumEntity> data;
   final String? token;
-  final List<VehicleEntity>? vehicles;
+  // final List<VehicleEntity>? vehicles;
 
   const VehicleOffline({
     super.key,
     this.token,
-    this.vehicles, required this.data,
+    // this.vehicles,
+    required this.data,
     // required this.data,
   });
 
@@ -2084,21 +2155,21 @@ class _VehicleOfflineState extends State<VehicleOffline> {
     final displayedVehicles =
         widget.data != null && widget.data.isNotEmpty ? widget.data : null;
 
-    final itemCount = widget.vehicles == null
-        ? widget.data.length
-        : widget.data.length - widget.vehicles!.length;
+    // final itemCount = widget.vehicles == null
+    //     ? widget.data.length
+    //     : widget.data.length;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10.0),
-      child: SizedBox(
+      child: Expanded(
         // height: 600,
         child: ListView.builder(
           shrinkWrap: true, // Prevents ListView from expanding infinitely
           padding: EdgeInsets.zero,
-          itemCount: itemCount,
+          itemCount: widget.data.length,
           itemBuilder: (context, index) {
             // final vehicle = effectiveDisplayedVehicles![index];
-            final vehicle = displayedVehicles![index];
+            final vehicle = widget.data[index]; //displayedVehicles![index];
 
             return InkWell(
               onTap: () {
@@ -2176,7 +2247,7 @@ class _VehicleOfflineState extends State<VehicleOffline> {
     );
   }
 
-  Widget _buildVehicleDetails(DashDatumEntity vehicle/*DatumEntity vehicle*/) {
+  Widget _buildVehicleDetails(DashDatumEntity vehicle /*DatumEntity vehicle*/) {
     // print('TimeStamp : ${vehicle.last_location?.updated_at.toString()}');
     return Padding(
       padding: const EdgeInsets.only(bottom: 10.0),
@@ -2216,7 +2287,7 @@ class _VehicleOfflineState extends State<VehicleOffline> {
     );
   }
 
-  Widget _buildVehicleStats(DashDatumEntity vehicle/*DatumEntity vehicle*/) {
+  Widget _buildVehicleStats(DashDatumEntity vehicle /*DatumEntity vehicle*/) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8.0),
       child: Row(

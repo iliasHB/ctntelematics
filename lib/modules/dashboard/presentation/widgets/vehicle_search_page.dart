@@ -38,94 +38,99 @@ class VehicleSearchDialog {
               width: 360,
               child: Padding(
                 padding: const EdgeInsets.all(10.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Row(
-                      children: [
-                        Text(
-                          'Select Vehicles',
-                          style: AppStyle.cardSubtitle,
-                        ),
-                        const Spacer(),
-                        IconButton(
-                            onPressed: () => Navigator.pop(context),
-                            icon: const Icon(Icons.cancel_outlined))
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    Form(
-                      child: TextFormField(
-                        controller: searchController,
-                        decoration: InputDecoration(
-                          hintText: 'Search for a vehicle...',
-                          hintStyle: AppStyle.cardfooter,
-                          prefixIcon: const Icon(CupertinoIcons.search),
-                          filled: true,
-                          fillColor: Colors.grey[200],
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: BorderSide.none,
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Row(
+                        children: [
+                          Text(
+                            'Select Vehicles',
+                            style: AppStyle.cardSubtitle,
                           ),
-                          contentPadding:
-                          const EdgeInsets.symmetric(horizontal: 10),
-                        ),
-                        onChanged: (value) {
-                          searchQuery.value = value.toLowerCase();
-                        },
+                          const Spacer(),
+                          IconButton(
+                              onPressed: () => Navigator.pop(context),
+                              icon: const Icon(Icons.cancel_outlined))
+                        ],
                       ),
-                    ),
-                    BlocProvider(
-                      create: (_) => sl<DashVehiclesBloc>()
-                        ..add(DashVehicleEvent(dashVehicleReqEntity)),
-                      child: BlocConsumer<DashVehiclesBloc, DashboardState>(
-                          builder: (context, state) {
-                            if (state is DashboardLoading) {
-                              return const Center(
-                                  child: Padding(
-                                    padding: EdgeInsets.only(top: 20.0),
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2.0,
-                                      color: Colors.green,
-                                    ),
-                                  ));
-                            } else if (state is DashboardDone) {
-                              return ValueListenableBuilder<String>(
-                                valueListenable: searchQuery,
-                                builder: (_, query, __) {
-                                  final filteredVehicles = state.resp.data
-                                      ?.where((vehicle) =>
-                                  (vehicle.brand?.toLowerCase() ?? "")
-                                      .contains(query) ||
-                                      (vehicle.model?.toLowerCase() ?? "")
-                                          .contains(query) ||
-                                      (vehicle.number_plate
-                                          ?.toLowerCase() ??
-                                          "")
-                                          .contains(query))
-                                      .toList();
-                                  return VehicleList(
-                                      DashboardDone(state.resp.copyWith(
-                                          data: filteredVehicles)),
-                                      token);
-                                },
-                              );
-                            } else {
-                              return const Center(child: Text('No records found'));
-                            }
+                      const SizedBox(height: 10),
+                      Form(
+                        child: TextFormField(
+                          controller: searchController,
+                          decoration: InputDecoration(
+                            hintText: 'Search for a vehicle...',
+                            hintStyle: AppStyle.cardfooter,
+                            prefixIcon: const Icon(CupertinoIcons.search),
+                            filled: true,
+                            fillColor: Colors.grey[200],
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: BorderSide.none,
+                            ),
+                            contentPadding:
+                            const EdgeInsets.symmetric(horizontal: 10),
+                          ),
+                          onChanged: (value) {
+                            searchQuery.value = value.toLowerCase();
                           },
-                          listener: (context, state) {
-                            if (state is DashboardFailure) {
-                              Navigator.pushNamed(context, "/login");
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text(state.message)),
-                              );
-                            }
-                          }),
-                    ),
-                  ],
+                        ),
+                      ),
+                      BlocProvider(
+                        create: (_) => sl<DashVehiclesBloc>()
+                          ..add(DashVehicleEvent(dashVehicleReqEntity)),
+                        child: BlocConsumer<DashVehiclesBloc, DashboardState>(
+                            builder: (context, state) {
+                              if (state is DashboardLoading) {
+                                return const Center(
+                                    child: Padding(
+                                      padding: EdgeInsets.only(top: 20.0),
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2.0,
+                                        color: Colors.green,
+                                      ),
+                                    ));
+                              } else if (state is DashboardDone) {
+                                return ValueListenableBuilder<String>(
+                                  valueListenable: searchQuery,
+                                  builder: (_, query, __) {
+                                    final filteredVehicles = state.resp.data
+                                        ?.where((vehicle) =>
+                                    (vehicle.brand?.toLowerCase() ?? "")
+                                        .contains(query) ||
+                                        (vehicle.model?.toLowerCase() ?? "")
+                                            .contains(query) ||
+                                        (vehicle.number_plate
+                                            ?.toLowerCase() ??
+                                            "")
+                                            .contains(query))
+                                        .toList();
+                                    return VehicleList(
+                                        DashboardDone(state.resp.copyWith(
+                                            data: filteredVehicles)),
+                                        token);
+                                  },
+                                );
+                              } else {
+                                return Center(child: Text('No records found', style: AppStyle.cardfooter,));
+                              }
+                            },
+                            listener: (context, state) {
+                              if (state is DashboardFailure) {
+                                if(state.message.contains('Unauthenticated')){
+                                  Navigator.pushNamedAndRemoveUntil(context, "/login", (route) => false);
+                                }
+
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text(state.message)),
+                                );
+                              }
+                            }),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
