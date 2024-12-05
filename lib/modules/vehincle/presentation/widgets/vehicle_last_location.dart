@@ -56,6 +56,7 @@ class VehicleRouteLastLocation extends StatefulWidget {
 
 class _VehicleRouteLastLocationState extends State<VehicleRouteLastLocation> {
   late GoogleMapController mapController;
+  bool _isCustomIconSet = false; // Track if the custom marker icon is already set
   BitmapDescriptor? _customIcon;
   BitmapDescriptor? _movingCustomIcon;
   late Future<void> _getAuthUserFuture;
@@ -94,15 +95,19 @@ class _VehicleRouteLastLocationState extends State<VehicleRouteLastLocation> {
 
   Future<void> _setCustomMarkerIcon() async {
     print("_setCustomMarkerIcon");
-    try {
-      _customIcon = await BitmapDescriptor.fromAssetImage(
-        const ImageConfiguration(size: Size(24, 24)),
-        'assets/images/vehicle_map.png',
-      );
-      print('Custom marker icon loaded successfully');
-      setState(() {}); // Refresh to show the marker with the custom icon
-    } catch (e) {
-      print('Error loading custom marker icon: $e');
+
+    if (!_isCustomIconSet) {
+      // Load your custom marker icon
+      try {
+        _customIcon = await BitmapDescriptor.fromAssetImage(
+          const ImageConfiguration(size: Size(24, 24)),
+          'assets/images/vehicle_map.png',
+        );
+        print('Custom marker icon loaded successfully');
+        setState(() {}); // Refresh to show the marker with the custom icon
+      } catch (e) {
+        print('Error loading custom marker icon: $e');
+      }
     }
   }
 
@@ -152,23 +157,26 @@ class _VehicleRouteLastLocationState extends State<VehicleRouteLastLocation> {
               future: _getAuthUserFuture,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
+                  return const Center(child: CircularProgressIndicator(strokeWidth: 2.0, color: Colors.green,));
                 } else if (snapshot.hasError) {
-                  return const Center(child: Text('Failed to fetch user data'));
+                  return Center(child: Text('Failed to fetch user data', style: AppStyle.cardfooter,));
                 } else {
                   return BlocListener<VehicleLocationBloc, List<VehicleEntity>>(
                     listener: (context, vehicles) {
                       // Listener code if needed
                     },
-                    child:
-                        BlocBuilder<VehicleLocationBloc, List<VehicleEntity>>(
+                    child: BlocBuilder<VehicleLocationBloc, List<VehicleEntity>>(
                       builder: (context, vehicles) {
                         if (vehicles.isEmpty) {
                           _markers.clear();
                           final LatLng _center = LatLng(
                               widget.latitude!.toDouble(),
                               widget.longitude!.toDouble());
-                          _setCustomMarkerIcon();
+                          // Call `_setCustomMarkerIcon` conditionally
+                          if (!_isCustomIconSet) {
+                            _setCustomMarkerIcon();
+                          }
+
                           _markers.add(Marker(
                             icon: _customIcon!,
                             markerId: MarkerId(widget.number_plate),
@@ -200,7 +208,10 @@ class _VehicleRouteLastLocationState extends State<VehicleRouteLastLocation> {
                               calculateBearing(startPosition, endPosition);
 
                           _markers.clear();
-                          _setOnlineCustomMarkerIcon();
+                          // Load moving icon only if it has not been set
+                          if (_movingCustomIcon == null) {
+                            _setOnlineCustomMarkerIcon();
+                          }
                           _markers.add(Marker(
                             icon: _movingCustomIcon!,
                             markerId: MarkerId(widget.number_plate),
@@ -212,8 +223,26 @@ class _VehicleRouteLastLocationState extends State<VehicleRouteLastLocation> {
                           return buildMap(startPosition);
                         }
 
-                        return const Center(
-                            child: Text('No vehicle data available'));
+
+                        _markers.clear();
+                        final LatLng _center = LatLng(
+                            widget.latitude!.toDouble(),
+                            widget.longitude!.toDouble());
+                        // Call `_setCustomMarkerIcon` conditionally
+                        if (!_isCustomIconSet) {
+                          _setCustomMarkerIcon();
+                        }
+
+                        _markers.add(Marker(
+                          icon: _customIcon!,
+                          markerId: MarkerId(widget.number_plate),
+                          position: _center,
+                          infoWindow: InfoWindow(title: widget.number_plate),
+                        ));
+                        return buildMap(_center);
+
+                        // return Center(
+                        //     child: Text('No vehicle data available', style: AppStyle.cardfooter,));
                       },
                     ),
                   );

@@ -843,7 +843,7 @@ class _RouteHistoryMapState extends State<RouteHistoryMap> {
                               ),
                               Text(
                                 FormatData.formatTimestamp(
-                                    widget.resp.data[index].created_at!),
+                                    widget.resp.data[index].fix_time ?? widget.resp.data[index].updated_at),
                                 style: AppStyle.cardfooter,
                               ),
                               const SizedBox(height: 20),
@@ -852,7 +852,7 @@ class _RouteHistoryMapState extends State<RouteHistoryMap> {
                                   : "Loading..."),
                               Text(
                                 FormatData.formatTimestamp(
-                                    widget.resp.data[index].created_at!),
+                                    widget.resp.data[index].fix_time ?? widget.resp.data[index].updated_at),
                                 style: AppStyle.cardfooter,
                               ),
                             ],

@@ -133,7 +133,7 @@ class _VehicleAlertPageState extends State<VehicleAlertPage> {
                       print('>>>>>>>>>>>>> not3>>>>>>>>>');
                       return AlertWidget(notifications: snapshot.data!); // Display notifications
                     } else {
-                      return Text('No 0000notifications found');
+                      return Text('No notifications found');
                     }
                   },
                 );

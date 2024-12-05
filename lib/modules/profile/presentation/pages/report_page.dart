@@ -204,7 +204,7 @@ class MaintenanceReport extends StatelessWidget {
                                   report[index].maintenance!.isEmpty
                                       ? Center(
                                           child: Text(
-                                          "No report found for the vehicle",
+                                          "No service found for the vehicle",
                                           style: AppStyle.cardfooter,
                                         ))
                                       : Row(

@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_datetime_picker_plus/flutter_datetime_picker_plus.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../config/theme/app_style.dart';
@@ -26,9 +27,10 @@ class VehicleAnalytics extends StatefulWidget {
 }
 
 class _VehicleAnalyticsState extends State<VehicleAnalytics> {
-  final List<String> _tabs = ["Today","Yesterday", "3 Days", "1 Week"];
+  final List<String> _tabs = ["Today","Yesterday", "3 Days", "1 Week", "Custom"];
   int _selectedTabIndex = 0;
-
+  DateTime? _customTimeFrom;
+  DateTime? _customTimeTo;
   // Function to generate date range for analytics
   Map<String, String> _getDateRange(String tab) {
     final now = DateTime.now();
@@ -51,6 +53,10 @@ class _VehicleAnalyticsState extends State<VehicleAnalytics> {
       case "1 Week":
         timeFrom = now.subtract(const Duration(days: 7)); // 7 days ago
         break;
+      case "Custom":
+        timeFrom = _customTimeFrom ?? now.subtract(const Duration(days: 1));
+        timeTo = _customTimeTo ?? now;
+        break;
       default:
         timeFrom = now; // Default to now (should not occur in this context)
     }
@@ -61,6 +67,47 @@ class _VehicleAnalyticsState extends State<VehicleAnalytics> {
       "time_from": formatter.format(timeFrom),
       "time_to": formatter.format(timeTo),
     };
+  }
+
+  _pickCustomDateRange() async {
+    DateTime? customTimeFrom;
+    DateTime? customTimeTo;
+
+    // Pick Start DateTime
+    await DatePicker.showDateTimePicker(
+      context,
+      showTitleActions: true,
+      minTime: DateTime(2000, 1, 1),
+      maxTime: DateTime.now(),
+      onConfirm: (date) {
+        customTimeFrom = date;
+      },
+      currentTime: DateTime.now(),
+      locale: LocaleType.en,
+    );
+
+    if (customTimeFrom != null) {
+      // Pick End DateTime
+      await DatePicker.showDateTimePicker(
+        context,
+        showTitleActions: true,
+        minTime: customTimeFrom,
+        maxTime: DateTime.now(),
+        onConfirm: (date) {
+          customTimeTo = date;
+        },
+        currentTime: customTimeFrom,
+        locale: LocaleType.en,
+      );
+    }
+
+    if (customTimeFrom != null && customTimeTo != null) {
+      setState(() {
+        _customTimeFrom = customTimeFrom!;
+        _customTimeTo = customTimeTo!;
+        _selectedTabIndex = _tabs.indexOf("Custom");
+      });
+    }
   }
 
   @override
@@ -96,6 +143,11 @@ class _VehicleAnalyticsState extends State<VehicleAnalytics> {
           token: widget.token,
           dashboardRoute: widget.dashboardRoute
       ),
+      FilterByDateTime(
+          timeFrom: dateRange["time_from"]!,
+          timeTo: dateRange["time_to"]!,
+          vin: widget.vin,
+          token: widget.token),
     ];
 
     return Scaffold(
@@ -119,11 +171,15 @@ class _VehicleAnalyticsState extends State<VehicleAnalytics> {
               itemCount: _tabs.length,
               itemBuilder: (context, index) {
                 return GestureDetector(
-                  onTap: () {
+                onTap: () async {
+                  if (_tabs[index] == "Custom") {
+                    await _pickCustomDateRange(); // Ensure the custom picker is invoked
+                  } else {
                     setState(() {
-                      _selectedTabIndex = index;
+                      _selectedTabIndex = index; // Set other tabs as usual
                     });
-                  },
+                  }
+                },
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 8.0),
                     child: Chip(
@@ -187,18 +243,19 @@ class TodayDashboardPage extends StatelessWidget {
             token: token))),
       child: BlocConsumer<VehicleRouteHistoryBloc, VehicleState>(
         builder: (context, state) {
-          print('vin- : $vin');
-          print('timeFrom- : $timeFrom');
-          print('timeTo- : $timeTo');
-          print('token- : $token');
+          print('today_vin- : $vin');
+          print('today_timeFrom- : $timeFrom');
+          print('today_timeTo- : $timeTo');
+          print('today_token- : $token');
           if (state is VehicleLoading) {
             return const Center(
               child: Padding(
                 padding: EdgeInsets.only(top: 10.0),
-                child: CircularProgressIndicator(strokeWidth: 2.0),
+                child: CircularProgressIndicator(strokeWidth: 2.0, color: Colors.green),
               ),
             );
           } else if (state is GetVehicleRouteHistoryDone) {
+            print('rrrrrrrrrrr: ${state.resp.data[0].connected}');
             return VehicleRouteDataAnalytics(vehicles: state.resp.data, vin: vin);
           } else {
             return Container();
@@ -207,7 +264,7 @@ class TodayDashboardPage extends StatelessWidget {
         listener: (context, state) {
           if (state is VehicleFailure) {
             if (state.message.contains("Unauthenticated")) {
-            Navigator.pushNamed(context, "/login");
+            Navigator.pushNamedAndRemoveUntil(context, "/login", (route) => false);
             }
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(state.message)),
@@ -251,7 +308,7 @@ class ThreeDaysDashboardPage extends StatelessWidget {
             return const Center(
               child: Padding(
                 padding: EdgeInsets.only(top: 10.0),
-                child: CircularProgressIndicator(strokeWidth: 2.0),
+                child: CircularProgressIndicator(strokeWidth: 2.0, color: Colors.green,),
               ),
             );
           } else if (state is GetVehicleRouteHistoryDone) {
@@ -262,8 +319,8 @@ class ThreeDaysDashboardPage extends StatelessWidget {
         },
         listener: (context, state) {
           if (state is VehicleFailure) {
-            if (state.message.contains("401")) {
-              Navigator.pushNamed(context, "/login");
+            if (state.message.contains("Unauthenticated")) {
+              Navigator.pushNamedAndRemoveUntil(context, "/login", (route) => false);
             }
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(state.message)),
@@ -309,7 +366,7 @@ class OneWeekDashboardPage extends StatelessWidget {
             return const Center(
               child: Padding(
                 padding: EdgeInsets.only(top: 10.0),
-                child: CircularProgressIndicator(strokeWidth: 2.0),
+                child: CircularProgressIndicator(strokeWidth: 2.0, color: Colors.green,),
               ),
             );
           } else if (state is GetVehicleRouteHistoryDone) {
@@ -320,8 +377,8 @@ class OneWeekDashboardPage extends StatelessWidget {
         },
         listener: (context, state) {
           if (state is VehicleFailure) {
-            if (state.message.contains("401")) {
-              Navigator.pushNamed(context, "/login");
+            if (state.message.contains("Unauthenticated")) {
+              Navigator.pushNamedAndRemoveUntil(context, "/login", (route) => false);
             }
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(state.message)),
@@ -365,7 +422,7 @@ class YesterdayDashboardPage extends StatelessWidget {
             return const Center(
               child: Padding(
                 padding: EdgeInsets.only(top: 10.0),
-                child: CircularProgressIndicator(strokeWidth: 2.0),
+                child: CircularProgressIndicator(strokeWidth: 2.0, color: Colors.green,),
               ),
             );
           } else if (state is GetVehicleRouteHistoryDone) {
@@ -376,8 +433,8 @@ class YesterdayDashboardPage extends StatelessWidget {
         },
         listener: (context, state) {
           if (state is VehicleFailure) {
-            if (state.message.contains("401")) {
-              Navigator.pushNamed(context, "/login");
+            if (state.message.contains("Unauthenticated")) {
+              Navigator.pushNamedAndRemoveUntil(context, "/login", (route) => false);
             }
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(state.message)),
@@ -389,6 +446,62 @@ class YesterdayDashboardPage extends StatelessWidget {
   }
 }
 
+class FilterByDateTime extends StatelessWidget {
+  final String timeFrom;
+  final String timeTo;
+  final String vin;
+  final String token;
+
+  const FilterByDateTime({
+    super.key,
+    required this.timeFrom,
+    required this.timeTo,
+    required this.vin,
+    required this.token,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (_) => sl<VehicleRouteHistoryBloc>()
+        ..add(VehicleRouteHistoryEvent(VehicleRouteHistoryReqEntity(
+            vehicle_vin: vin,
+            time_from: timeFrom,
+            time_to: timeTo,
+            token: token))),
+      child: BlocConsumer<VehicleRouteHistoryBloc, VehicleState>(
+        builder: (context, state) {
+          print('vin- : $vin');
+          print('timeFrom- : $timeFrom');
+          print('timeTo- : $timeTo');
+          print('token- : $token');
+          if (state is VehicleLoading) {
+            return const Center(
+              child: Padding(
+                padding: EdgeInsets.only(top: 10.0),
+                child: CircularProgressIndicator(strokeWidth: 2.0, color: Colors.green,),
+              ),
+            );
+          } else if (state is GetVehicleRouteHistoryDone) {
+            return  VehicleRouteDataAnalytics(vehicles: state.resp.data, vin: vin,);
+          } else {
+            return Container();
+          }
+        },
+        listener: (context, state) {
+          if (state is VehicleFailure) {
+            if (state.message.contains("Unauthenticated")) {
+              Navigator.pushNamedAndRemoveUntil(context, "/login", (route) => false);
+            }
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(state.message)),
+            );
+          }
+        },
+      ),
+    );
+  }
+}
 
 class VehicleRouteDataAnalytics extends StatefulWidget {
   final List<DatumEntity> vehicles;
@@ -424,13 +537,13 @@ class _VehicleRouteDataAnalyticsState extends State<VehicleRouteDataAnalytics> {
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: analytics == null
-            ? const Center(child: CircularProgressIndicator())
+            ? const Center(child: CircularProgressIndicator(strokeWidth: 2.0, color: Colors.green,))
             : Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                Text('VIN: ', style: AppStyle.cardSubtitle),
+                Text('VIN: ', style: AppStyle.cardSubtitle.copyWith(fontSize: 14)),
                 Text(widget.vin, style: AppStyle.cardfooter),
               ],
             ),
@@ -442,7 +555,7 @@ class _VehicleRouteDataAnalyticsState extends State<VehicleRouteDataAnalytics> {
                   radius: 5,
                 ),
                 const SizedBox(width: 10),
-                Text('Online',
+                Text('online',
                     style: AppStyle.cardSubtitle.copyWith(fontSize: 14)),
               ],
             ),
@@ -453,7 +566,7 @@ class _VehicleRouteDataAnalyticsState extends State<VehicleRouteDataAnalytics> {
                   radius: 5,
                 ),
                 const SizedBox(width: 10),
-                Text('Offline',
+                Text('offline',
                     style: AppStyle.cardSubtitle.copyWith(fontSize: 14)),
               ],
             ),
@@ -520,20 +633,19 @@ class _VehicleRouteDataAnalyticsState extends State<VehicleRouteDataAnalytics> {
                     margin: const EdgeInsets.symmetric(vertical: 8),
                     child: ListTile(
                       title: Text(
-                        'Status: ${vehicle.connected}',
+                        'Status: ${vehicle.connected ?? "N/A"}',
                         style: AppStyle.cardfooter,
                       ),
                       subtitle: Text(
-                        'DateTime: ' +
-                            FormatData.formatTimestamp(
-                                '${vehicle.created_at}'),
+                        'DateTime: ${FormatData.formatTimestamp(
+                                '${vehicle.fix_time ?? vehicle.updated_at}')}',
                         style: AppStyle.cardfooter,
                       ),
                       trailing: Icon(
-                        vehicle.connected == 'online'
+                        vehicle.connected == 'online' ||  vehicle.connected == 'Online'
                             ? Icons.check_circle
                             : Icons.remove_circle,
-                        color: vehicle.connected == 'online'
+                        color: vehicle.connected == 'online' || vehicle.connected == 'Online'
                             ? Colors.green
                             : Colors.red,
                       ),
@@ -548,127 +660,6 @@ class _VehicleRouteDataAnalyticsState extends State<VehicleRouteDataAnalytics> {
     );
   }
 
-  // Widget build(BuildContext context) {
-  //   return Scaffold(
-  //     body: Padding(
-  //       padding: const EdgeInsets.all(16.0),
-  //       child: analytics == null
-  //           ? const Center(child: CircularProgressIndicator())
-  //           : SingleChildScrollView(
-  //         child: Column(
-  //           crossAxisAlignment: CrossAxisAlignment.start,
-  //           children: [
-  //             Row(
-  //               children: [
-  //                 Text('VIN: ', style: AppStyle.cardSubtitle,),
-  //                 Text(widget.vin, style: AppStyle.cardfooter,),
-  //               ],
-  //             ),
-  //             const SizedBox(height: 5.0,),
-  //             Row(
-  //               children: [
-  //                 const CircleAvatar(
-  //                   backgroundColor: Colors.green,
-  //                   radius: 5,
-  //                 ),
-  //                 const SizedBox(width: 10,),
-  //                 Text('Online',
-  //                     style: AppStyle.cardSubtitle.copyWith(fontSize: 14))
-  //               ],
-  //             ),
-  //             Row(
-  //               children: [
-  //                 const CircleAvatar(
-  //                   backgroundColor: Colors.red,
-  //                   radius: 5,
-  //                 ),
-  //                 const SizedBox(width: 10,),
-  //                 Text('offline',
-  //                     style: AppStyle.cardSubtitle.copyWith(fontSize: 14))
-  //               ],
-  //             ),
-  //             const SizedBox(height: 20),
-  //             // Pie chart visualization
-  //             Center(
-  //               child: SizedBox(
-  //                 width: 200,
-  //                 height: 200,
-  //                 child: PieChart(
-  //                   PieChartData(
-  //                     sections: [
-  //                       if (analytics!.onlineCount > 0)
-  //                         PieChartSectionData(
-  //                           value: analytics!.onlineCount.toDouble(),
-  //                           color: Colors.green,
-  //                           title: '${analytics!.onlineCount}',
-  //                           radius: 100,
-  //                           titleStyle: const TextStyle(
-  //                               color: Colors.white,
-  //                               fontWeight: FontWeight.bold),
-  //                         ),
-  //                       if (analytics!.offlineCount > 0)
-  //                         PieChartSectionData(
-  //                           value: analytics!.offlineCount.toDouble(),
-  //                           color: Colors.red,
-  //                           title: '${analytics!.offlineCount}',
-  //                           radius: 100,
-  //                           titleStyle: const TextStyle(
-  //                               color: Colors.white,
-  //                               fontWeight: FontWeight.bold),
-  //                         ),
-  //                       // Fallback for cases where both counts are zero
-  //                       if (analytics!.onlineCount == 0 &&
-  //                           analytics!.offlineCount == 0)
-  //                         PieChartSectionData(
-  //                           value: 1,
-  //                           color: Colors.grey,
-  //                           title: 'No Data',
-  //                           radius: 60,
-  //                           titleStyle: const TextStyle(
-  //                               color: Colors.white,
-  //                               fontWeight: FontWeight.bold),
-  //                         ),
-  //                     ],
-  //                   ),
-  //                 ),
-  //               ),
-  //             ),
-  //             const SizedBox(height: 20),
-  //             Text(
-  //                 'Analysis Details:',
-  //                 style:AppStyle.cardSubtitle.copyWith(fontSize: 12)
-  //             ),
-  //             const SizedBox(height: 10),
-  //             Expanded(
-  //               child: ListView.builder(
-  //                 itemCount: widget.vehicles.length,
-  //                 itemBuilder: (context, index) {
-  //                   var vehicle = widget.vehicles[index];
-  //                   return Card(
-  //                     elevation: 3,
-  //                     margin: const EdgeInsets.symmetric(vertical: 8),
-  //                     child: ListTile(
-  //                       title:  Text('Status: ${vehicle.connected}', style: AppStyle.cardfooter,),
-  //                       subtitle: Text('DateTime: '+FormatData.formatTimestamp('${vehicle.created_at}'), style: AppStyle.cardfooter,),
-  //                       trailing: Icon(
-  //                         vehicle.connected == 'online'
-  //                             ? Icons.check_circle
-  //                             : Icons.remove_circle,
-  //                         color: vehicle.connected == 'online'
-  //                             ? Colors.green
-  //                             : Colors.red,
-  //                       ),
-  //                     ),
-  //                   );
-  //                 },
-  //               ),
-  //             ),
-  //           ],
-  //         ),
-  //       ),
-  //     ),
-  //   );
-  // }
 
 }
 
@@ -683,10 +674,12 @@ class Analytics {
     int onlineCount = 0;
     int offlineCount = 0;
 
+
     for (var vehicle in vehicles) {
-      if (vehicle.connected == 'online') {
+      print('fffffffff: ${vehicle.connected}');
+      if (vehicle.connected == 'online' || vehicle.connected == 'Online') {
         onlineCount++;
-      } else if (vehicle.connected == 'offline') {
+      } else if (vehicle.connected == 'offline' || vehicle.connected == 'Offline') {
         offlineCount++;
       }
     }

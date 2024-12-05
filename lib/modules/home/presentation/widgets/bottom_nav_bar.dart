@@ -37,17 +37,17 @@ class _BottomNavBarState extends State<BottomNavBar> {
     // List of pages for the BottomNavigationBar
     final List<Widget> bottomBarPages = [
       MapPage(),
-      VehiclePage(),
-      DashboardPage(),
-      EshopPage(),
-      DashCamPage(),
+      const VehiclePage(),
+      const DashboardPage(),
+      const EshopPage(),
+      const DashCamPage(),
     ];
 
     return Scaffold(
       body: SafeArea(
         child: PageView(
           controller: _pageController,
-          physics: NeverScrollableScrollPhysics(),
+          physics: const NeverScrollableScrollPhysics(),
           children: bottomBarPages,
         ),
       ),
@@ -64,33 +64,33 @@ class _BottomNavBarState extends State<BottomNavBar> {
         type: BottomNavigationBarType.fixed,
         elevation: 5,
         backgroundColor: Colors.grey.shade200,
-        selectedItemColor: Colors.black,
+        selectedItemColor: Colors.green,
         unselectedItemColor: Colors.grey,
         showSelectedLabels: true,
         showUnselectedLabels: true,
         items: [
           BottomNavigationBarItem(
-            icon: Icon(CupertinoIcons.placemark),
+            icon: const Icon(CupertinoIcons.placemark),
             activeIcon: Icon(CupertinoIcons.placemark_fill, color: Colors.green.shade900,),
             label: 'Map',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.local_shipping_outlined,),
+            icon: const Icon(Icons.local_shipping_outlined,),
             activeIcon: Icon(Icons.local_shipping, color: Colors.green.shade900,),
             label: 'Vehicle',
           ),
-          BottomNavigationBarItem(
+          const BottomNavigationBarItem(
             icon: Icon(CupertinoIcons.house),
             activeIcon: Icon(CupertinoIcons.house_alt_fill),
             label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: Icon(CupertinoIcons.shopping_cart),
+            icon: const Icon(CupertinoIcons.shopping_cart),
             activeIcon: Icon(CupertinoIcons.cart_fill, color: Colors.green.shade900,),
-            label: 'Shop',
+            label: 'E-shop',
           ),
           BottomNavigationBarItem(
-            icon: Icon(CupertinoIcons.camera),
+            icon: const Icon(CupertinoIcons.camera),
             activeIcon: Icon(CupertinoIcons.camera_fill, color: Colors.green.shade900,),
             label: 'Dashcam',
           ),

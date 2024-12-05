@@ -104,7 +104,7 @@ class VehicleOperation extends StatelessWidget {
                   //     });
                 }, //VehiclePlayBackToolTip.showTopModal(context),
                 child: VehicleOperationCard(
-                    status: 'Analysis',
+                    status: 'Analytics',
                     icon: Icon(
                       Icons.auto_graph,
                       // CupertinoIcons.play_circle,

@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:ctntelematics/core/utils/app_export_util.dart';
 import 'package:ctntelematics/core/widgets/appBar.dart';
+import 'package:ctntelematics/core/widgets/custom_button.dart';
 import 'package:ctntelematics/modules/map/domain/entitties/req_entities/token_req_entity.dart';
 import 'package:ctntelematics/modules/map/domain/entitties/resp_entities/last_location_resp_entity.dart';
 // import 'package:ctntelematics/modules/map/domain/entitties/resp_entities/last_location_resp_entity.dart';
@@ -10,6 +11,7 @@ import 'package:ctntelematics/modules/map/presentation/widgets/vehicle_tooltip.d
 import 'package:ctntelematics/modules/websocket/presentation/bloc/vehicle_location_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import '../../../../core/usecase/provider_usecase.dart';
@@ -25,6 +27,7 @@ class MapPage extends StatefulWidget {
 
 class _MapPageState extends State<MapPage> {
   late GoogleMapController mapController;
+
   BitmapDescriptor? _offlineCustomIcon;
   BitmapDescriptor? _onlineCustomIcon;
 
@@ -122,7 +125,11 @@ class _MapPageState extends State<MapPage> {
         future: _getAuthUserFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(
+                child: CircularProgressIndicator(
+              strokeWidth: 2.0,
+              color: Colors.green,
+            ));
           } else if (snapshot.hasError) {
             return const Center(child: Text('Failed to fetch user data'));
           } else {
@@ -138,7 +145,8 @@ class _MapPageState extends State<MapPage> {
                 listener: (context, state) {
                   if (state is MapFailure) {
                     if (state.message.contains("Unauthenticated")) {
-                      Navigator.pushNamedAndRemoveUntil(context, "/login", (route) => false);
+                      Navigator.pushNamedAndRemoveUntil(
+                          context, "/login", (route) => false);
                     }
                     ScaffoldMessenger.of(context)
                         .showSnackBar(SnackBar(content: Text(state.message)));
@@ -170,6 +178,7 @@ class _MapPageState extends State<MapPage> {
                           child: Center(
                             child: CircularProgressIndicator(
                               strokeWidth: 2.0,
+                              color: Colors.green,
                             ),
                           ),
                         ),
@@ -195,7 +204,23 @@ class _MapPageState extends State<MapPage> {
                       ),
                     );
                   } else {
-                    return const Center(child: Text('No records found'));
+                    return Center(
+                        child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Text(
+                          'No records found',
+                          style: AppStyle.cardfooter,
+                        ),
+                        CustomSecondaryButton(
+                            label: 'Refresh',
+                            onPressed: () {
+                              BlocProvider.of<LastLocationBloc>(context)
+                                  .add(LastLocationEvent(tokenReq));
+                            })
+                      ],
+                    ));
                   }
                 },
               ),
@@ -206,7 +231,128 @@ class _MapPageState extends State<MapPage> {
     );
   }
 
-// Build GoogleMap widget
+  void _updateMarkers(List<LastLocationRespEntity> allVehicles,
+      {required List<VehicleEntity> vehicles}) {
+    // Ensure offline markers are added for stationary vehicles
+
+    for (var vehicle in allVehicles) {
+      if (vehicle.vehicle != null &&
+          vehicle.vehicle!.details?.last_location != null) {
+        _addGeofencePolygon(vehicle.vehicle?.geofence?.coordinates);
+
+        final currentPosition = LatLng(
+          double.parse(
+              vehicle.vehicle!.details!.last_location!.latitude.toString()),
+          double.parse(
+              vehicle.vehicle!.details!.last_location!.longitude.toString()),
+        );
+
+        final numberPlate = vehicle.vehicle!.details!.number_plate!;
+
+        // Add offline marker if the vehicle is not moving
+        if (vehicle.vehicle!.details?.last_location?.status != 'Moving' ||
+            vehicle.vehicle!.details?.last_location?.status != 'moving'
+        ) {
+          if (_offlineCustomIcon == null) {
+            _setOfflineCustomMarkerIcon();
+          }
+
+          _markers.add(
+            Marker(
+              icon: _offlineCustomIcon!, // Icon for stationary vehicles
+              markerId: MarkerId(numberPlate),
+              position: currentPosition,
+              onTap: () {
+                _showVehicleToolTip(vehicle);
+              },
+              infoWindow: InfoWindow(
+                title: numberPlate,
+              ),
+            ),
+          );
+        }
+      }
+    }
+
+    for (var vehicle in vehicles) {
+      print("vehicle status: ${vehicles[0].locationInfo.vehicleStatus}");
+      print("tracker status: ${vehicles[0].locationInfo.tracker?.status}");
+
+      if ((vehicle.locationInfo.vehicleStatus == "Moving" &&
+              vehicle.locationInfo.tracker!.status == "online" &&
+              vehicle.locationInfo.tracker!.position!.latitude != null &&
+              vehicle.locationInfo.tracker!.position!.longitude != null)
+      ||
+          // (vehicle.locationInfo.vehicleStatus == "Parked" &&
+          //     vehicle.locationInfo.tracker!.status == "online" &&
+          //     vehicle.locationInfo.tracker!.position!.latitude != null &&
+          //     vehicle.locationInfo.tracker!.position!.longitude != null) ||
+          (vehicle.locationInfo.vehicleStatus == "Idling" &&
+              vehicle.locationInfo.tracker!.status == "online" &&
+              vehicle.locationInfo.tracker!.position!.latitude != null &&
+              vehicle.locationInfo.tracker!.position!.longitude != null)
+      ) {
+        _addGeofencePolygon2(
+          vehicle.locationInfo.withinGeofence?.coordinates ?? [],
+        );
+
+
+        final currentPosition = LatLng(
+          double.parse(
+              vehicle.locationInfo.tracker!.position!.latitude.toString()),
+          double.parse(
+              vehicle.locationInfo.tracker!.position!.longitude.toString()),
+        );
+
+        final numberPlate = vehicle.locationInfo.numberPlate;
+
+        // Retrieve the previous position for bearing calculation
+        final previousPosition = _previousPositions[numberPlate];
+
+        // Cache the current position as the new previous position
+        _previousPositions[numberPlate] = currentPosition;
+
+        // Calculate bearing if we have a previous position
+        double? bearing;
+        if (previousPosition != null) {
+          bearing = _calculateBearing(previousPosition, currentPosition);
+        }
+
+        // Remove the old marker (if any) for this specific vehicle
+        _markers.removeWhere((marker) => marker.markerId.value == numberPlate);
+
+        // Add marker only if the vehicle has moved significantly
+        // Adjust the distance threshold to update markers more frequently if necessary
+        if (previousPosition == null ||
+            _calculateDistance(previousPosition, currentPosition) > 2.0) {
+          if (_onlineCustomIcon == null) {
+            _setOnlineCustomMarkerIcon();
+          }
+
+          _markers.add(
+            Marker(
+              icon: _onlineCustomIcon ??
+                  BitmapDescriptor.defaultMarker, // Ensure custom icon is set
+              markerId: MarkerId(numberPlate),
+              position: currentPosition,
+              onTap: () {
+                _showVehicleToolTip(vehicle);
+              },
+              infoWindow: InfoWindow(
+                title: numberPlate,
+              ),
+              rotation: bearing ?? 0, // Set bearing if available
+            ),
+          );
+
+          // Smoothly animate the camera to the new position
+          mapController.animateCamera(CameraUpdate.newLatLng(currentPosition));
+        }
+      }
+    }
+  }
+
+
   Widget buildMap(bool isGeofence) {
     return GoogleMap(
       onMapCreated: (GoogleMapController controller) {
@@ -236,120 +382,126 @@ class _MapPageState extends State<MapPage> {
     );
   }
 
-// Update markers for all vehicles and moving vehicles
-  void _updateMarkers(
-    List<LastLocationRespEntity> allVehicles, {
-    required List<VehicleEntity> vehicles,
-  }) {
-    bool shouldUpdateOfflineIcon = false;
+  // void _updateMarkers(List<LastLocationRespEntity> allVehicles, {required List<VehicleEntity> vehicles,}) {
+  //   bool shouldUpdateOfflineIcon = false;
+  //   final updatedMarkers = <Marker>{}; // Temporary set for updated markers
+  //   _markers.clear(); // Clear existing markers
+  //
+  //   // Add markers for all vehicles' last known locations (stationary vehicles)
+  //   for (var vehicle in allVehicles) {
+  //     print('Processing allVehicles...');
+  //     if (vehicle.vehicle != null &&
+  //         vehicle.vehicle!.details?.last_location != null) {
+  //       _addGeofencePolygon(vehicle.vehicle?.geofence?.coordinates);
+  //
+  //       final currentPosition = LatLng(
+  //         double.parse(
+  //             vehicle.vehicle!.details!.last_location!.latitude.toString()),
+  //         double.parse(
+  //             vehicle.vehicle!.details!.last_location!.longitude.toString()),
+  //       );
+  //
+  //       final numberPlate = vehicle.vehicle!.details!.number_plate!;
+  //
+  //       // Check if the current position has changed
+  //       if (!_previousPositions.containsKey(numberPlate) ||
+  //           _previousPositions[numberPlate] != currentPosition) {
+  //         shouldUpdateOfflineIcon = true;
+  //       }
+  //
+  //       // Cache the current position as the previous position
+  //       _previousPositions[numberPlate] = currentPosition;
+  //
+  //       // Add stationary vehicle marker
+  //       _markers.add(
+  //         Marker(
+  //           icon: _offlineCustomIcon!, // Icon for stationary vehicles
+  //           markerId: MarkerId(numberPlate),
+  //           position: currentPosition,
+  //           onTap: () {
+  //             _showVehicleToolTip(vehicle);
+  //           },
+  //           infoWindow: InfoWindow(
+  //             title: numberPlate,
+  //           ),
+  //         ),
+  //       );
+  //     }
+  //   }
+  //
+  //   // Update the custom offline marker icon if needed
+  //   if (shouldUpdateOfflineIcon) {
+  //     _setOfflineCustomMarkerIcon();
+  //   }
+  //
+  //   // Add markers for moving vehicles
+  //   for (var vehicle in vehicles) {
+  //     print("Processing moving vehicles...");
+  //     if ((vehicle.locationInfo.vehicleStatus == "Moving" &&
+  //             vehicle.locationInfo.tracker?.position?.latitude != null &&
+  //             vehicle.locationInfo.tracker?.position?.longitude != null) ||
+  //         vehicle.locationInfo.vehicleStatus == "moving") {
+  //       _addGeofencePolygon2(
+  //           vehicle.locationInfo.withinGeofence?.coordinates != null
+  //               ? vehicle.locationInfo.withinGeofence!.coordinates
+  //               : []);
+  //       final currentPosition = LatLng(
+  //         double.parse(
+  //             vehicle.locationInfo.tracker!.position!.latitude.toString()),
+  //         double.parse(
+  //             vehicle.locationInfo.tracker!.position!.longitude.toString()),
+  //       );
+  //
+  //       final numberPlate = vehicle.locationInfo.numberPlate;
+  //
+  //       // Retrieve the previous position for bearing calculation
+  //       final previousPosition = _previousPositions[numberPlate];
+  //
+  //       // Cache the current position as the new previous position
+  //       _previousPositions[numberPlate] = currentPosition;
+  //
+  //       // Calculate bearing if we have a previous position
+  //       double? bearing;
+  //       if (previousPosition != null) {
+  //         bearing = _calculateBearing(previousPosition, currentPosition);
+  //       }
+  //
+  //       // Add marker only if the vehicle has moved significantly
+  //       if (previousPosition == null ||
+  //           _calculateDistance(previousPosition, currentPosition) > 4.0) {
+  //         if (_onlineCustomIcon == null) {
+  //           _setOnlineCustomMarkerIcon();
+  //         }
+  //         _markers.add(
+  //           Marker(
+  //             icon: _onlineCustomIcon ?? BitmapDescriptor.defaultMarker, // Icon for moving vehicles
+  //             markerId: MarkerId(numberPlate),
+  //             position: currentPosition,
+  //             onTap: () {
+  //               _showVehicleToolTip(vehicle);
+  //             },
+  //             infoWindow: InfoWindow(
+  //               title: numberPlate,
+  //             ),
+  //             rotation: bearing ?? 0, // Set bearing if available
+  //           ),
+  //         );
+  //
+  //         // Smoothly animate the camera to the new position
+  //         mapController.animateCamera(CameraUpdate.newLatLng(currentPosition));
+  //       }
+  //     }
+  //   }
+  // }
 
-    _markers.clear(); // Clear existing markers
-    // Add markers for all vehicles' last known locations
-    for (var vehicle in allVehicles) {
-      print('object-------------allVehicles');
-      if (vehicle.vehicle != null &&
-          vehicle.vehicle!.details?.last_location != null) {
-        _addGeofencePolygon(vehicle.vehicle?.geofence?.coordinates);
-
-        final currentPosition = LatLng(
-          double.parse(
-              vehicle.vehicle!.details!.last_location!.latitude.toString()),
-          double.parse(
-              vehicle.vehicle!.details!.last_location!.longitude.toString()),
-        );
-
-        // Cache the current position as the "previous position" if not already present
-        final numberPlate = vehicle.vehicle!.details!.number_plate!;
-        // Check if the current position is different from the previously stored position
-        if (!_previousPositions.containsKey(numberPlate) ||
-            _previousPositions[numberPlate] != currentPosition) {
-          shouldUpdateOfflineIcon = true;
-        }
-        _previousPositions.putIfAbsent(numberPlate, () => currentPosition);
-        // _setOfflineCustomMarkerIcon();
-        _markers.add(
-          Marker(
-            icon: _offlineCustomIcon!, // Icon for stationary vehicles
-            markerId: MarkerId(numberPlate),
-            position: currentPosition,
-            onTap: () {
-              _showVehicleToolTip(vehicle);
-            },
-            infoWindow: InfoWindow(
-              title: numberPlate,
-            ),
-          ),
-        );
-      }
-
-    }
-
-    // Update the custom marker icon if needed
-    if (shouldUpdateOfflineIcon) {
-      _setOfflineCustomMarkerIcon();
-    }
-
-    // Update markers for vehicles that have moved
-    for (var vehicle in vehicles) {
-      print(">>>>>>>>>>>>>>>> moving vehicle block 01<<<<<<<<<<<<<<<<<<<<<");
-      print('vehicle status: ${vehicle.locationInfo.vehicleStatus}');
-      print('status: ${vehicle.locationInfo.tracker!.status}');
-      if (vehicle.locationInfo.vehicleStatus == "Moving" &&
-          vehicle.locationInfo.tracker!.position!.latitude != null &&
-          vehicle.locationInfo.tracker!.position!.longitude != null) {
-        _addGeofencePolygon2(vehicle.locationInfo.withinGeofence!.coordinates);
-
-        print(">>>>>>>>>>>>>>>> moving vehicle block 02<<<<<<<<<<<<<<<<<<<<<");
-
-        final currentPosition = LatLng(
-          double.parse(
-              vehicle.locationInfo.tracker!.position!.latitude.toString()),
-          double.parse(
-              vehicle.locationInfo.tracker!.position!.longitude.toString()),
-        );
-
-        final numberPlate = vehicle.locationInfo.numberPlate;
-
-        // Retrieve the previous position for bearing calculation
-        final previousPosition = _previousPositions[numberPlate];
-
-        // Cache the current position as the new previous position
-        _previousPositions[numberPlate] = currentPosition;
-
-        // Calculate bearing if we have a previous position
-        double? bearing;
-        if (previousPosition != null) {
-          bearing = _calculateBearing(previousPosition, currentPosition);
-        }
-
-        _setOnlineCustomMarkerIcon();
-
-        _markers.add(
-          Marker(
-            icon: _onlineCustomIcon!, // Icon for moving vehicles
-            markerId: MarkerId(numberPlate),
-            position: currentPosition,
-            onTap: () {
-              _showVehicleToolTip(vehicle);
-            },
-            infoWindow: InfoWindow(
-              title: numberPlate,
-            ),
-            rotation:
-                bearing ?? 0, // Set bearing if available, otherwise default
-          ),
-        );
-      }
-      else {
-        print('>>>>>>>>>> not moving here <<<<<<<<<<<<<<<<');
-        // ScaffoldMessenger.of(context).showSnackBar(
-        //   SnackBar(
-        //     content: Text('Vehicle is not moving', style: AppStyle.cardfooter,),
-        //     backgroundColor: Colors.red,
-        //   ),
-        // );
-      }
-    }
+// Helper function to calculate distance between two points
+  double _calculateDistance(LatLng start, LatLng end) {
+    return Geolocator.distanceBetween(
+      start.latitude,
+      start.longitude,
+      end.latitude,
+      end.longitude,
+    );
   }
 
   double _calculateBearing(LatLng start, LatLng end) {
@@ -480,9 +632,174 @@ class _MapPageState extends State<MapPage> {
     return [];
     // Replace with actual API call to fetch vehicles within the bounds
   }
-
-
 }
+
+//  //
+// // Update markers for all vehicles and moving vehicles
+//   void _updateMarkers(List<LastLocationRespEntity> allVehicles, {required List<VehicleEntity> vehicles,}) {bool shouldUpdateOfflineIcon = false;
+//
+//     _markers.clear(); // Clear existing markers
+//     // Add markers for all vehicles' last known locations
+//     for (var vehicle in allVehicles) {
+//       if (vehicle.vehicle != null &&
+//           vehicle.vehicle!.details?.last_location != null) {
+//         _addGeofencePolygon(vehicle.vehicle?.geofence?.coordinates);
+//
+//         final currentPosition = LatLng(
+//           double.parse(
+//               vehicle.vehicle!.details!.last_location!.latitude.toString()),
+//           double.parse(
+//               vehicle.vehicle!.details!.last_location!.longitude.toString()),
+//         );
+//
+//         // Cache the current position as the "previous position" if not already present
+//         final numberPlate = vehicle.vehicle!.details!.number_plate!;
+//         // Check if the current position is different from the previously stored position
+//         if (!_previousPositions.containsKey(numberPlate) ||
+//             _previousPositions[numberPlate] != currentPosition) {
+//           shouldUpdateOfflineIcon = true;
+//         }
+//         _previousPositions.putIfAbsent(numberPlate, () => currentPosition);
+//         // _setOfflineCustomMarkerIcon();
+//         _markers.add(
+//           Marker(
+//             icon: _offlineCustomIcon!, // Icon for stationary vehicles
+//             markerId: MarkerId(numberPlate),
+//             position: currentPosition,
+//             onTap: () {
+//               _showVehicleToolTip(vehicle);
+//             },
+//             infoWindow: InfoWindow(
+//               title: numberPlate,
+//             ),
+//           ),
+//         );
+//       }
+//     }
+//
+//     // Update the custom marker icon if needed
+//     if (shouldUpdateOfflineIcon) {
+//       _setOfflineCustomMarkerIcon();
+//     }
+//
+//     // Update markers for vehicles that have moved
+//     for (var vehicle in vehicles) {
+//       print(">>>>>>>>>>>>>>>> moving vehicle block 01<<<<<<<<<<<<<<<<<<<<<");
+//       print('vehicle status: ${vehicle.locationInfo.vehicleStatus}');
+//       print('status: ${vehicle.locationInfo.tracker!.status}');
+//       if (vehicle.locationInfo.vehicleStatus == "Moving" &&
+//           vehicle.locationInfo.tracker!.position!.latitude != null &&
+//           vehicle.locationInfo.tracker!.position!.longitude != null) {
+//         // _addGeofencePolygon2(vehicle.locationInfo.withinGeofence!.coordinates);
+//
+//         print(">>>>>>>>>>>>>>>> moving vehicle block 02<<<<<<<<<<<<<<<<<<<<<");
+//
+//         final currentPosition = LatLng(
+//           double.parse(
+//               vehicle.locationInfo.tracker!.position!.latitude.toString()),
+//           double.parse(
+//               vehicle.locationInfo.tracker!.position!.longitude.toString()),
+//         );
+//
+//         final numberPlate = vehicle.locationInfo.numberPlate;
+//
+//         // Retrieve the previous position for bearing calculation
+//         final previousPosition = _previousPositions[numberPlate];
+//
+//         // Cache the current position as the new previous position
+//         _previousPositions[numberPlate] = currentPosition;
+//
+//         // Calculate bearing if we have a previous position
+//         double? bearing;
+//         if (previousPosition != null) {
+//           bearing = _calculateBearing(previousPosition, currentPosition);
+//         }
+//
+//         if (_onlineCustomIcon == null) {
+//           _setOnlineCustomMarkerIcon();
+//         }
+//         // _setOnlineCustomMarkerIcon();
+//
+//         _markers.add(
+//           Marker(
+//             icon: _onlineCustomIcon!, // Icon for moving vehicles
+//             markerId: MarkerId(numberPlate),
+//             position: currentPosition,
+//             onTap: () {
+//               _showVehicleToolTip(vehicle);
+//             },
+//             infoWindow: InfoWindow(
+//               title: numberPlate,
+//             ),
+//             rotation:
+//                 bearing ?? 0, // Set bearing if available, otherwise default
+//           ),
+//         );
+//       } else {
+//         print('>>>>>>>>>> not moving here <<<<<<<<<<<<<<<<');
+//         // ScaffoldMessenger.of(context).showSnackBar(
+//         //   SnackBar(
+//         //     content: Text('Vehicle is not moving', style: AppStyle.cardfooter,),
+//         //     backgroundColor: Colors.red,
+//         //   ),
+//         // );
+//       }
+//     }
+//   }
+
+///
+//
+// // Helper function to calculate bearing
+//   double _calculateBearing(LatLng start, LatLng end) {
+//     final lat1 = _toRadians(start.latitude);
+//     final lon1 = _toRadians(start.longitude);
+//     final lat2 = _toRadians(end.latitude);
+//     final lon2 = _toRadians(end.longitude);
+//
+//     final dLon = lon2 - lon1;
+//
+//     final y = sin(dLon) * cos(lat2);
+//     final x = cos(lat1) * sin(lat2) - sin(lat1) * cos(lat2) * cos(dLon);
+//
+//     final bearing = atan2(y, x);
+//
+//     // Convert to degrees and normalize to 0-360
+//     return (_toDegrees(bearing) + 360) % 360;
+//   }
+
+// // Conversion utilities
+//   double _toRadians(double degrees) => degrees * pi / 180;
+//   double _toDegrees(double radians) => radians * 180 / pi;
+//
+// // Add geofence polygon to map
+//   void _addGeofencePolygon(List<dynamic>? coordinates) {
+//     if (coordinates != null) {
+//       // Implement geofence polygon logic
+//       print('Adding geofence polygon...');
+//     }
+//   }
+
+// // Set custom marker icons
+//   void _setOfflineCustomMarkerIcon() async {
+//     _offlineCustomIcon = await BitmapDescriptor.fromAssetImage(
+//       ImageConfiguration(size: Size(48, 48)),
+//       'assets/offline_vehicle_icon.png',
+//     );
+//   }
+//
+//   void _setOnlineCustomMarkerIcon() async {
+//     _onlineCustomIcon = await BitmapDescriptor.fromAssetImage(
+//       ImageConfiguration(size: Size(48, 48)),
+//       'assets/online_vehicle_icon.png',
+//     );
+//   }
+//
+// // Show vehicle tooltip
+//   void _showVehicleToolTip(dynamic vehicle) {
+//     // Implement tooltip display logic
+//     print('Vehicle selected: ${vehicle.vehicle?.details?.number_plate}');
+//   }
+///
 // Widget handleLocationUpdate(){
 //   return  BlocBuilder<VehicleLocationBloc, List<VehicleEntity>>(
 //     builder: (context, vehicles) {

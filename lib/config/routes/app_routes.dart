@@ -2,6 +2,7 @@ import 'package:ctntelematics/modules/authentication/presentation/pages/onBoardi
 import 'package:ctntelematics/modules/eshop/presentation/widgets/checkout.dart';
 import 'package:ctntelematics/modules/profile/presentation/pages/setting_widget.dart';
 import 'package:ctntelematics/modules/dashboard/presentation/pages/dashboard_page.dart';
+import 'package:ctntelematics/modules/service/presentation/pages/service_page.dart';
 import 'package:ctntelematics/modules/vehincle/presentation/pages/vehicle_page.dart';
 import 'package:flutter/material.dart';
 
@@ -26,6 +27,7 @@ final routes = {
   '/login': (BuildContext context) => LoginPage(),
   '/signup': (BuildContext context) => SignupPage(),
   '/home': (BuildContext context) => const Home(),
+  '/service': (BuildContext context) => const ServicePage(),
   // '/dashboard': (BuildContext context) => const DashboardPage(),
   '/bottomNav': (BuildContext context) =>  BottomNavBar(),
   '/forgetPassword': (BuildContext context) =>  ForgotPasswordPage(),

@@ -67,6 +67,7 @@ dependencies:
   sqflite: ^2.4.1
   image_picker: ^1.1.2
   flutter_launcher_icons: ^0.14.1
+  geolocator: ^13.0.2
 #  pusher_client_x: ^3.0.1
 
 dev_dependencies:

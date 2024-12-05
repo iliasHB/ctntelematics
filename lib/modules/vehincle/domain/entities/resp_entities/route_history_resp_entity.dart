@@ -3,7 +3,7 @@ import 'package:equatable/equatable.dart';
 class VehicleRouteHistoryRespEntity extends Equatable {
 
   final List<DatumEntity> data;
-  final double? routeLength;
+  final dynamic routeLength;
 
   const VehicleRouteHistoryRespEntity({
     required this.data,
