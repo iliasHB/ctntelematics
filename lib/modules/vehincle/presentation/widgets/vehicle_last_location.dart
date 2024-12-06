@@ -224,7 +224,7 @@ class _VehicleRouteLastLocationState extends State<VehicleRouteLastLocation> {
                         }
 
 
-                        _markers.clear();
+                        // _markers.clear();
                         final LatLng _center = LatLng(
                             widget.latitude!.toDouble(),
                             widget.longitude!.toDouble());

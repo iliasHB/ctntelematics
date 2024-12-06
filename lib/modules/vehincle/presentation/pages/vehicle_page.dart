@@ -13,6 +13,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/widgets/appBar.dart';
+import '../../../../core/widgets/custom_button.dart';
 import '../../../../core/widgets/format_data.dart';
 import '../../../../service_locator.dart';
 import '../../../dashboard/presentation/bloc/dashboard_bloc.dart';
@@ -26,7 +27,6 @@ class VehiclePage extends StatefulWidget {
 }
 
 class _VehiclePageState extends State<VehiclePage> {
-  int _selectedTabIndex = 0;
   bool isLoading = true;
   PrefUtils prefUtils = PrefUtils();
   String? first_name;
@@ -35,13 +35,6 @@ class _VehiclePageState extends State<VehiclePage> {
   String? email;
   String? token;
   String? userId;
-  int vehicleCount = 0;
-  int movingCount = 0;
-  int idleCount = 0;
-  int offlineLength = 0;
-  int offlineCount = 0;
-  int packedCount = 0;
-
   @override
   void initState() {
     super.initState();
@@ -127,14 +120,6 @@ class _VehiclePageState extends State<VehiclePage> {
 
   @override
   Widget build(BuildContext context) {
-    final List<String> tabs = [
-      "All ($vehicleCount)",
-      "Idle ($idleCount)",
-      "Parked ($packedCount)",
-      "Moving ($movingCount)",
-      "Offline ($offlineLength)",
-    ];
-
     return Scaffold(
       appBar: AnimatedAppBar(
         firstname: first_name ?? "",
@@ -147,37 +132,6 @@ class _VehiclePageState extends State<VehiclePage> {
             ))
           : Column(
               children: [
-                SizedBox(
-                  height: 45.0,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: tabs.length,
-                    itemBuilder: (context, index) {
-                      return GestureDetector(
-                        onTap: () {
-                          setState(() => _selectedTabIndex = index);
-                        },
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                          child: Chip(
-                            side: BorderSide.none,
-                            backgroundColor: _selectedTabIndex == index
-                                ? Colors.green
-                                : Colors.grey.shade200,
-                            label: Text(
-                              tabs[index],
-                              style: TextStyle(
-                                color: _selectedTabIndex == index
-                                    ? Colors.white
-                                    : Colors.black,
-                              ),
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
                 BlocProvider(
                   create: (_) => sl<DashVehiclesBloc>()
                     ..add(DashVehicleEvent(DashVehicleReqEntity(
@@ -205,95 +159,68 @@ class _VehiclePageState extends State<VehiclePage> {
                             ),
                           );
                         }
-
                         final vehiclesData = state.resp.data ?? [];
-                        final vehicleCounts =
-                            _computeVehicleCounts(vehiclesData);
+                        final vehicleCounts = _computeVehicleCounts(vehiclesData);
 
-                        vehicleCount = vehicleCounts['vehicles'] ?? 0;
-                        idleCount = vehicleCounts['idling'] ?? 0;
-                        packedCount = vehicleCounts['parked'] ?? 0;
-                        offlineLength = vehicleCounts['offline'] ?? 0;
-
-                        WidgetsBinding.instance.addPostFrameCallback((_) {
-                          setState(() {
-                            vehicleCount;
-                            idleCount;
-                            packedCount;
-                            offlineLength;
-                          });
-                        });
-
-                        BlocListener<VehicleLocationBloc, List<VehicleEntity>>(
-                          listener: (context, vehicles) {
-                            // _updateVehicleCounts(vehicles);
-                            setState(() {
-                              vehicles;
-                            });
-                          },
+                        return BlocListener<VehicleLocationBloc,
+                            List<VehicleEntity>>(
+                          listener: (context, vehicles) {},
                           child: BlocBuilder<VehicleLocationBloc,
                               List<VehicleEntity>>(
                             builder: (context, vehicles) {
-                              if (vehicles.isEmpty) {}
+                              if (vehicles.isEmpty) {
+                                return Expanded(
+                                  child: VehicleSubPage(
+                                      onlineCount: vehicleCounts['online'] ?? 0,
+                                      offlineCount: vehicleCounts['offline'] ?? 0,
+                                      idlingCount: vehicleCounts['idling'] ?? 0,
+                                      parkedCount: vehicleCounts['parked'] ?? 0,
+                                      vehiclesData: vehiclesData,
+                                      movingCount: 0,
+                                      token: token!),
+                                );
+                              }
 
-                              final vehicleWebsocketCounts = _computeVehicleSocketCounts(vehicles);
+                              final vehicleWebsocketCounts =
+                                  _computeVehicleSocketCounts(vehicles);
 
-                              // int _idleCount = vehicleWebsocketCounts['idling'] ?? 0;
-                              // int _movingCount = vehicleWebsocketCounts['moving'] ?? 0;
-                              // WidgetsBinding.instance.addPostFrameCallback((_) {
-                              //   setState(() {
-                                  // vehicleCount;
-                                  idleCount = vehicleWebsocketCounts['idling'] ?? 0;
-                                  // packedCount;
-                                  movingCount =  vehicleWebsocketCounts['moving'] ?? 0;
-                              //   });
-                              // });
-
-                              return Container();
+                              return Expanded(
+                                child: VehicleSubPage(
+                                    onlineCount: vehicleWebsocketCounts['online'] ?? 0,
+                                    offlineCount: vehicleCounts['offline'] ?? 0,
+                                    idlingCount: vehicleWebsocketCounts['idling'] ?? 0,
+                                    parkedCount: vehicleCounts['parked'] ?? 0,
+                                    vehiclesData: vehiclesData,
+                                    movingCount: vehicleWebsocketCounts['moving'] ?? 0,
+                                    token: token!),
+                              );
                             },
                           ),
                         );
-
-                        // Pass the data to the relevant page
-                        switch (_selectedTabIndex) {
-                          case 0:
-                            return AllVehiclesPage(
-                              vehicles: state.resp.data!,
-                              token: token,
-                            );
-                          case 1:
-                            return IdleVehiclesPage(
-                              data: state.resp.data!,
-                              token: token,
-                            );
-                          case 2:
-                            return PackedVehiclesPage(
-                              data: state.resp.data!,
-                              token: token,
-                            );
-
-                          case 3:
-                            return MovingVehiclesPage(
-                              vehicles: state.resp.data!,
-                              token: token,
-                            );
-
-                          case 4:
-                            return OfflineVehiclesPage(
-                              data: state.resp.data!,
-                              token: token,
-                            );
-                          default:
-                            return AllVehiclesPage(
-                              vehicles: state.resp.data!,
-                              token: token,
-                            );
-                        }
                       } else {
                         return Center(
-                            child: Text(
-                          'No records found',
-                          style: AppStyle.cardfooter,
+                            child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Text(
+                              'No records found',
+                              style: AppStyle.cardfooter,
+                            ),
+                            const SizedBox(
+                              height: 10.0,
+                            ),
+                            CustomSecondaryButton(
+                                label: 'Refresh',
+                                onPressed: () {
+                                  BlocProvider.of<DashVehiclesBloc>(context)
+                                      .add(DashVehicleEvent(
+                                          DashVehicleReqEntity(
+                                              token: token ?? "",
+                                              contentType:
+                                                  'application/json')));
+                                })
+                          ],
                         ));
                       }
                     },
@@ -315,6 +242,406 @@ class _VehiclePageState extends State<VehiclePage> {
     );
   }
 }
+
+
+//
+//
+// void _updateMarkers(List<LastLocationRespEntity> allVehicles, {required List<VehicleEntity> vehicles}) async {
+//   List<Marker> updatedMarkers = List.from(_markers);
+//
+//   for (var vehicle in vehicles) {
+//     print("vehicle status: ${vehicles[0].locationInfo.vehicleStatus}");
+//     print("tracker status: ${vehicles[0].locationInfo.tracker?.status}");
+//
+//     if ((vehicle.locationInfo.vehicleStatus == "Moving" &&
+//         vehicle.locationInfo.tracker!.status == "online" &&
+//         vehicle.locationInfo.tracker!.position!.latitude != null &&
+//         vehicle.locationInfo.tracker!.position!.longitude != null ||
+//         vehicle.locationInfo.tracker!.status == "Online") ||
+//         (vehicle.locationInfo.vehicleStatus == "Parked" &&
+//             vehicle.locationInfo.tracker!.status == "online" &&
+//             vehicle.locationInfo.tracker!.position!.latitude != null &&
+//             vehicle.locationInfo.tracker!.position!.longitude != null ||
+//             vehicle.locationInfo.tracker!.status == "Online") ||
+//         (vehicle.locationInfo.vehicleStatus == "Idling" &&
+//             vehicle.locationInfo.tracker!.status == "online" &&
+//             vehicle.locationInfo.tracker!.position!.latitude != null &&
+//             vehicle.locationInfo.tracker!.position!.longitude != null ||
+//             vehicle.locationInfo.tracker!.status == "Online")) {
+//       _addGeofencePolygon2(
+//         vehicle.locationInfo.withinGeofence?.coordinates ?? [],
+//       );
+//
+//       final currentPosition = LatLng(
+//         double.parse(vehicle.locationInfo.tracker!.position!.latitude.toString()),
+//         double.parse(vehicle.locationInfo.tracker!.position!.longitude.toString()),
+//       );
+//       final numberPlate = vehicle.locationInfo.numberPlate;
+//
+//       // Retrieve the previous position
+//       final previousPosition = _previousPositions[numberPlate] ?? currentPosition;
+//
+//       // Cache the new position
+//       _previousPositions[numberPlate] = currentPosition;
+//
+//       // Smoothly animate marker movement
+//       _animateMarkerMovement(numberPlate, previousPosition, currentPosition, vehicle);
+//
+//       updatedMarkers.removeWhere((marker) => marker.markerId.value == numberPlate);
+//     }
+//   }
+//
+//   setState(() {
+//     _markers = updatedMarkers;
+//   });
+// }
+//
+
+
+class VehicleSubPage extends StatefulWidget {
+  final int onlineCount, offlineCount, idlingCount, parkedCount, movingCount;
+  final List<DashDatumEntity> vehiclesData;
+  final String token;
+  const VehicleSubPage(
+      {super.key,
+      required this.onlineCount,
+      required this.offlineCount,
+      required this.idlingCount,
+      required this.parkedCount,
+      required this.vehiclesData,
+      required this.movingCount,
+      required this.token});
+
+  @override
+  State<VehicleSubPage> createState() => _VehicleSubPageState();
+}
+
+class _VehicleSubPageState extends State<VehicleSubPage> {
+  int _selectedTabIndex = 0;
+  // bool isLoading = true;
+  // PrefUtils prefUtils = PrefUtils();
+  // String? first_name;
+  // String? last_name;
+  // String? middle_name;
+  // String? email;
+  // String? token;
+  // String? userId;
+  // int vehicleCount = 0;
+  // int movingCount = 0;
+  // int idleCount = 0;
+  // int offlineLength = 0;
+  // int offlineCount = 0;
+  // int packedCount = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    // _initializeData();
+  }
+
+  // _initializeData() async {
+  //   List<String>? authUser = await prefUtils.getStringList('auth_user');
+  //   setState(() {
+  //     if (authUser != null && authUser.isNotEmpty) {
+  //       first_name = authUser[0].isEmpty ? null : authUser[0];
+  //       last_name = authUser[1].isEmpty ? null : authUser[1];
+  //       middle_name = authUser[2].isEmpty ? null : authUser[2];
+  //       email = authUser[3].isEmpty ? null : authUser[3];
+  //       token = authUser[4].isEmpty ? null : authUser[4];
+  //       userId = authUser[5].isEmpty ? null : authUser[5];
+  //     }
+  //     if (token != null && userId != null) {
+  //       sl<DashVehiclesBloc>().add(DashVehicleEvent(DashVehicleReqEntity(
+  //           token: token!, contentType: 'application/json')));
+  //     }
+  //     isLoading = false;
+  //   });
+  // }
+  //
+  // Map<String, int> _computeVehicleCounts(List<DashDatumEntity> vehicles) {
+  //   return {
+  //     'online': vehicles
+  //         .where((v) =>
+  //             v.last_location?.status == "online" ||
+  //             v.last_location?.status == "Online")
+  //         .length,
+  //     'offline': vehicles
+  //         .where((v) =>
+  //             v.last_location?.status == "offline" ||
+  //             v.last_location?.status == "Offline")
+  //         .length,
+  //     'idling': vehicles
+  //         .where((v) =>
+  //             v.last_location?.status == "idling" ||
+  //             v.last_location?.status == "Idling")
+  //         .length,
+  //     'parked': vehicles
+  //         .where((v) =>
+  //             v.last_location?.status == "parked" ||
+  //             v.last_location?.status == "Parked")
+  //         .length,
+  //     'vehicles': vehicles.length
+  //   };
+  // }
+  //
+  // // Helper function to compute counts
+  // Map<String, int> _computeVehicleSocketCounts(List<VehicleEntity> vehicles) {
+  //   return {
+  //     'moving': vehicles
+  //         .where((v) =>
+  //             (v.locationInfo.vehicleStatus == "Moving" ||
+  //                 v.locationInfo.vehicleStatus == "moving") &&
+  //             (v.locationInfo.tracker!.status == "Online" ||
+  //                 v.locationInfo.tracker!.status == "online"))
+  //         .length,
+  //     'offline': vehicles
+  //         .where((v) =>
+  //             v.locationInfo.vehicleStatus == "Offline" ||
+  //             v.locationInfo.vehicleStatus == "offline")
+  //         .length,
+  //     'idling': vehicles
+  //         .where((v) =>
+  //             (v.locationInfo.vehicleStatus == "Idling" ||
+  //                 v.locationInfo.vehicleStatus == "idling") &&
+  //             (v.locationInfo.tracker!.status == "Online" ||
+  //                 v.locationInfo.tracker!.status == "online"))
+  //         .length,
+  //     'parked': vehicles
+  //         .where((v) =>
+  //             (v.locationInfo.vehicleStatus == "Parked" ||
+  //                 v.locationInfo.vehicleStatus == "parked") &&
+  //             (v.locationInfo.tracker!.status == "Online" ||
+  //                 v.locationInfo.tracker!.status == "online"))
+  //         .length,
+  //   };
+  // }
+
+  @override
+  Widget build(BuildContext context) {
+    final List<String> tabs = [
+      "All (${widget.vehiclesData.length})",
+      "Idle (${widget.idlingCount})",
+      "Parked (${widget.parkedCount})",
+      "Moving (${widget.movingCount})",
+      "Offline (${widget.offlineCount})",
+    ];
+
+    return Column(
+        children: [
+          SizedBox(
+            height: 45.0,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: tabs.length,
+              itemBuilder: (context, index) {
+                return GestureDetector(
+                  onTap: () {
+                    setState(() => _selectedTabIndex = index);
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    child: Chip(
+                      side: BorderSide.none,
+                      backgroundColor: _selectedTabIndex == index
+                          ? Colors.green
+                          : Colors.grey.shade200,
+                      label: Text(
+                        tabs[index],
+                        style: TextStyle(
+                          color: _selectedTabIndex == index
+                              ? Colors.white
+                              : Colors.black,
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+
+          // Dynamic Page Display
+          Expanded(
+            child: _buildSelectedPage(),
+          ),
+        ],
+      );
+
+  }
+
+  Widget _buildSelectedPage() {
+    switch (_selectedTabIndex) {
+      case 0:
+        return AllVehiclesPage(
+          vehicles: widget.vehiclesData,
+          token: widget.token,
+        );
+      case 1:
+        return IdleVehiclesPage(
+          data: widget.vehiclesData,
+          token: widget.token,
+        );
+      case 2:
+        return PackedVehiclesPage(
+          data: widget.vehiclesData,
+          token: widget.token,
+        );
+      case 3:
+        return MovingVehiclesPage(
+          vehicles: widget.vehiclesData,
+          token: widget.token,
+        );
+      case 4:
+        return OfflineVehiclesPage(
+          data: widget.vehiclesData,
+          token: widget.token,
+        );
+      default:
+        return AllVehiclesPage(
+          vehicles: widget.vehiclesData,
+          token: widget.token,
+        );
+    }
+  }
+}
+
+// BlocProvider(
+//   create: (_) => sl<DashVehiclesBloc>()
+//     ..add(DashVehicleEvent(DashVehicleReqEntity(
+//         token: token ?? "", contentType: 'application/json'))),
+//   child: BlocConsumer<DashVehiclesBloc, DashboardState>(
+//     builder: (context, state) {
+//       if (state is DashboardLoading) {
+//         return const Center(
+//           child: Padding(
+//             padding: EdgeInsets.only(top: 10.0),
+//             child: CircularProgressIndicator(
+//               strokeWidth: 2.0,
+//               color: Colors.green,
+//             ),
+//           ),
+//         );
+//       } else if (state is DashboardDone) {
+//         // Check if the vehicle data is empty
+//         if (state.resp.data == null ||
+//             state.resp.data!.isEmpty) {
+//           return Center(
+//             child: Text(
+//               'No vehicles available',
+//               style: AppStyle.cardfooter,
+//             ),
+//           );
+//         }
+//
+//         final vehiclesData = state.resp.data ?? [];
+//         final vehicleCounts = _computeVehicleCounts(vehiclesData);
+//
+//         vehicleCount = vehicleCounts['vehicles'] ?? 0;
+//         packedCount = vehicleCounts['parked'] ?? 0;
+//         offlineLength = vehicleCounts['offline'] ?? 0;
+//
+//         WidgetsBinding.instance.addPostFrameCallback((_) {
+//           setState(() {
+//             vehicleCount;
+//             packedCount;
+//             offlineLength;
+//           });
+//         });
+//
+//         BlocListener<VehicleLocationBloc, List<VehicleEntity>>(
+//           listener: (context, vehicles) {
+//             // final vehicleWebsocketCounts = _computeVehicleSocketCounts(vehicles);
+//             // print('idleCount-idleCount1: $idleCount');
+//             // print('movingCount-movingCount2: $movingCount');
+//           },
+//           child: BlocBuilder<VehicleLocationBloc,
+//               List<VehicleEntity>>(
+//             builder: (context, vehicles) {
+//               if (vehicles.isEmpty) {}
+//
+//               final vehicleWebsocketCounts = _computeVehicleSocketCounts(vehicles);
+//
+//               setState(() {
+//                 idleCount = vehicleWebsocketCounts['idling'] ?? 0;
+//                 movingCount = vehicleWebsocketCounts['moving'] ?? 0;
+//               });
+//               print('idleCount-idleCount: $idleCount');
+//               print('movingCount-movingCount: $movingCount');
+//               return Container();
+//             },
+//           ),
+//         );
+//
+//         // Pass the data to the relevant page
+//         switch (_selectedTabIndex) {
+//           case 0:
+//             return AllVehiclesPage(
+//               vehicles: state.resp.data!,
+//               token: token,
+//             );
+//           case 1:
+//             return IdleVehiclesPage(
+//               data: state.resp.data!,
+//               token: token,
+//             );
+//           case 2:
+//             return PackedVehiclesPage(
+//               data: state.resp.data!,
+//               token: token,
+//             );
+//
+//           case 3:
+//             return MovingVehiclesPage(
+//               vehicles: state.resp.data!,
+//               token: token,
+//             );
+//
+//           case 4:
+//             return OfflineVehiclesPage(
+//               data: state.resp.data!,
+//               token: token,
+//             );
+//           default:
+//             return AllVehiclesPage(
+//               vehicles: state.resp.data!,
+//               token: token,
+//             );
+//         }
+//       } else {
+//         return Center(
+//             child: Column(
+//               mainAxisAlignment: MainAxisAlignment.center,
+//               crossAxisAlignment: CrossAxisAlignment.center,
+//               children: [
+//                 Text(
+//                   'No records found',
+//                   style: AppStyle.cardfooter,
+//                 ),
+//                 const SizedBox(height: 10.0,),
+//                 CustomSecondaryButton(
+//                     label: 'Refresh',
+//                     onPressed: () {
+//                       BlocProvider.of<DashVehiclesBloc>(context)
+//                           .add(DashVehicleEvent(DashVehicleReqEntity(
+//                           token: token ?? "", contentType: 'application/json')));
+//                     })
+//               ],
+//             ));
+//       }
+//     },
+//     listener: (context, state) {
+//       if (state is DashboardFailure) {
+//         if (state.message.contains("Unauthenticated")) {
+//           Navigator.pushNamedAndRemoveUntil(
+//               context, "/login", (route) => false);
+//         }
+//         ScaffoldMessenger.of(context).showSnackBar(
+//           SnackBar(content: Text(state.message)),
+//         );
+//       }
+//     },
+//   ),
+// )
 
 class AllVehiclesPage extends StatelessWidget {
   // final List<DatumEntity> vehicles;
@@ -390,6 +717,9 @@ class _MovingVehiclesPageState extends State<MovingVehiclesPage> {
     // );
   }
 }
+
+
+
 
 class OfflineVehiclesPage extends StatelessWidget {
   // final List<DatumEntity> data;
@@ -577,15 +907,14 @@ class VehicleListItem extends StatefulWidget {
 class _VehicleListItemState extends State<VehicleListItem> {
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 10.0),
-      child: Expanded(
-        child: ListView.builder(
-          // shrinkWrap: true,
-          padding: EdgeInsets.zero,
-          itemCount: widget.data.length,
-          itemBuilder: (context, index) {
-            return BlocListener<VehicleLocationBloc, List<VehicleEntity>>(
+    return Expanded(
+      child: ListView.builder(
+        padding: EdgeInsets.zero,
+        itemCount: widget.data.length,
+        itemBuilder: (context, index) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10.0),
+            child: BlocListener<VehicleLocationBloc, List<VehicleEntity>>(
               listener: (context, vehicles) {
                 setState(() {
                   vehicles;
@@ -1077,9 +1406,9 @@ class _VehicleListItemState extends State<VehicleListItem> {
                         );
                 },
               ),
-            );
-          },
-        ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -1105,28 +1434,28 @@ class VehicleUpdateListener extends StatelessWidget {
     // // Calculate itemCount based on which list is non-null and non-empty
     // final itemCount = effectiveDisplayedVehicles?.length ?? 0;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 10.0),
-      child: Expanded(
-        // height: 600,
-        child: ListView.builder(
-          shrinkWrap: true,
-          padding: EdgeInsets.zero,
-          itemCount: vehicles!.length,
-          itemBuilder: (context, index) {
-            // Use `effectiveData` if available, otherwise `effectiveDisplayedVehicles`
-            // final widget.data![index] = effectiveData != null ? effectiveData[index] : null;
-            // final vehicle = effectiveDisplayedVehicles != null
-            //     ? effectiveDisplayedVehicles[index]
-            //     : null;
-            final vehicle = vehicles![index];
+    return Expanded(
+      // height: 600,
+      child: ListView.builder(
+        shrinkWrap: true,
+        padding: EdgeInsets.zero,
+        itemCount: vehicles!.length,
+        itemBuilder: (context, index) {
+          // Use `effectiveData` if available, otherwise `effectiveDisplayedVehicles`
+          // final widget.data![index] = effectiveData != null ? effectiveData[index] : null;
+          // final vehicle = effectiveDisplayedVehicles != null
+          //     ? effectiveDisplayedVehicles[index]
+          //     : null;
+          final vehicle = vehicles![index];
 
-            // Check if we have valid data; if not, skip rendering
-            // if (widget.data![index] == null && vehicle == null) {
-            //   return const SizedBox.shrink();
-            // }
+          // Check if we have valid data; if not, skip rendering
+          // if (widget.data![index] == null && vehicle == null) {
+          //   return const SizedBox.shrink();
+          // }
 
-            return InkWell(
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10.0),
+            child: InkWell(
               onTap: () {
                 Navigator.of(context).push(MaterialPageRoute(
                   builder: (context) => VehicleRouteLastLocationAndUpdate(
@@ -1220,7 +1549,7 @@ class VehicleUpdateListener extends StatelessWidget {
                                     Text(
                                         FormatData.formatTimeAgo(vehicle
                                             .locationInfo.tracker!.lastUpdate!),
-                                        style: TextStyle(fontSize: 14.0)),
+                                        style: const TextStyle(fontSize: 14.0)),
                                   ],
                                 ),
                               ],
@@ -1294,9 +1623,9 @@ class VehicleUpdateListener extends StatelessWidget {
                   ),
                 ],
               ),
-            );
-          },
-        ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -1348,18 +1677,18 @@ class _VehicleIdleItemState extends State<VehicleIdleItem> {
     // final itemCount = effectiveDisplayedVehicles?.length ?? 0;
 
     final itemCount = widget.vehicles.isEmpty ? 0 : widget.vehicles.length;
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 10.0),
-      child: Expanded(
-        // height: 600,
-        child: ListView.builder(
-          shrinkWrap: true, // Prevents ListView from expanding infinitely
-          padding: EdgeInsets.zero,
-          itemCount: itemCount,
-          itemBuilder: (context, index) {
-            final vehicle = effectiveDisplayedVehicles![index];
+    return Expanded(
+      // height: 600,
+      child: ListView.builder(
+        shrinkWrap: true, // Prevents ListView from expanding infinitely
+        padding: EdgeInsets.zero,
+        itemCount: itemCount,
+        itemBuilder: (context, index) {
+          final vehicle = effectiveDisplayedVehicles![index];
 
-            return InkWell(
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10.0),
+            child: InkWell(
               onTap: () {
                 if (vehicle.locationInfo.tracker?.position?.latitude != null) {
                   Navigator.of(context).push(
@@ -1434,9 +1763,9 @@ class _VehicleIdleItemState extends State<VehicleIdleItem> {
                   ),
                 ],
               ),
-            );
-          },
-        ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -1555,18 +1884,17 @@ class _VehicleParkedState extends State<VehicleParked> {
     // final itemCount =
     //     widget.vehicles == null ? widget.data.length : widget.vehicles!.length;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 10.0),
-      child: Expanded(
-        // height: 600,
-        child: ListView.builder(
-          shrinkWrap: true, // Prevents ListView from expanding infinitely
-          padding: EdgeInsets.zero,
-          itemCount: widget.data.length,
-          itemBuilder: (context, index) {
-            final vehicle = widget.data[index]; //displayedVehicles![index];
+    return Expanded(
+      child: ListView.builder(
+        shrinkWrap: true, // Prevents ListView from expanding infinitely
+        padding: EdgeInsets.zero,
+        itemCount: widget.data.length,
+        itemBuilder: (context, index) {
+          final vehicle = widget.data[index]; //displayedVehicles![index];
 
-            return InkWell(
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10.0),
+            child: InkWell(
               onTap: () {
                 if (vehicle.last_location!.latitude != null) {
                   Navigator.of(context).push(
@@ -1638,9 +1966,9 @@ class _VehicleParkedState extends State<VehicleParked> {
                   ),
                 ],
               ),
-            );
-          },
-        ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -1715,412 +2043,6 @@ class _VehicleParkedState extends State<VehicleParked> {
       ],
     );
   }
-
-//   BlocListener<VehicleLocationBloc, List<VehicleEntity>>(
-//   listener: (context, vehicles) {
-//     setState(() {
-//       vehicles;
-//     });
-//   },
-//   child: BlocBuilder<VehicleLocationBloc, List<VehicleEntity>>(
-//     builder: (context, vehicles) {
-//       return vehicles.isEmpty ||
-//               widget.data![index].number_plate !=
-//                   vehicles[0].locationInfo.numberPlate
-//           ? InkWell(
-//               onTap: () {
-//                 widget.data![index].last_location!.latitude != null
-//                     ? Navigator.of(context).push(MaterialPageRoute(
-//                         builder: (context) =>
-//                             VehicleRouteLastLocation(
-//                                 brand: widget.data![index].brand!,
-//                                 model: widget.data![index].model!,
-//                                 vin: widget.data![index].vin!,
-//                                 latitude:
-//                                     // double.tryParse(
-//                                     //     widget.data![index].last_location!.latitude!),
-//                                     widget.data![index].last_location
-//                                                 ?.latitude !=
-//                                             null
-//                                         ? double.tryParse(widget
-//                                             .data![index]
-//                                             .last_location!
-//                                             .latitude!)
-//                                         : 0.000000,
-//                                 longitude:
-//                                     // double.tryParse(widget.data![index].last_location!.longitude!),
-//                                     widget.data![index].last_location
-//                                                 ?.longitude !=
-//                                             null
-//                                         ? double.tryParse(widget
-//                                             .data![index]
-//                                             .last_location!
-//                                             .longitude!)
-//                                         : 0.000000,
-//                                 token: widget.token ?? '',
-//                                 number_plate: widget
-//                                     .data![index].number_plate
-//                                     .toString()
-//                                 // ?? vehicle!.locationInfo.numberPlate,
-//                                 ),
-//                       ))
-//                     : ScaffoldMessenger.of(context).showSnackBar(
-//                         const SnackBar(
-//                             content: Text(
-//                                 'Vehicle coordinate is not found!')),
-//                       );
-//               },
-//               child: Row(
-//                 children: [
-//                   Column(
-//                     mainAxisAlignment: MainAxisAlignment.center,
-//                     children: [
-//                       Text(
-//                         widget.data![index].last_location?.speed
-//                                 ?.toString() ??
-//                             "0.00",
-//                         style: AppStyle.cardTitle,
-//                       ),
-//                       const Text("KM/H",
-//                           style: TextStyle(color: Colors.grey)),
-//                       Icon(
-//                         Icons.local_shipping,
-//                         size: 40.0,
-//                         color: Colors.grey.shade600,
-//                       ),
-//                     ],
-//                   ),
-//                   const SizedBox(width: 10.0),
-//                   Expanded(
-//                     child: Card(
-//                       child: Column(
-//                         crossAxisAlignment: CrossAxisAlignment.start,
-//                         children: [
-//                           Container(
-//                             margin: const EdgeInsets.all(8.0),
-//                             padding: const EdgeInsets.all(8.0),
-//                             color: Colors.white,
-//                             child: Row(
-//                               mainAxisAlignment:
-//                                   MainAxisAlignment.spaceBetween,
-//                               children: [
-//                                 Text(
-//                                   '${widget.data![index].brand} ${widget.data![index].model}',
-//                                   style: AppStyle.cardSubtitle
-//                                       .copyWith(fontSize: 12),
-//                                 ),
-//                                 Column(
-//                                   children: [
-//                                     Text(
-//                                       widget.data![index]
-//                                               .last_location?.status
-//                                               ?.toString() ??
-//                                           "N/A",
-//                                       // widget.data![index]?.last_location!.status ?? vehicle!.locationInfo.tracker!.status ?? "N/A",
-//                                       //widget.data![index].last_location!.status == null ? "" : widget.data![index].last_location!.status!,
-//                                       // widget.data![index]?.last_location?.status ?? "N/A",
-//                                       style: AppStyle.cardfooter,
-//                                     ),
-//                                     Text(
-//                                         FormatData.formatTimeAgo(
-//                                             widget
-//                                                 .data![index]
-//                                                 .last_location!
-//                                                 .updated_at
-//                                                 .toString()),
-//                                         style: AppStyle.cardfooter
-//                                             .copyWith(fontSize: 12)),
-//                                   ],
-//                                 ),
-//                               ],
-//                             ),
-//                           ),
-//                           const SizedBox(height: 5.0),
-//                           Padding(
-//                             padding: const EdgeInsets.symmetric(
-//                                 horizontal: 8.0),
-//                             child: Row(
-//                               mainAxisAlignment:
-//                                   MainAxisAlignment.spaceBetween,
-//                               children: [
-//                                 Row(
-//                                   children: [
-//                                     Column(
-//                                       children: [
-//                                         const Icon(Icons.gps_fixed,
-//                                             color: Colors.green),
-//                                         Text(
-//                                             widget
-//                                                 .data![index]
-//                                                 .last_location!
-//                                                 .gps_positioned
-//                                                 .toString(),
-//                                             style: AppStyle.cardfooter
-//                                                 .copyWith(
-//                                                     fontSize: 10)),
-//                                       ],
-//                                     ),
-//                                     const SizedBox(width: 15),
-//                                     Column(
-//                                       children: [
-//                                         const Icon(Icons.wifi,
-//                                             color: Colors.green),
-//                                         Text(
-//                                             widget
-//                                                 .data![index]
-//                                                 .last_location!
-//                                                 .gsm_signal_strength
-//                                                 .toString(),
-//                                             style: AppStyle.cardfooter
-//                                                 .copyWith(
-//                                                     fontSize: 10)),
-//                                       ],
-//                                     ),
-//                                     const SizedBox(width: 15),
-//                                     Column(
-//                                       children: [
-//                                         const Icon(Icons.power,
-//                                             color: Colors.green),
-//                                         Text("OFF",
-//                                             style: AppStyle.cardfooter
-//                                                 .copyWith(
-//                                                     fontSize: 10)),
-//                                       ],
-//                                     ),
-//                                   ],
-//                                 ),
-//                                 Column(
-//                                   children: [
-//                                     Text("Expires On",
-//                                         style: AppStyle.cardfooter),
-//                                     Chip(
-//                                       backgroundColor:
-//                                           Colors.green.shade200,
-//                                       label: Text("Unlimited",
-//                                           style: AppStyle.cardfooter
-//                                               .copyWith(
-//                                                   fontSize: 11)),
-//                                     ),
-//                                   ],
-//                                 ),
-//                               ],
-//                             ),
-//                           ),
-//                         ],
-//                       ),
-//                     ),
-//                   ),
-//                 ],
-//               ),
-//             )
-//           : vehicles[0].locationInfo.vehicleStatus == "moving"
-//               ? Container()
-//               : InkWell(
-//                   onTap: () {
-//                     Navigator.of(context).push(MaterialPageRoute(
-//                       builder: (context) => VehicleRouteLastLocation(
-//                           brand: vehicles[0].locationInfo.brand,
-//                           model: vehicles[0].locationInfo.model,
-//                           // widget.data![index].model!,
-//                           vin: vehicles[0]
-//                               .locationInfo
-//                               .vin, //widget.data![index].vin!,
-//                           latitude: vehicles[0]
-//                                   .locationInfo
-//                                   .tracker
-//                                   ?.position
-//                                   ?.latitude ??
-//                               0.000000,
-//                           longitude: vehicles[0]
-//                                   .locationInfo
-//                                   .tracker
-//                                   ?.position
-//                                   ?.longitude ??
-//                               0.0000000,
-//                           token: widget.token ?? '',
-//                           number_plate: vehicles[0]
-//                               .locationInfo
-//                               .numberPlate
-//                               .toString()
-//                           // ?? vehicle!.locationInfo.numberPlate,
-//                           ),
-//                     ));
-//                   },
-//                   child: Row(
-//                     children: [
-//                       Column(
-//                         mainAxisAlignment: MainAxisAlignment.center,
-//                         children: [
-//                           Text(
-//                             vehicles[0]
-//                                         .locationInfo
-//                                         .tracker
-//                                         ?.position
-//                                         ?.speed !=
-//                                     null
-//                                 ? vehicles[0]
-//                                     .locationInfo
-//                                     .tracker!
-//                                     .position!
-//                                     .speed
-//                                     .toString()
-//                                 : widget.data![index].last_location
-//                                         ?.speed
-//                                         ?.toString() ??
-//                                     "0.00",
-//                             style: AppStyle.cardTitle,
-//                           ),
-//                           const Text("KM/H",
-//                               style: TextStyle(color: Colors.grey)),
-//                           Icon(
-//                             Icons.local_shipping,
-//                             size: 40.0,
-//                             color: Colors.grey.shade600,
-//                           ),
-//                         ],
-//                       ),
-//                       const SizedBox(width: 10.0),
-//                       Expanded(
-//                         child: Card(
-//                           child: Column(
-//                             crossAxisAlignment:
-//                                 CrossAxisAlignment.start,
-//                             children: [
-//                               Container(
-//                                 margin: const EdgeInsets.all(8.0),
-//                                 padding: const EdgeInsets.all(8.0),
-//                                 color: Colors.white,
-//                                 child: Row(
-//                                   mainAxisAlignment:
-//                                       MainAxisAlignment.spaceBetween,
-//                                   children: [
-//                                     Text(
-//                                       '${vehicles[0].locationInfo.brand} ${vehicles[0].locationInfo.model}',
-//                                       style: AppStyle.cardSubtitle
-//                                           .copyWith(fontSize: 12),
-//                                     ),
-//                                     Column(
-//                                       children: [
-//                                         Text(
-//                                           vehicles[0]
-//                                                       .locationInfo
-//                                                       .tracker
-//                                                       ?.status !=
-//                                                   null
-//                                               ? vehicles[0]
-//                                                   .locationInfo
-//                                                   .tracker!
-//                                                   .status
-//                                                   .toString()
-//                                               : "N/A",
-//                                           // widget.data![index]?.last_location!.status ?? vehicle!.locationInfo.tracker!.status ?? "N/A",
-//                                           //widget.data![index].last_location!.status == null ? "" : widget.data![index].last_location!.status!,
-//                                           // widget.data![index]?.last_location?.status ?? "N/A",
-//                                           style: AppStyle.cardfooter,
-//                                         ),
-//                                         Text(
-//                                             FormatData.formatTimeAgo(
-//                                                 vehicles[0]
-//                                                     .locationInfo
-//                                                     .updatedAt),
-//                                             style:
-//                                                 AppStyle.cardfooter),
-//                                       ],
-//                                     ),
-//                                   ],
-//                                 ),
-//                               ),
-//                               const SizedBox(height: 5.0),
-//                               Padding(
-//                                 padding: const EdgeInsets.symmetric(
-//                                     horizontal: 8.0),
-//                                 child: Row(
-//                                   mainAxisAlignment:
-//                                       MainAxisAlignment.spaceBetween,
-//                                   children: [
-//                                     Row(
-//                                       children: [
-//                                         Column(
-//                                           children: [
-//                                             const Icon(
-//                                                 Icons.gps_fixed,
-//                                                 color: Colors.green),
-//                                             Text("true",
-//                                                 style: AppStyle
-//                                                     .cardfooter
-//                                                     .copyWith(
-//                                                         fontSize:
-//                                                             10)),
-//                                           ],
-//                                         ),
-//                                         const SizedBox(width: 15),
-//                                         Column(
-//                                           children: [
-//                                             const Icon(Icons.wifi,
-//                                                 color: Colors.green),
-//                                             Text(
-//                                                 vehicles[0]
-//                                                     .locationInfo
-//                                                     .tracker!
-//                                                     .position!
-//                                                     .gsmRssi
-//                                                     .toString(),
-//                                                 style: AppStyle
-//                                                     .cardfooter
-//                                                     .copyWith(
-//                                                         fontSize:
-//                                                             10)),
-//                                           ],
-//                                         ),
-//                                         const SizedBox(width: 15),
-//                                         Column(
-//                                           children: [
-//                                             const Icon(Icons.power,
-//                                                 color: Colors.green),
-//                                             Text(
-//                                                 vehicles[0]
-//                                                     .locationInfo
-//                                                     .tracker!
-//                                                     .position!
-//                                                     .ignition,
-//                                                 style: AppStyle
-//                                                     .cardfooter
-//                                                     .copyWith(
-//                                                         fontSize:
-//                                                             10)),
-//                                           ],
-//                                         ),
-//                                       ],
-//                                     ),
-//                                     Column(
-//                                       children: [
-//                                         Text("Expires On",
-//                                             style:
-//                                                 AppStyle.cardfooter),
-//                                         Chip(
-//                                           backgroundColor:
-//                                               Colors.green.shade200,
-//                                           label: Text("Unlimited",
-//                                               style: AppStyle
-//                                                   .cardfooter
-//                                                   .copyWith(
-//                                                       fontSize: 11)),
-//                                         ),
-//                                       ],
-//                                     ),
-//                                   ],
-//                                 ),
-//                               ),
-//                             ],
-//                           ),
-//                         ),
-//                       ),
-//                     ],
-//                   ),
-//                 );
-//     },
-//   ),
-// );
 }
 
 class VehicleOffline extends StatefulWidget {
@@ -2159,19 +2081,19 @@ class _VehicleOfflineState extends State<VehicleOffline> {
     //     ? widget.data.length
     //     : widget.data.length;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 10.0),
-      child: Expanded(
-        // height: 600,
-        child: ListView.builder(
-          shrinkWrap: true, // Prevents ListView from expanding infinitely
-          padding: EdgeInsets.zero,
-          itemCount: widget.data.length,
-          itemBuilder: (context, index) {
-            // final vehicle = effectiveDisplayedVehicles![index];
-            final vehicle = widget.data[index]; //displayedVehicles![index];
+    return Expanded(
+      // height: 600,
+      child: ListView.builder(
+        shrinkWrap: true, // Prevents ListView from expanding infinitely
+        padding: EdgeInsets.zero,
+        itemCount: widget.data.length,
+        itemBuilder: (context, index) {
+          // final vehicle = effectiveDisplayedVehicles![index];
+          final vehicle = widget.data[index]; //displayedVehicles![index];
 
-            return InkWell(
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10.0),
+            child: InkWell(
               onTap: () {
                 if (vehicle.last_location!.latitude != null) {
                   Navigator.of(context).push(
@@ -2240,9 +2162,9 @@ class _VehicleOfflineState extends State<VehicleOffline> {
                   ),
                 ],
               ),
-            );
-          },
-        ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -2724,1369 +2646,16 @@ class _VehicleOfflineState extends State<VehicleOffline> {
 // );
 }
 
-//   BlocListener<VehicleLocationBloc, List<VehicleEntity>>(
-//   listener: (context, vehicles) {
-//     setState(() {
-//       vehicles;
-//     });
-//   },
-//   child: BlocBuilder<VehicleLocationBloc, List<VehicleEntity>>(
-//     builder: (context, vehicles) {
-//       return vehicles.isEmpty ||
-//               widget.data![index].number_plate !=
-//                   vehicles[0].locationInfo.numberPlate
-//           ? InkWell(
-//               onTap: () {
-//                 widget.data![index].last_location!.latitude != null
-//                     ? Navigator.of(context).push(MaterialPageRoute(
-//                         builder: (context) =>
-//                             VehicleRouteLastLocation(
-//                                 brand: widget.data![index].brand!,
-//                                 model: widget.data![index].model!,
-//                                 vin: widget.data![index].vin!,
-//                                 latitude:
-//                                     // double.tryParse(
-//                                     //     widget.data![index].last_location!.latitude!),
-//                                     widget.data![index].last_location
-//                                                 ?.latitude !=
-//                                             null
-//                                         ? double.tryParse(widget
-//                                             .data![index]
-//                                             .last_location!
-//                                             .latitude!)
-//                                         : 0.000000,
-//                                 longitude:
-//                                     // double.tryParse(widget.data![index].last_location!.longitude!),
-//                                     widget.data![index].last_location
-//                                                 ?.longitude !=
-//                                             null
-//                                         ? double.tryParse(widget
-//                                             .data![index]
-//                                             .last_location!
-//                                             .longitude!)
-//                                         : 0.000000,
-//                                 token: widget.token ?? '',
-//                                 number_plate: widget
-//                                     .data![index].number_plate
-//                                     .toString()
-//                                 // ?? vehicle!.locationInfo.numberPlate,
-//                                 ),
-//                       ))
-//                     : ScaffoldMessenger.of(context).showSnackBar(
-//                         const SnackBar(
-//                             content: Text(
-//                                 'Vehicle coordinate is not found!')),
-//                       );
-//               },
-//               child: Row(
-//                 children: [
-//                   Column(
-//                     mainAxisAlignment: MainAxisAlignment.center,
-//                     children: [
-//                       Text(
-//                         widget.data![index].last_location?.speed
-//                                 ?.toString() ??
-//                             "0.00",
-//                         style: AppStyle.cardTitle,
-//                       ),
-//                       const Text("KM/H",
-//                           style: TextStyle(color: Colors.grey)),
-//                       Icon(
-//                         Icons.local_shipping,
-//                         size: 40.0,
-//                         color: Colors.grey.shade600,
-//                       ),
-//                     ],
-//                   ),
-//                   const SizedBox(width: 10.0),
-//                   Expanded(
-//                     child: Card(
-//                       child: Column(
-//                         crossAxisAlignment: CrossAxisAlignment.start,
-//                         children: [
-//                           Container(
-//                             margin: const EdgeInsets.all(8.0),
-//                             padding: const EdgeInsets.all(8.0),
-//                             color: Colors.white,
-//                             child: Row(
-//                               mainAxisAlignment:
-//                                   MainAxisAlignment.spaceBetween,
-//                               children: [
-//                                 Text(
-//                                   '${widget.data![index].brand} ${widget.data![index].model}',
-//                                   style: AppStyle.cardSubtitle
-//                                       .copyWith(fontSize: 12),
-//                                 ),
-//                                 Column(
-//                                   children: [
-//                                     Text(
-//                                       widget.data![index]
-//                                               .last_location?.status
-//                                               ?.toString() ??
-//                                           "N/A",
-//                                       // widget.data![index]?.last_location!.status ?? vehicle!.locationInfo.tracker!.status ?? "N/A",
-//                                       //widget.data![index].last_location!.status == null ? "" : widget.data![index].last_location!.status!,
-//                                       // widget.data![index]?.last_location?.status ?? "N/A",
-//                                       style: AppStyle.cardfooter,
-//                                     ),
-//                                     Text(
-//                                         FormatData.formatTimeAgo(
-//                                             widget
-//                                                 .data![index]
-//                                                 .last_location!
-//                                                 .updated_at
-//                                                 .toString()),
-//                                         style: AppStyle.cardfooter
-//                                             .copyWith(fontSize: 12)),
-//                                   ],
-//                                 ),
-//                               ],
-//                             ),
-//                           ),
-//                           const SizedBox(height: 5.0),
-//                           Padding(
-//                             padding: const EdgeInsets.symmetric(
-//                                 horizontal: 8.0),
-//                             child: Row(
-//                               mainAxisAlignment:
-//                                   MainAxisAlignment.spaceBetween,
-//                               children: [
-//                                 Row(
-//                                   children: [
-//                                     Column(
-//                                       children: [
-//                                         const Icon(Icons.gps_fixed,
-//                                             color: Colors.green),
-//                                         Text(
-//                                             widget
-//                                                 .data![index]
-//                                                 .last_location!
-//                                                 .gps_positioned
-//                                                 .toString(),
-//                                             style: AppStyle.cardfooter
-//                                                 .copyWith(
-//                                                     fontSize: 10)),
-//                                       ],
-//                                     ),
-//                                     const SizedBox(width: 15),
-//                                     Column(
-//                                       children: [
-//                                         const Icon(Icons.wifi,
-//                                             color: Colors.green),
-//                                         Text(
-//                                             widget
-//                                                 .data![index]
-//                                                 .last_location!
-//                                                 .gsm_signal_strength
-//                                                 .toString(),
-//                                             style: AppStyle.cardfooter
-//                                                 .copyWith(
-//                                                     fontSize: 10)),
-//                                       ],
-//                                     ),
-//                                     const SizedBox(width: 15),
-//                                     Column(
-//                                       children: [
-//                                         const Icon(Icons.power,
-//                                             color: Colors.green),
-//                                         Text("OFF",
-//                                             style: AppStyle.cardfooter
-//                                                 .copyWith(
-//                                                     fontSize: 10)),
-//                                       ],
-//                                     ),
-//                                   ],
-//                                 ),
-//                                 Column(
-//                                   children: [
-//                                     Text("Expires On",
-//                                         style: AppStyle.cardfooter),
-//                                     Chip(
-//                                       backgroundColor:
-//                                           Colors.green.shade200,
-//                                       label: Text("Unlimited",
-//                                           style: AppStyle.cardfooter
-//                                               .copyWith(
-//                                                   fontSize: 11)),
-//                                     ),
-//                                   ],
-//                                 ),
-//                               ],
-//                             ),
-//                           ),
-//                         ],
-//                       ),
-//                     ),
-//                   ),
-//                 ],
-//               ),
-//             )
-//           : vehicles[0].locationInfo.vehicleStatus == "moving"
-//               ? Container()
-//               : InkWell(
-//                   onTap: () {
-//                     Navigator.of(context).push(MaterialPageRoute(
-//                       builder: (context) => VehicleRouteLastLocation(
-//                           brand: vehicles[0].locationInfo.brand,
-//                           model: vehicles[0].locationInfo.model,
-//                           // widget.data![index].model!,
-//                           vin: vehicles[0]
-//                               .locationInfo
-//                               .vin, //widget.data![index].vin!,
-//                           latitude: vehicles[0]
-//                                   .locationInfo
-//                                   .tracker
-//                                   ?.position
-//                                   ?.latitude ??
-//                               0.000000,
-//                           longitude: vehicles[0]
-//                                   .locationInfo
-//                                   .tracker
-//                                   ?.position
-//                                   ?.longitude ??
-//                               0.0000000,
-//                           token: widget.token ?? '',
-//                           number_plate: vehicles[0]
-//                               .locationInfo
-//                               .numberPlate
-//                               .toString()
-//                           // ?? vehicle!.locationInfo.numberPlate,
-//                           ),
-//                     ));
-//                   },
-//                   child: Row(
-//                     children: [
-//                       Column(
-//                         mainAxisAlignment: MainAxisAlignment.center,
-//                         children: [
-//                           Text(
-//                             vehicles[0]
-//                                         .locationInfo
-//                                         .tracker
-//                                         ?.position
-//                                         ?.speed !=
-//                                     null
-//                                 ? vehicles[0]
-//                                     .locationInfo
-//                                     .tracker!
-//                                     .position!
-//                                     .speed
-//                                     .toString()
-//                                 : widget.data![index].last_location
-//                                         ?.speed
-//                                         ?.toString() ??
-//                                     "0.00",
-//                             style: AppStyle.cardTitle,
-//                           ),
-//                           const Text("KM/H",
-//                               style: TextStyle(color: Colors.grey)),
-//                           Icon(
-//                             Icons.local_shipping,
-//                             size: 40.0,
-//                             color: Colors.grey.shade600,
-//                           ),
-//                         ],
-//                       ),
-//                       const SizedBox(width: 10.0),
-//                       Expanded(
-//                         child: Card(
-//                           child: Column(
-//                             crossAxisAlignment:
-//                                 CrossAxisAlignment.start,
-//                             children: [
-//                               Container(
-//                                 margin: const EdgeInsets.all(8.0),
-//                                 padding: const EdgeInsets.all(8.0),
-//                                 color: Colors.white,
-//                                 child: Row(
-//                                   mainAxisAlignment:
-//                                       MainAxisAlignment.spaceBetween,
-//                                   children: [
-//                                     Text(
-//                                       '${vehicles[0].locationInfo.brand} ${vehicles[0].locationInfo.model}',
-//                                       style: AppStyle.cardSubtitle
-//                                           .copyWith(fontSize: 12),
-//                                     ),
-//                                     Column(
-//                                       children: [
-//                                         Text(
-//                                           vehicles[0]
-//                                                       .locationInfo
-//                                                       .tracker
-//                                                       ?.status !=
-//                                                   null
-//                                               ? vehicles[0]
-//                                                   .locationInfo
-//                                                   .tracker!
-//                                                   .status
-//                                                   .toString()
-//                                               : "N/A",
-//                                           // widget.data![index]?.last_location!.status ?? vehicle!.locationInfo.tracker!.status ?? "N/A",
-//                                           //widget.data![index].last_location!.status == null ? "" : widget.data![index].last_location!.status!,
-//                                           // widget.data![index]?.last_location?.status ?? "N/A",
-//                                           style: AppStyle.cardfooter,
-//                                         ),
-//                                         Text(
-//                                             FormatData.formatTimeAgo(
-//                                                 vehicles[0]
-//                                                     .locationInfo
-//                                                     .updatedAt),
-//                                             style:
-//                                                 AppStyle.cardfooter),
-//                                       ],
-//                                     ),
-//                                   ],
-//                                 ),
-//                               ),
-//                               const SizedBox(height: 5.0),
-//                               Padding(
-//                                 padding: const EdgeInsets.symmetric(
-//                                     horizontal: 8.0),
-//                                 child: Row(
-//                                   mainAxisAlignment:
-//                                       MainAxisAlignment.spaceBetween,
-//                                   children: [
-//                                     Row(
-//                                       children: [
-//                                         Column(
-//                                           children: [
-//                                             const Icon(
-//                                                 Icons.gps_fixed,
-//                                                 color: Colors.green),
-//                                             Text("true",
-//                                                 style: AppStyle
-//                                                     .cardfooter
-//                                                     .copyWith(
-//                                                         fontSize:
-//                                                             10)),
-//                                           ],
-//                                         ),
-//                                         const SizedBox(width: 15),
-//                                         Column(
-//                                           children: [
-//                                             const Icon(Icons.wifi,
-//                                                 color: Colors.green),
-//                                             Text(
-//                                                 vehicles[0]
-//                                                     .locationInfo
-//                                                     .tracker!
-//                                                     .position!
-//                                                     .gsmRssi
-//                                                     .toString(),
-//                                                 style: AppStyle
-//                                                     .cardfooter
-//                                                     .copyWith(
-//                                                         fontSize:
-//                                                             10)),
-//                                           ],
-//                                         ),
-//                                         const SizedBox(width: 15),
-//                                         Column(
-//                                           children: [
-//                                             const Icon(Icons.power,
-//                                                 color: Colors.green),
-//                                             Text(
-//                                                 vehicles[0]
-//                                                     .locationInfo
-//                                                     .tracker!
-//                                                     .position!
-//                                                     .ignition,
-//                                                 style: AppStyle
-//                                                     .cardfooter
-//                                                     .copyWith(
-//                                                         fontSize:
-//                                                             10)),
-//                                           ],
-//                                         ),
-//                                       ],
-//                                     ),
-//                                     Column(
-//                                       children: [
-//                                         Text("Expires On",
-//                                             style:
-//                                                 AppStyle.cardfooter),
-//                                         Chip(
-//                                           backgroundColor:
-//                                               Colors.green.shade200,
-//                                           label: Text("Unlimited",
-//                                               style: AppStyle
-//                                                   .cardfooter
-//                                                   .copyWith(
-//                                                       fontSize: 11)),
-//                                         ),
-//                                       ],
-//                                     ),
-//                                   ],
-//                                 ),
-//                               ),
-//                             ],
-//                           ),
-//                         ),
-//                       ),
-//                     ],
-//                   ),
-//                 );
-//     },
-//   ),
-// );
-
-///----idle-----
-// class VehicleIdleItem extends StatefulWidget {
-//   final List<DatumEntity>? data;
-//   final String? token;
-//   final List<VehicleEntity> vehicles;
 //
-//   const VehicleIdleItem({
-//     super.key,
-//     this.data,
-//     this.token,
-//     required this.vehicles,
-//     /*this.displayedVehicles*/
-//   });
+// class VehicleSubPage extends StatefulWidget {
+//   final int onlineCount, offlineCount, idlingCount, parkedCount;
+//   const VehicleSubPage({super.key, required this.onlineCount, required this.offlineCount, required this.idlingCount, required this.parkedCount});
 //
 //   @override
-//   State<VehicleIdleItem> createState() => _VehicleIdleItemState();
+//   State<VehicleSubPage> createState() => _VehicleSubPageState();
 // }
 //
-// class _VehicleIdleItemState extends State<VehicleIdleItem> {
-//   late List<DatumEntity> filteredVehicles;
-//   late List<VehicleEntity> filteredIdleVehicles;
-//
-//   @override
-//   void initState() {
-//     super.initState();
-//     _filterVehicles();
-//   }
-//
-//   void _filterVehicles() {
-//     setState(() {
-//       filteredVehicles = widget.data!.where((vehicle) {
-//         return vehicle.last_location?.status?.toLowerCase() != "moving";
-//       }).toList();
-//     });
-//   }
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     final itemCount = widget.vehicles.isEmpty ? 0 : widget.vehicles.length;
-//     return Padding(
-//       padding: const EdgeInsets.symmetric(horizontal: 10.0),
-//       child: ListView.builder(
-//         shrinkWrap: true, // Prevents ListView from expanding infinitely
-//         padding: EdgeInsets.zero,
-//         itemCount: filteredVehicles.length - itemCount,
-//         itemBuilder: (context, index) {
-//           final vehicle = filteredVehicles[index];
-//
-//           return InkWell(
-//             onTap: () {
-//               if (vehicle.last_location?.latitude != null) {
-//                 Navigator.of(context).push(
-//                   MaterialPageRoute(
-//                     builder: (context) => VehicleRouteLastLocation(
-//                       brand: vehicle.brand ?? '',
-//                       model: vehicle.model ?? '',
-//                       vin: vehicle.vin ?? '',
-//                       latitude: double.tryParse(
-//                           vehicle.last_location?.latitude ?? '') ??
-//                           0.0,
-//                       longitude: double.tryParse(
-//                           vehicle.last_location?.longitude ?? '') ??
-//                           0.0,
-//                       token: widget.token ?? '',
-//                       number_plate: vehicle.number_plate ?? '',
-//                       name: widget.data![index].driver!.name!,
-//                       email: widget.data![index].driver!.email!,
-//                       phone: widget.data![index].driver!.phone!,
-//                     ),
-//                   ),
-//                 );
-//               } else {
-//                 ScaffoldMessenger.of(context).showSnackBar(
-//                   const SnackBar(
-//                     content: Text('Vehicle coordinate is not found!'),
-//                   ),
-//                 );
-//               }
-//             },
-//             child: Row(
-//               children: [
-//                 Column(
-//                   mainAxisAlignment: MainAxisAlignment.center,
-//                   children: [
-//                     Text(
-//                       vehicle.last_location?.speed?.toString() ?? "0.00",
-//                       style: AppStyle.cardTitle,
-//                     ),
-//                     const Text("KM/H", style: TextStyle(color: Colors.grey)),
-//                     Icon(Icons.local_shipping,
-//                         size: 40.0, color: Colors.grey.shade600),
-//                   ],
-//                 ),
-//                 const SizedBox(width: 10.0),
-//                 Expanded(
-//                   child: Card(
-//                     child: _buildVehicleDetails(vehicle),
-//                   ),
-//                 ),
-//               ],
-//             ),
-//           );
-//         },
-//       ),
-//     );
-//   }
-
-///-----
-// class VehiclePage extends StatefulWidget {
-//   const VehiclePage({super.key});
-//
-//   @override
-//   State<VehiclePage> createState() => _VehiclePageState();
-// }
-//
-// class _VehiclePageState extends State<VehiclePage> {
-//   int _selectedTabIndex = 0;
-//   bool isLoading = true;
-//   PrefUtils prefUtils = PrefUtils();
-//   String? first_name;
-//   String? last_name;
-//   String? middle_name;
-//   String? email;
-//   String? token;
-//   String? userId;
-//   int movingCount = 0;
-//   int idleCount = 0;
-//   int stoppedCount = 0;
-//   int offlineCount = 0;
-//   @override
-//   void initState() {
-//     super.initState();
-//     _initializeData();
-//   }
-//
-//   _initializeData() async {
-//     List<String>? authUser = await prefUtils.getStringList('auth_user');
-//     setState(() {
-//       if (authUser != null && authUser.isNotEmpty) {
-//         first_name = authUser[0].isEmpty ? null : authUser[0];
-//         last_name = authUser[1].isEmpty ? null : authUser[1];
-//         middle_name = authUser[2].isEmpty ? null : authUser[2];
-//         email = authUser[3].isEmpty ? null : authUser[3];
-//         token = authUser[4].isEmpty ? null : authUser[4];
-//         userId = authUser[5].isEmpty
-//             ? null
-//             : authUser[5]; // assuming userId is at index 5
-//       }
-//       if (token != null && userId != null) {
-//         // Check if PusherService is already registered
-//         if (!sl.isRegistered<PusherService>()) {
-//           print("not registered anywhere");
-//           sl.registerSingleton<PusherService>(PusherService(token!, userId!));
-//           // sl.registerFactory<PusherService>(() => PusherService(token!, userId!));
-//           // Retrieve the PusherService and initialize only if it hasn’t been already
-//           final pusherService = sl<PusherService>();
-//           pusherService.initializePusher();
-//         }
-//
-//         // Trigger the event for the VehiclesBloc with token information
-//         sl<VehiclesBloc>().add(GetVehicleEvent(
-//             VehicleReqEntity(token: token!, contentType: 'application/json')));
-//         // BlocProvider.of<RouteHistoryBloc>(context)
-//         //     .add(RouteHistoryEvent(routeHistoryReqEntity));
-//       }
-//       // if (token != null && userId != null) {
-//       //   // sl.unregister<PusherService>();
-//       //   // Register PusherService dynamically in GetIt
-//       //   // sl.registerFactory<PusherService>(() => PusherService(token!, userId!));
-//       //   if (!GetIt.instance.isRegistered<PusherService>()) {
-//       //     GetIt.instance.registerLazySingleton<PusherService>(() => PusherService(token!, userId!));
-//       //     // Initialize PusherService through BLoC
-//       //     final pusherService = sl<PusherService>();
-//       //     pusherService.initializePusher(); // Connect and listen to channels
-//       //
-//       //   }
-//       //
-//       //
-//       //   // Add any additional events here if necessary
-//       //   sl<VehiclesBloc>().add(GetVehicleEvent(
-//       //       VehicleReqEntity(token: token!, contentType: 'application/json')));
-//       // }
-//
-//       isLoading = false;
-//     });
-//   }
-//
-//   List<VehicleEntity> _filterVehicles(List<VehicleEntity> vehicles) {
-//     switch (_selectedTabIndex) {
-//       case 1:
-//         return vehicles
-//             .where((v) => v.locationInfo.vehicleStatus == "Moving")
-//             .toList();
-//       // case 1:
-//       //   return vehicles
-//       //       .where((v) => v.locationInfo.tracker.status == "online")
-//       //       .toList();
-//       // case 2:
-//       //   return vehicles
-//       //       .where((v) => v.locationInfo.vehicleStatus == "Offline")
-//       //       .toList();
-//       case 2:
-//         return vehicles
-//             .where((v) => v.locationInfo.vehicleStatus == "Stopped")
-//             .toList();
-//       case 3:
-//         return vehicles
-//             .where((v) => v.locationInfo.vehicleStatus == "Idle")
-//             .toList();
-//       default:
-//         return vehicles;
-//     }
-//   }
-//
-//   void _updateVehicleCounts(List<VehicleEntity> vehicles) {
-//     // Calculate vehicle counts by status
-//     movingCount = vehicles
-//         .where((vehicle) => vehicle.locationInfo.vehicleStatus == 'Moving')
-//         .length;
-//     // offlineCount = vehicles
-//     //     .where((vehicle) => vehicle.locationInfo.vehicleStatus == 'Offline')
-//     //     .length;
-//     stoppedCount = vehicles
-//         .where((vehicle) => vehicle.locationInfo.vehicleStatus == 'Stopped')
-//         .length;
-//     idleCount = vehicles
-//         .where((vehicle) => vehicle.locationInfo.vehicleStatus == 'Idle')
-//         .length;
-//   }
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     final List<String> tabs = [
-//       "All",
-//       "Moving ($movingCount)",
-//       "Stopped ($stoppedCount)",
-//       "Idle ($idleCount)",
-//     ];
-//
-//     return Scaffold(
-//       appBar: AnimatedAppBar(
-//         firstname: first_name ?? "",
-//       ),
-//       // appBar(firstname: first_name ?? "", context),
-//       body: isLoading
-//           ? const Center(child: CircularProgressIndicator())
-//           : Column(
-//               children: [
-//                 // Top Tabs
-//                 SizedBox(
-//                   height: 45.0,
-//                   child: ListView.builder(
-//                     scrollDirection: Axis.horizontal,
-//                     itemCount: tabs.length,
-//                     itemBuilder: (context, index) {
-//                       return GestureDetector(
-//                         onTap: () {
-//                           setState(() => _selectedTabIndex = index);
-//                         },
-//                         child: Padding(
-//                           padding: const EdgeInsets.symmetric(horizontal: 8.0),
-//                           child: Chip(
-//                             side: BorderSide.none,
-//                             backgroundColor: _selectedTabIndex == index
-//                                 ? Colors.green
-//                                 : Colors.grey.shade200,
-//                             label: Text(
-//                               tabs[index],
-//                               style: TextStyle(
-//                                 color: _selectedTabIndex == index
-//                                     ? Colors.white
-//                                     : Colors.black,
-//                               ),
-//                             ),
-//                           ),
-//                         ),
-//                       );
-//                     },
-//                   ),
-//                 ),
-//                 // Listen for state changes and update counts
-//                 BlocListener<VehicleLocationBloc, List<VehicleEntity>>(
-//                   listener: (context, vehicles) {
-//                     _updateVehicleCounts(vehicles);
-//                     setState(() {
-//                       vehicles;
-//                     }); // Trigger rebuild to update counts in tabs
-//                   },
-//                   child: BlocBuilder<VehicleLocationBloc, List<VehicleEntity>>(
-//                     builder: (context, vehicles) {
-//                       if (vehicles.isEmpty) {
-//                         //return const Center(child: Text("waiting for update"));
-//                         return VehicleListItem(token: token);
-//                       }
-//
-//                       // Select the appropriate vehicle list based on the selected tab
-//                       List<VehicleEntity> displayedVehicles;
-//                       switch (_selectedTabIndex) {
-//                         case 1:
-//                           displayedVehicles = vehicles
-//                               .where((vehicle) =>
-//                                   vehicle.locationInfo.vehicleStatus ==
-//                                   'Moving')
-//                               .toList();
-//                           break;
-//                         // case 2:
-//                         //   displayedVehicles = vehicles
-//                         //       .where((vehicle) =>
-//                         //           vehicle.locationInfo.vehicleStatus ==
-//                         //           'offline')
-//                         //       .toList();
-//                         //   break;
-//                         case 3:
-//                           displayedVehicles = vehicles
-//                               .where((vehicle) =>
-//                                   vehicle.locationInfo.vehicleStatus ==
-//                                   'Stopped')
-//                               .toList();
-//                           break;
-//                         case 3:
-//                           displayedVehicles = vehicles
-//                               .where((vehicle) =>
-//                                   vehicle.locationInfo.vehicleStatus ==
-//                                   'Idling')
-//                               .toList();
-//                           break;
-//                         default:
-//                           displayedVehicles = vehicles;
-//                       }
-//
-//                       return Expanded(
-//                         child: ListView.builder(
-//                           padding: const EdgeInsets.all(0.0),
-//                           itemCount: displayedVehicles.length,
-//                           itemBuilder: (context, index) {
-//                             final vehicle = displayedVehicles[index];
-//                             String dateTimeString =
-//                                 "${vehicle.locationInfo.tracker!.position!.fixTime}";
-//                             String numberString =
-//                                 "${vehicle.locationInfo.tracker?.position?.speed}";
-//                             double number = double.parse(numberString);
-//                             String speed = number.toStringAsFixed(2);
-//                             String time =
-//                                 dateTimeString.split("T")[1].split(".")[0];
-//                             return InkWell(
-//                               onTap: () {
-//                                 Navigator.of(context).push(MaterialPageRoute(
-//                                     builder: (context) =>
-//                                         VehicleRouteLastLocation(
-//                                             brand: vehicle.locationInfo.brand,
-//                                             model: vehicle.locationInfo.model,
-//                                             vin: vehicle.locationInfo.vin,
-//                                             latitude: vehicle.locationInfo
-//                                                 .tracker!.position!.latitude,
-//                                             longitude: vehicle.locationInfo
-//                                                 .tracker!.position!.longitude,
-//                                             token: token!,
-//                                             number_plate: vehicle
-//                                                 .locationInfo.numberPlate)));
-//                                 // Navigator.pushNamed(
-//                                 //     context, '/vehicleRouteLastLocation',
-//                                 //     arguments: {
-//                                 //       "latitude": vehicle.locationInfo.tracker!
-//                                 //           .position!.latitude!
-//                                 //           .toDouble(),
-//                                 //       "longitude": vehicle.locationInfo.tracker!
-//                                 //           .position!.latitude!
-//                                 //           .toDouble(),
-//                                 //       "token": token
-//                                 //     });
-//                                 ///-------
-//                                 // RouteLastLocation(vehicle.locationInfo.tracker!.position!.latitude!.toDouble(),
-//                                 //     vehicle.locationInfo.tracker!.position!.longitude!.toDouble());
-//                               },
-//                               child: Container(
-//                                 // width: getHorizontalSize(300),
-//                                 margin: const EdgeInsets.symmetric(
-//                                     horizontal: 10.0, vertical: 5.0),
-//                                 child: Padding(
-//                                   padding: const EdgeInsets.all(8.0),
-//                                   child: Row(
-//                                     //crossAxisAlignment: CrossAxisAlignment.start,
-//                                     children: [
-//                                       // Vehicle Speed and Icon
-//                                       Column(
-//                                         // crossAxisAlignment: CrossAxisAlignment.center,
-//                                         mainAxisAlignment:
-//                                             MainAxisAlignment.center,
-//                                         children: [
-//                                           Text(
-//                                             speed,
-//                                             style: const TextStyle(
-//                                                 fontSize: 24,
-//                                                 fontWeight: FontWeight.bold),
-//                                           ),
-//                                           const Text(
-//                                             "KM/H",
-//                                             style:
-//                                                 TextStyle(color: Colors.grey),
-//                                           ),
-//                                           Icon(
-//                                             Icons.local_shipping,
-//                                             size: 40.0,
-//                                             color: Colors.grey.shade600,
-//                                           ),
-//                                         ],
-//                                       ),
-//                                       const SizedBox(width: 10.0),
-//                                       // Vehicle Details
-//                                       Expanded(
-//                                         child: Card(
-//                                           // margin: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
-//                                           child: Column(
-//                                             crossAxisAlignment:
-//                                                 CrossAxisAlignment.start,
-//                                             children: [
-//                                               Container(
-//                                                 margin:
-//                                                     const EdgeInsets.all(8.0),
-//                                                 padding:
-//                                                     const EdgeInsets.all(8.0),
-//                                                 //width: getHorizontalSize(250),
-//                                                 color: Colors.white,
-//                                                 child: Row(
-//                                                   mainAxisAlignment:
-//                                                       MainAxisAlignment
-//                                                           .spaceBetween,
-//                                                   children: [
-//                                                     Text(
-//                                                       "${vehicle.locationInfo.brand} ${vehicle.locationInfo.model}",
-//                                                       style: const TextStyle(
-//                                                           fontWeight:
-//                                                               FontWeight.bold,
-//                                                           fontSize: 16.0),
-//                                                     ),
-//                                                     Column(
-//                                                       children: [
-//                                                         Text(
-//                                                           vehicle.locationInfo
-//                                                               .tracker!.status
-//                                                               .toString(),
-//                                                           style: const TextStyle(
-//                                                               fontWeight:
-//                                                                   FontWeight
-//                                                                       .normal,
-//                                                               fontSize: 14.0),
-//                                                         ),
-//                                                         Text(
-//                                                           time,
-//                                                           style: const TextStyle(
-//                                                               fontWeight:
-//                                                                   FontWeight
-//                                                                       .normal,
-//                                                               fontSize: 14.0),
-//                                                           softWrap: true,
-//                                                         )
-//                                                       ],
-//                                                     ),
-//                                                   ],
-//                                                 ),
-//                                               ),
-//                                               const SizedBox(height: 5.0),
-//                                               // const Row(
-//                                               //   children: [
-//                                               //     Icon(Icons.gps_fixed, color: Colors.green),
-//                                               //     SizedBox(width: 5.0),
-//                                               //     Icon(Icons.network_cell, color: Colors.green),
-//                                               //     SizedBox(width: 5.0),
-//                                               //     Icon(Icons.power, color: Colors.green),
-//                                               //   ],
-//                                               // ),
-//                                               // const SizedBox(height: 5.0),
-//                                               Padding(
-//                                                 padding:
-//                                                     const EdgeInsets.symmetric(
-//                                                         horizontal: 8.0),
-//                                                 child: Row(
-//                                                   mainAxisAlignment:
-//                                                       MainAxisAlignment
-//                                                           .spaceBetween,
-//                                                   children: [
-//                                                     const Row(
-//                                                       children: [
-//                                                         Column(
-//                                                           children: [
-//                                                             Icon(
-//                                                                 Icons.gps_fixed,
-//                                                                 color: Colors
-//                                                                     .green),
-//                                                             Text(
-//                                                               "GPS",
-//                                                               style: TextStyle(
-//                                                                   fontSize: 12),
-//                                                             )
-//                                                           ],
-//                                                         ),
-//                                                         SizedBox(
-//                                                           width: 15,
-//                                                         ),
-//                                                         Column(
-//                                                           children: [
-//                                                             Icon(Icons.wifi,
-//                                                                 color: Colors
-//                                                                     .green),
-//                                                             Text(
-//                                                               "GSM",
-//                                                               style: TextStyle(
-//                                                                   fontSize: 12),
-//                                                             )
-//                                                           ],
-//                                                         ),
-//                                                         SizedBox(
-//                                                           width: 15,
-//                                                         ),
-//                                                         Column(
-//                                                           children: [
-//                                                             Icon(Icons.power,
-//                                                                 color: Colors
-//                                                                     .green),
-//                                                             Text(
-//                                                               "Ignition",
-//                                                               style: TextStyle(
-//                                                                   fontSize: 12),
-//                                                             )
-//                                                           ],
-//                                                         ),
-//                                                       ],
-//                                                     ),
-//                                                     Column(
-//                                                       children: [
-//                                                         const Text(
-//                                                           "Expires On",
-//                                                           style: TextStyle(
-//                                                               fontSize: 14),
-//                                                         ),
-//                                                         Chip(
-//                                                           backgroundColor:
-//                                                               Colors.green
-//                                                                   .shade200,
-//                                                           label: const Text(
-//                                                             "Unlimited",
-//                                                             style: TextStyle(
-//                                                                 fontSize: 12.0),
-//                                                           ),
-//                                                         ),
-//                                                       ],
-//                                                     ),
-//                                                   ],
-//                                                 ),
-//                                               ),
-//                                             ],
-//                                           ),
-//                                         ),
-//                                       ),
-//                                     ],
-//                                   ),
-//                                 ),
-//                               ),
-//                             );
-//
-//                             //   Card(
-//                             //   margin: const EdgeInsets.symmetric(vertical: 8.0),
-//                             //   child: Padding(
-//                             //     padding: const EdgeInsets.all(16.0),
-//                             //     child: Column(
-//                             //       crossAxisAlignment: CrossAxisAlignment.start,
-//                             //       children: [
-//                             //         Text('Brand: ${vehicle.locationInfo.brand}',
-//                             //             style: TextStyle(fontSize: 20)),
-//                             //         Text('Model: ${vehicle.locationInfo.model}',
-//                             //             style: TextStyle(fontSize: 20)),
-//                             //         Text(
-//                             //             'NumberPlate: ${vehicle.locationInfo.numberPlate}',
-//                             //             style: TextStyle(fontSize: 20)),
-//                             //         Text('Year: ${vehicle.locationInfo.year}',
-//                             //             style: TextStyle(fontSize: 20)),
-//                             //         Text('VIN: ${vehicle.locationInfo.vin}',
-//                             //             style: TextStyle(fontSize: 20)),
-//                             //         Text(
-//                             //             'Tracker Unique ID: ${vehicle.locationInfo.tracker?.uniqueId}',
-//                             //             style: TextStyle(fontSize: 20)),
-//                             //         Text(
-//                             //             'Location: (${vehicle.locationInfo.tracker?.position?.latitude}, ${vehicle.locationInfo.tracker?.position?.longitude})',
-//                             //             style: TextStyle(fontSize: 20)),
-//                             //         Text(
-//                             //             'Speed: ${vehicle.locationInfo.tracker?.position?.speed} km/h',
-//                             //             style: TextStyle(fontSize: 20)),
-//                             //         Text(
-//                             //             'Owner: ${vehicle.locationInfo.owner?.firstName} ${vehicle.locationInfo.owner?.lastName}',
-//                             //             style: TextStyle(fontSize: 20)),
-//                             //         Text(
-//                             //             'Owner Phone: ${vehicle.locationInfo.owner?.phone}',
-//                             //             style: TextStyle(fontSize: 20)),
-//                             //         Text(
-//                             //             'Status: ${vehicle.locationInfo.vehicleStatus}',
-//                             //             style: TextStyle(fontSize: 20)),
-//                             //       ],
-//                             //     ),
-//                             //   ),
-//                             // );
-//                           },
-//                         ),
-//                       );
-//                     },
-//                   ),
-//                 ),
-//
-//                 // Expanded(
-//                 //   child: BlocBuilder<VehicleLocationBloc, List<VehicleEntity>>(
-//                 //     builder: (context, vehicles) {
-//                 //       if (vehicles.isEmpty) {
-//                 //         return const Center(
-//                 //             child: Text('Waiting for vehicle updates...'));
-//                 //       }
-//                 //
-//                 //       // Filter vehicles by status
-//                 //       final allVehicles = vehicles;
-//                 //       final movingVehicles = vehicles
-//                 //           .where((vehicle) =>
-//                 //               vehicle.locationInfo.vehicleStatus == 'Moving')
-//                 //           .toList();
-//                 //       final idleVehicles = vehicles
-//                 //           .where((vehicle) =>
-//                 //               vehicle.locationInfo.vehicleStatus == 'Idle')
-//                 //           .toList();
-//                 //       final stoppedVehicles = vehicles
-//                 //           .where((vehicle) =>
-//                 //               vehicle.locationInfo.vehicleStatus == 'Stopped')
-//                 //           .toList();
-//                 //
-//                 //       // Update counts for tabs
-//                 //       setState(() {
-//                 //         movingCount = movingVehicles.length;
-//                 //         idleCount = idleVehicles.length;
-//                 //         stoppedCount = stoppedVehicles.length;
-//                 //       });
-//                 //
-//                 //       // Select the appropriate vehicle list based on the selected tab
-//                 //       List<VehicleEntity> displayedVehicles;
-//                 //       switch (_selectedTabIndex) {
-//                 //         case 1:
-//                 //           displayedVehicles = movingVehicles;
-//                 //           break;
-//                 //         case 2:
-//                 //           displayedVehicles = idleVehicles;
-//                 //           break;
-//                 //         case 3:
-//                 //           displayedVehicles = stoppedVehicles;
-//                 //           break;
-//                 //         default:
-//                 //           displayedVehicles = allVehicles;
-//                 //       }
-//                 //
-//                 //       final filteredVehicles = _filterVehicles(vehicles);
-//                 //       return ListView.builder(
-//                 //         itemCount: filteredVehicles.length,
-//                 //         itemBuilder: (context, index) {
-//                 //           final vehicle = displayedVehicles[index];
-//                 //           // final vehicle = filteredVehicles[index];
-//                 //           return Card(
-//                 //             margin: const EdgeInsets.symmetric(vertical: 8.0),
-//                 //             child: Padding(
-//                 //               padding: const EdgeInsets.all(16.0),
-//                 //               child: Column(
-//                 //                 crossAxisAlignment: CrossAxisAlignment.start,
-//                 //                 children: [
-//                 //                   Text('Brand: ${vehicle.locationInfo.brand}',
-//                 //                       style: TextStyle(fontSize: 20)),
-//                 //                   Text('Model: ${vehicle.locationInfo.model}',
-//                 //                       style: TextStyle(fontSize: 20)),
-//                 //                   Text(
-//                 //                       'NumberPlate: ${vehicle.locationInfo.numberPlate}',
-//                 //                       style: TextStyle(fontSize: 20)),
-//                 //                   Text('Year: ${vehicle.locationInfo.year}',
-//                 //                       style: TextStyle(fontSize: 20)),
-//                 //                   Text('VIN: ${vehicle.locationInfo.vin}',
-//                 //                       style: TextStyle(fontSize: 20)),
-//                 //                   Text(
-//                 //                       'Tracker Unique ID: ${vehicle.locationInfo.tracker?.uniqueId}',
-//                 //                       style: TextStyle(fontSize: 20)),
-//                 //                   Text(
-//                 //                       'Location: (${vehicle.locationInfo.tracker?.position?.latitude}, ${vehicle.locationInfo.tracker?.position?.longitude})',
-//                 //                       style: TextStyle(fontSize: 20)),
-//                 //                   Text(
-//                 //                       'Speed: ${vehicle.locationInfo.tracker?.position?.speed} km/h',
-//                 //                       style: TextStyle(fontSize: 20)),
-//                 //                   Text(
-//                 //                       'Owner: ${vehicle.locationInfo.owner?.firstName} ${vehicle.locationInfo.owner?.lastName}',
-//                 //                       style: TextStyle(fontSize: 20)),
-//                 //                   Text(
-//                 //                       'Owner Phone: ${vehicle.locationInfo.owner?.phone}',
-//                 //                       style: TextStyle(fontSize: 20)),
-//                 //                   Text(
-//                 //                       'Status: ${vehicle.locationInfo.vehicleStatus}',
-//                 //                       style: TextStyle(fontSize: 20)),
-//                 //                 ],
-//                 //               ),
-//                 //             ),
-//                 //           );
-//                 //         },
-//                 //       );
-//                 //     },
-//                 //   ),
-//                 // ),
-//               ],
-//             ),
-//     );
-//   }
-// }
-///-------
-// class VehicleListItem extends StatelessWidget {
-//   final String? token;
-//   const VehicleListItem({super.key, this.token});
-//   @override
-//   Widget build(BuildContext context) {
-//     return Container(
-//       margin: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
-//       child: Padding(
-//         padding: const EdgeInsets.all(8.0),
-//         child: BlocProvider(
-//           create: (_) => sl<VehiclesBloc>()
-//             ..add(GetVehicleEvent(VehicleReqEntity(
-//                 token: token ?? "", contentType: 'application/json'))),
-//           child: BlocConsumer<VehiclesBloc, VehicleState>(
-//               builder: (context, state) {
-//             if (state is VehicleLoading) {
-//               return const Center(
-//                   child: Padding(
-//                 padding: EdgeInsets.only(top: 10.0),
-//                 child: CircularProgressIndicator(
-//                   strokeWidth: 2.0,
-//                 ),
-//               ));
-//             } else if (state is VehicleDone) {
-//               return SizedBox(
-//                 height: 500,
-//                 child: ListView.builder(
-//                   itemCount:
-//                       state.resp.data == null ? 0 : state.resp.data!.length,
-//                   itemBuilder: (context, index) {
-//                     return InkWell(
-//                       onTap: () {
-//                         Navigator.of(context).push(MaterialPageRoute(
-//                             builder: (context) => VehicleRouteLastLocation(
-//                                   brand: state.resp.data![index].brand!,
-//                                   model: state.resp.data![index].model!,
-//                                   vin: state.resp.data![index].vin!,
-//                                   latitude: double.parse(state.resp.data![index]
-//                                       .last_location!.latitude!),
-//                                   longitude: double.parse(state.resp
-//                                       .data![index].last_location!.longitude!),
-//                                   token: token!,
-//                                   number_plate:
-//                                       state.resp.data![index].number_plate!,
-//                                 )));
-//                         // Navigator.pushNamed(
-//                         //     context, '/vehicleRouteLastLocation',
-//                         //     arguments: {
-//                         //       "latitude": state.resp.data![index].last_location!.latitude,
-//                         //       "longitude": state
-//                         //           .resp.data![index].last_location!.longitude,
-//                         //       "token": token,
-//                         //       "model": state.resp.data![index].model,
-//                         //       "brand": state.resp.data![index].brand,
-//                         //       "number_plate": state.resp.data![index].number_plate,
-//                         //       "address":
-//                         //           state.resp.data![index].driver!.country,
-//                         //       "vin": state.resp.data![index].vin,
-//                         //       "name": state.resp.data![index].driver!.name,
-//                         //       "phone": state.resp.data![index].driver!.phone,
-//                         //     });
-//                       },
-//                       child: Row(
-//                         //crossAxisAlignment: CrossAxisAlignment.start,
-//                         children: [
-//                           // Vehicle Speed and Icon
-//                           Column(
-//                             // crossAxisAlignment: CrossAxisAlignment.center,
-//                             mainAxisAlignment: MainAxisAlignment.center,
-//                             children: [
-//                               Text(
-//                                 state.resp.data![index].last_location!.speed
-//                                     .toString(),
-//                                 style: const TextStyle(
-//                                     fontSize: 24, fontWeight: FontWeight.bold),
-//                               ),
-//                               const Text(
-//                                 "KM/H",
-//                                 style: TextStyle(color: Colors.grey),
-//                               ),
-//                               Icon(
-//                                 Icons.local_shipping,
-//                                 size: 40.0,
-//                                 color: Colors.grey.shade600,
-//                               ),
-//                             ],
-//                           ),
-//                           const SizedBox(width: 10.0),
-//                           // Vehicle Details
-//                           Expanded(
-//                             child: Card(
-//                               // margin: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
-//                               child: Column(
-//                                 crossAxisAlignment: CrossAxisAlignment.start,
-//                                 children: [
-//                                   Container(
-//                                     margin: const EdgeInsets.all(8.0),
-//                                     padding: const EdgeInsets.all(8.0),
-//                                     //width: getHorizontalSize(250),
-//                                     color: Colors.white,
-//                                     child: Row(
-//                                       mainAxisAlignment:
-//                                           MainAxisAlignment.spaceBetween,
-//                                       children: [
-//                                         Text(
-//                                           '${state.resp.data![index].brand.toString()} '
-//                                           '${state.resp.data![index].model.toString()}',
-//                                           style: const TextStyle(
-//                                               fontWeight: FontWeight.bold,
-//                                               fontSize: 16.0),
-//                                         ),
-//                                         Column(
-//                                           children: [
-//                                             Text(
-//                                               state.resp.data![index]
-//                                                   .last_location!.status
-//                                                   .toString(),
-//                                               style: const TextStyle(
-//                                                   fontWeight: FontWeight.normal,
-//                                                   fontSize: 14.0),
-//                                             ),
-//                                             const Text(
-//                                               "7 min 20s",
-//                                               style: TextStyle(
-//                                                   fontWeight: FontWeight.normal,
-//                                                   fontSize: 14.0),
-//                                             ),
-//                                           ],
-//                                         ),
-//                                       ],
-//                                     ),
-//                                   ),
-//                                   const SizedBox(height: 5.0),
-//                                   // const Row(
-//                                   //   children: [
-//                                   //     Icon(Icons.gps_fixed, color: Colors.green),
-//                                   //     SizedBox(width: 5.0),
-//                                   //     Icon(Icons.network_cell, color: Colors.green),
-//                                   //     SizedBox(width: 5.0),
-//                                   //     Icon(Icons.power, color: Colors.green),
-//                                   //   ],
-//                                   // ),
-//                                   // const SizedBox(height: 5.0),
-//                                   Padding(
-//                                     padding: const EdgeInsets.symmetric(
-//                                         horizontal: 8.0),
-//                                     child: Row(
-//                                       mainAxisAlignment:
-//                                           MainAxisAlignment.spaceBetween,
-//                                       children: [
-//                                         const Row(
-//                                           children: [
-//                                             Column(
-//                                               children: [
-//                                                 Icon(Icons.gps_fixed,
-//                                                     color: Colors.green),
-//                                                 Text(
-//                                                   "GPS",
-//                                                   style:
-//                                                       TextStyle(fontSize: 12),
-//                                                 )
-//                                               ],
-//                                             ),
-//                                             SizedBox(
-//                                               width: 15,
-//                                             ),
-//                                             Column(
-//                                               children: [
-//                                                 Icon(Icons.wifi,
-//                                                     color: Colors.green),
-//                                                 Text(
-//                                                   "GSM",
-//                                                   style:
-//                                                       TextStyle(fontSize: 12),
-//                                                 )
-//                                               ],
-//                                             ),
-//                                             SizedBox(
-//                                               width: 15,
-//                                             ),
-//                                             Column(
-//                                               children: [
-//                                                 Icon(Icons.power,
-//                                                     color: Colors.green),
-//                                                 Text(
-//                                                   "Ignition",
-//                                                   style:
-//                                                       TextStyle(fontSize: 12),
-//                                                 )
-//                                               ],
-//                                             ),
-//                                           ],
-//                                         ),
-//                                         Column(
-//                                           children: [
-//                                             const Text(
-//                                               "Expires On",
-//                                               style: TextStyle(fontSize: 14),
-//                                             ),
-//                                             Chip(
-//                                               backgroundColor:
-//                                                   Colors.green.shade200,
-//                                               label: const Text(
-//                                                 "Unlimited",
-//                                                 style:
-//                                                     TextStyle(fontSize: 12.0),
-//                                               ),
-//                                             ),
-//                                           ],
-//                                         ),
-//                                       ],
-//                                     ),
-//                                   ),
-//                                 ],
-//                               ),
-//                             ),
-//                           ),
-//                         ],
-//                       ),
-//                     );
-//                   },
-//                 ),
-//               );
-//             } else {
-//               return const Center(child: Text('No records found'));
-//             }
-//           }, listener: (context, state) {
-//             if (state is VehicleFailure) {
-//               //if (state.message.contains("The Token has expired")) {
-//               Navigator.pushNamed(context, "/login");
-//               //}
-//               ScaffoldMessenger.of(context).showSnackBar(
-//                 SnackBar(content: Text(state.message)),
-//               );
-//             }
-//           }),
-//         ),
-//
-//         ///
-//       ),
-//     );
-//   }
-// }
-
-///-------vehiclepage-----
-
-// class _VehiclePageState extends State<VehiclePage> {
+// class _VehicleSubPageState extends State<VehicleSubPage> {
 //   int _selectedTabIndex = 0;
 //   bool isLoading = true;
 //   PrefUtils prefUtils = PrefUtils();
@@ -4099,8 +2668,9 @@ class _VehicleOfflineState extends State<VehicleOffline> {
 //   int vehicleCount = 0;
 //   int movingCount = 0;
 //   int idleCount = 0;
-//   int stoppedCount = 0;
+//   int offlineLength = 0;
 //   int offlineCount = 0;
+//   int packedCount = 0;
 //
 //   @override
 //   void initState() {
@@ -4120,57 +2690,79 @@ class _VehicleOfflineState extends State<VehicleOffline> {
 //         userId = authUser[5].isEmpty ? null : authUser[5];
 //       }
 //       if (token != null && userId != null) {
-//         if (!sl.isRegistered<PusherService>()) {
-//           sl.registerSingleton<PusherService>(PusherService(token!, userId!));
-//           final pusherService = sl<PusherService>();
-//           pusherService.initializePusher();
-//         }
-//         sl<VehiclesBloc>().add(GetVehicleEvent(
-//             VehicleReqEntity(token: token!, contentType: 'application/json')));
+//         sl<DashVehiclesBloc>().add(DashVehicleEvent(DashVehicleReqEntity(
+//             token: token!, contentType: 'application/json')));
 //       }
 //       isLoading = false;
 //     });
 //   }
 //
-//   List<VehicleEntity> _filterVehicles(List<VehicleEntity> vehicles) {
-//     switch (_selectedTabIndex) {
-//       case 1:
-//         return vehicles
-//             .where((v) => v.locationInfo.vehicleStatus == "Moving")
-//             .toList();
-//       case 2:
-//         return vehicles
-//             .where((v) => v.locationInfo.vehicleStatus == "Stopped")
-//             .toList();
-//       case 3:
-//         return vehicles
-//             .where((v) => v.locationInfo.vehicleStatus == "Idle")
-//             .toList();
-//       default:
-//         return vehicles;
-//     }
+//   Map<String, int> _computeVehicleCounts(List<DashDatumEntity> vehicles) {
+//     return {
+//       'online': vehicles
+//           .where((v) =>
+//       v.last_location?.status == "online" ||
+//           v.last_location?.status == "Online")
+//           .length,
+//       'offline': vehicles
+//           .where((v) =>
+//       v.last_location?.status == "offline" ||
+//           v.last_location?.status == "Offline")
+//           .length,
+//       'idling': vehicles
+//           .where((v) =>
+//       v.last_location?.status == "idling" ||
+//           v.last_location?.status == "Idling")
+//           .length,
+//       'parked': vehicles
+//           .where((v) =>
+//       v.last_location?.status == "parked" ||
+//           v.last_location?.status == "Parked")
+//           .length,
+//       'vehicles': vehicles.length
+//     };
 //   }
 //
-//   void _updateVehicleCounts(List<VehicleEntity> vehicles) {
-//     movingCount = vehicles
-//         .where((vehicle) => vehicle.locationInfo.vehicleStatus == 'Moving')
-//         .length;
-//     stoppedCount = vehicles
-//         .where((vehicle) => vehicle.locationInfo.vehicleStatus == 'Stopped')
-//         .length;
-//     idleCount = vehicles
-//         .where((vehicle) => vehicle.locationInfo.vehicleStatus == 'Idle')
-//         .length;
-//     vehicleCount = vehicles.length;
+//   // Helper function to compute counts
+//   Map<String, int> _computeVehicleSocketCounts(List<VehicleEntity> vehicles) {
+//     return {
+//       'moving': vehicles
+//           .where((v) =>
+//       (v.locationInfo.vehicleStatus == "Moving" ||
+//           v.locationInfo.vehicleStatus == "moving") &&
+//           (v.locationInfo.tracker!.status == "Online" ||
+//               v.locationInfo.tracker!.status == "online"))
+//           .length,
+//       'offline': vehicles
+//           .where((v) =>
+//       v.locationInfo.vehicleStatus == "Offline" ||
+//           v.locationInfo.vehicleStatus == "offline")
+//           .length,
+//       'idling': vehicles
+//           .where((v) =>
+//       (v.locationInfo.vehicleStatus == "Idling" ||
+//           v.locationInfo.vehicleStatus == "idling") &&
+//           (v.locationInfo.tracker!.status == "Online" ||
+//               v.locationInfo.tracker!.status == "online"))
+//           .length,
+//       'parked': vehicles
+//           .where((v) =>
+//       (v.locationInfo.vehicleStatus == "Parked" ||
+//           v.locationInfo.vehicleStatus == "parked") &&
+//           (v.locationInfo.tracker!.status == "Online" ||
+//               v.locationInfo.tracker!.status == "online"))
+//           .length,
+//     };
 //   }
 //
 //   @override
 //   Widget build(BuildContext context) {
 //     final List<String> tabs = [
 //       "All ($vehicleCount)",
-//       "Moving ($movingCount)",
-//       "Stopped ($stoppedCount)",
 //       "Idle ($idleCount)",
+//       "Parked ($packedCount)",
+//       "Moving ($movingCount)",
+//       "Offline ($offlineLength)",
 //     ];
 //
 //     return Scaffold(
@@ -4178,324 +2770,182 @@ class _VehicleOfflineState extends State<VehicleOffline> {
 //         firstname: first_name ?? "",
 //       ),
 //       body: isLoading
-//           ? const Center(child: CircularProgressIndicator())
+//           ? const Center(
+//           child: CircularProgressIndicator(
+//             strokeWidth: 2.0,
+//             color: Colors.green,
+//           ))
 //           : Column(
-//               children: [
-//                 SizedBox(
-//                   height: 45.0,
-//                   child: ListView.builder(
-//                     scrollDirection: Axis.horizontal,
-//                     itemCount: tabs.length,
-//                     itemBuilder: (context, index) {
-//                       return GestureDetector(
-//                         onTap: () {
-//                           setState(() => _selectedTabIndex = index);
-//                         },
-//                         child: Padding(
-//                           padding: const EdgeInsets.symmetric(horizontal: 8.0),
-//                           child: Chip(
-//                             side: BorderSide.none,
-//                             backgroundColor: _selectedTabIndex == index
-//                                 ? Colors.green
-//                                 : Colors.grey.shade200,
-//                             label: Text(
-//                               tabs[index],
-//                               style: TextStyle(
-//                                 color: _selectedTabIndex == index
-//                                     ? Colors.white
-//                                     : Colors.black,
-//                               ),
-//                             ),
-//                           ),
-//                         ),
-//                       );
-//                     },
-//                   ),
-//                 ),
-
-//                 BlocListener<VehicleLocationBloc, List<VehicleEntity>>(
-//                   listener: (context, vehicles) {
-//                     _updateVehicleCounts(vehicles);
-//                     setState(() {
-//                       vehicles;
-//                     });
+//         children: [
+//           SizedBox(
+//             height: 45.0,
+//             child: ListView.builder(
+//               scrollDirection: Axis.horizontal,
+//               itemCount: tabs.length,
+//               itemBuilder: (context, index) {
+//                 return GestureDetector(
+//                   onTap: () {
+//                     setState(() => _selectedTabIndex = index);
 //                   },
-//                   child: BlocBuilder<VehicleLocationBloc, List<VehicleEntity>>(
-//                     builder: (context, vehicles) {
-//                       if (vehicles.isEmpty) {
-//                         return BlocProvider(
-//                           create: (_) => sl<VehiclesBloc>()
-//                             ..add(GetVehicleEvent(VehicleReqEntity(
-//                                 token: token ?? "",
-//                                 contentType: 'application/json'))),
-//                           child: BlocConsumer<VehiclesBloc, VehicleState>(
-//                             builder: (context, state) {
-//                               if (state is VehicleLoading) {
-//                                 return const Center(
-//                                   child: Padding(
-//                                     padding: EdgeInsets.only(top: 10.0),
-//                                     child: CircularProgressIndicator(
-//                                         strokeWidth: 2.0),
-//                                   ),
-//                                 );
-//                               } else if (state is VehicleDone) {
-//                                 // Check if the vehicle data is empty
-//                                 if (state.resp.data == null ||
-//                                     state.resp.data!.isEmpty) {
-//                                   return const Center(
-//                                     child: Text(
-//                                       'No vehicles available',
-//                                       style: TextStyle(
-//                                           fontSize: 16.0, color: Colors.grey),
-//                                     ),
-//                                   );
-//                                 }
-//                                 return VehicleListItem(
-//                                     data: state.resp.data, token: token);
-//                               } else {
-//                                 return const Center(
-//                                     child: Text('No records found'));
-//                               }
-//                             },
-//                             listener: (context, state) {
-//                               if (state is VehicleFailure) {
-//                                 Navigator.pushNamed(context, "/login");
-//                                 ScaffoldMessenger.of(context).showSnackBar(
-//                                   SnackBar(content: Text(state.message)),
-//                                 );
-//                               }
-//                             },
-//                           ),
-//                         );
-//                       }
+//                   child: Padding(
+//                     padding: const EdgeInsets.symmetric(horizontal: 8.0),
+//                     child: Chip(
+//                       side: BorderSide.none,
+//                       backgroundColor: _selectedTabIndex == index
+//                           ? Colors.green
+//                           : Colors.grey.shade200,
+//                       label: Text(
+//                         tabs[index],
+//                         style: TextStyle(
+//                           color: _selectedTabIndex == index
+//                               ? Colors.white
+//                               : Colors.black,
+//                         ),
+//                       ),
+//                     ),
+//                   ),
+//                 );
+//               },
+//             ),
+//           ),
+//           BlocProvider(
+//             create: (_) => sl<DashVehiclesBloc>()
+//               ..add(DashVehicleEvent(DashVehicleReqEntity(
+//                   token: token ?? "", contentType: 'application/json'))),
+//             child: BlocConsumer<DashVehiclesBloc, DashboardState>(
+//               builder: (context, state) {
+//                 if (state is DashboardLoading) {
+//                   return const Center(
+//                     child: Padding(
+//                       padding: EdgeInsets.only(top: 10.0),
+//                       child: CircularProgressIndicator(
+//                         strokeWidth: 2.0,
+//                         color: Colors.green,
+//                       ),
+//                     ),
+//                   );
+//                 } else if (state is DashboardDone) {
+//                   // Check if the vehicle data is empty
+//                   if (state.resp.data == null ||
+//                       state.resp.data!.isEmpty) {
+//                     return Center(
+//                       child: Text(
+//                         'No vehicles available',
+//                         style: AppStyle.cardfooter,
+//                       ),
+//                     );
+//                   }
 //
-//                       List<VehicleEntity> displayedVehicles = _filterVehicles(vehicles);
+//                   final vehiclesData = state.resp.data ?? [];
+//                   final vehicleCounts = _computeVehicleCounts(vehiclesData);
 //
-//                       return VehicleListItem(
-//                         displayedVehicles: displayedVehicles,
+//                   vehicleCount = vehicleCounts['vehicles'] ?? 0;
+//                   packedCount = vehicleCounts['parked'] ?? 0;
+//                   offlineLength = vehicleCounts['offline'] ?? 0;
+//
+//                   WidgetsBinding.instance.addPostFrameCallback((_) {
+//                     setState(() {
+//                       vehicleCount;
+//                       packedCount;
+//                       offlineLength;
+//                     });
+//                   });
+//
+//                   BlocListener<VehicleLocationBloc, List<VehicleEntity>>(
+//                     listener: (context, vehicles) {
+//                       // final vehicleWebsocketCounts = _computeVehicleSocketCounts(vehicles);
+//                       // print('idleCount-idleCount1: $idleCount');
+//                       // print('movingCount-movingCount2: $movingCount');
+//                     },
+//                     child: BlocBuilder<VehicleLocationBloc,
+//                         List<VehicleEntity>>(
+//                       builder: (context, vehicles) {
+//                         if (vehicles.isEmpty) {}
+//
+//                         final vehicleWebsocketCounts = _computeVehicleSocketCounts(vehicles);
+//
+//                         setState(() {
+//                           idleCount = vehicleWebsocketCounts['idling'] ?? 0;
+//                           movingCount = vehicleWebsocketCounts['moving'] ?? 0;
+//                         });
+//                         print('idleCount-idleCount: $idleCount');
+//                         print('movingCount-movingCount: $movingCount');
+//                         return Container();
+//                       },
+//                     ),
+//                   );
+//
+//                   // Pass the data to the relevant page
+//                   switch (_selectedTabIndex) {
+//                     case 0:
+//                       return AllVehiclesPage(
+//                         vehicles: state.resp.data!,
 //                         token: token,
 //                       );
-//                     },
-//                   ),
-//                 ),
-//               ],
+//                     case 1:
+//                       return IdleVehiclesPage(
+//                         data: state.resp.data!,
+//                         token: token,
+//                       );
+//                     case 2:
+//                       return PackedVehiclesPage(
+//                         data: state.resp.data!,
+//                         token: token,
+//                       );
+//
+//                     case 3:
+//                       return MovingVehiclesPage(
+//                         vehicles: state.resp.data!,
+//                         token: token,
+//                       );
+//
+//                     case 4:
+//                       return OfflineVehiclesPage(
+//                         data: state.resp.data!,
+//                         token: token,
+//                       );
+//                     default:
+//                       return AllVehiclesPage(
+//                         vehicles: state.resp.data!,
+//                         token: token,
+//                       );
+//                   }
+//                 } else {
+//                   return Center(
+//                       child: Column(
+//                         mainAxisAlignment: MainAxisAlignment.center,
+//                         crossAxisAlignment: CrossAxisAlignment.center,
+//                         children: [
+//                           Text(
+//                             'No records found',
+//                             style: AppStyle.cardfooter,
+//                           ),
+//                           const SizedBox(height: 10.0,),
+//                           CustomSecondaryButton(
+//                               label: 'Refresh',
+//                               onPressed: () {
+//                                 BlocProvider.of<DashVehiclesBloc>(context)
+//                                     .add(DashVehicleEvent(DashVehicleReqEntity(
+//                                     token: token ?? "", contentType: 'application/json')));
+//                               })
+//                         ],
+//                       ));
+//                 }
+//               },
+//               listener: (context, state) {
+//                 if (state is DashboardFailure) {
+//                   if (state.message.contains("Unauthenticated")) {
+//                     Navigator.pushNamedAndRemoveUntil(
+//                         context, "/login", (route) => false);
+//                   }
+//                   ScaffoldMessenger.of(context).showSnackBar(
+//                     SnackBar(content: Text(state.message)),
+//                   );
+//                 }
+//               },
 //             ),
-//     );
-//   }
-// }
-
-///----
-///
-// class VehicleListItem extends StatelessWidget {
-//   final List<DatumEntity>? data;
-//   final String? token;
-//   final List<VehicleEntity>? vehicles;
-//
-//   const VehicleListItem({
-//     super.key,
-//     this.data,
-//     this.token,
-//     required this.vehicles,
-//     /*this.displayedVehicles*/
-//   });
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     // Use `data` if it has elements; otherwise, use `displayedVehicles`
-//     final effectiveData = data != null && data!.isNotEmpty ? data : null;
-//     final effectiveDisplayedVehicles =
-//         vehicles != null && vehicles!.isNotEmpty ? vehicles : null;
-//
-//     // Calculate itemCount based on which list is non-null and non-empty
-//     final itemCount =
-//         effectiveData?.length ?? effectiveDisplayedVehicles?.length ?? 0;
-//
-//     return Padding(
-//       padding: const EdgeInsets.symmetric(horizontal: 10.0),
-//       child: ListView.builder(
-//         shrinkWrap: true, // Prevents ListView from expanding infinitely
-//         padding: EdgeInsets.zero,
-//         itemCount: itemCount,
-//         itemBuilder: (context, index) {
-//           // Use `effectiveData` if available, otherwise `effectiveDisplayedVehicles`
-//           final widget.data![index] =
-//               effectiveData != null ? effectiveData[index] : null;
-//           final vehicle = effectiveDisplayedVehicles != null
-//               ? effectiveDisplayedVehicles[index]
-//               : null;
-//
-//           // Check if we have valid data; if not, skip rendering
-//           // if (widget.data![index] == null && vehicle == null) {
-//           //   return const SizedBox.shrink();
-//           // }
-//
-//           print(
-//               "::::::status:::: ${vehicle?.locationInfo.tracker!.status.toString()}");
-//           return InkWell(
-//             onTap: () {
-//               widget.data![index]!.last_location!.latitude != null
-//                   ? Navigator.of(context).push(MaterialPageRoute(
-//                       builder: (context) => VehicleRouteLastLocation(
-//                           brand:
-//                               widget.data![index].brand ?? vehicle!.locationInfo.brand,
-//                           model:
-//                               widget.data![index].model ?? vehicle!.locationInfo.model,
-//                           vin: widget.data![index].vin ?? vehicle!.locationInfo.vin,
-//                           latitude:
-//                               // double.tryParse(
-//                               //     widget.data![index].last_location!.latitude!),
-//                               widget.data![index].last_location?.latitude != null
-//                                   ? double.tryParse(
-//                                       widget.data![index].last_location!.latitude!)
-//                                   : vehicle!.locationInfo.tracker?.position
-//                                           ?.latitude ??
-//                                       6.5480551,
-//                           longitude:
-//                               // double.tryParse(widget.data![index].last_location!.longitude!),
-//                               widget.data![index].last_location?.longitude != null
-//                                   ? double.tryParse(
-//                                       widget.data![index].last_location!.longitude!)
-//                                   : vehicle!.locationInfo.tracker?.position
-//                                           ?.longitude ??
-//                                       3.2839595,
-//                           token: token ?? '',
-//                           number_plate: widget.data![index].number_plate.toString()
-//                           // ?? vehicle!.locationInfo.numberPlate,
-//                           ),
-//                     ))
-//                   : ScaffoldMessenger.of(context).showSnackBar(
-//                       const SnackBar(
-//                           content: Text('Vehicle coordinate is not found!')),
-//                     );
-//             },
-//             child: Row(
-//               children: [
-//                 Column(
-//                   mainAxisAlignment: MainAxisAlignment.center,
-//                   children: [
-//                     Text(
-//                       widget.data![index]?.vin == vehicle?.locationInfo.vin ||
-//                               vehicle?.locationInfo.tracker?.position?.speed !=
-//                                   null
-//                           ? vehicle!.locationInfo.tracker!.position!.speed
-//                               .toString()
-//                           : widget.data![index]?.last_location?.speed?.toString() ??
-//                               "0.00",
-//                       style: AppStyle.cardTitle,
-//                     ),
-//                     const Text("KM/H", style: TextStyle(color: Colors.grey)),
-//                     Icon(
-//                       Icons.local_shipping,
-//                       size: 40.0,
-//                       color: Colors.grey.shade600,
-//                     ),
-//                   ],
-//                 ),
-//                 const SizedBox(width: 10.0),
-//                 Expanded(
-//                   child: Card(
-//                     child: Column(
-//                       crossAxisAlignment: CrossAxisAlignment.start,
-//                       children: [
-//                         Container(
-//                           margin: const EdgeInsets.all(8.0),
-//                           padding: const EdgeInsets.all(8.0),
-//                           color: Colors.white,
-//                           child: Row(
-//                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//                             children: [
-//                               Text(
-//                                 // '${widget.data![index]!.brand} ${widget.data![index].model}',
-//                                 '${widget.data![index]?.brand ?? vehicle!.locationInfo.brand} ${widget.data![index]?.model ?? vehicle!.locationInfo.model}',
-//                                 style: AppStyle.cardSubtitle
-//                                     .copyWith(fontSize: 12),
-//                               ),
-//                               Column(
-//                                 children: [
-//                                   Text(
-//                                     widget.data![index]?.vin ==
-//                                                 vehicle?.locationInfo.vin ||
-//                                             vehicle?.locationInfo.tracker
-//                                                     ?.status !=
-//                                                 null
-//                                         ? vehicle!.locationInfo.tracker!.status
-//                                             .toString()
-//                                         : widget.data![index]?.last_location?.status
-//                                                 ?.toString() ??
-//                                             "N/A",
-//                                     // widget.data![index]?.last_location!.status ?? vehicle!.locationInfo.tracker!.status ?? "N/A",
-//                                     //widget.data![index].last_location!.status == null ? "" : widget.data![index].last_location!.status!,
-//                                     // widget.data![index]?.last_location?.status ?? "N/A",
-//                                     style: AppStyle.cardfooter,
-//                                   ),
-//                                   Text("7min 20s", style: AppStyle.cardfooter),
-//                                 ],
-//                               ),
-//                             ],
-//                           ),
-//                         ),
-//                         const SizedBox(height: 5.0),
-//                         Padding(
-//                           padding: const EdgeInsets.symmetric(horizontal: 8.0),
-//                           child: Row(
-//                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//                             children: [
-//                               Row(
-//                                 children: [
-//                                   Column(
-//                                     children: [
-//                                       const Icon(Icons.gps_fixed,
-//                                           color: Colors.green),
-//                                       Text("GPS",
-//                                           style: AppStyle.cardfooter
-//                                               .copyWith(fontSize: 10)),
-//                                     ],
-//                                   ),
-//                                   const SizedBox(width: 15),
-//                                   Column(
-//                                     children: [
-//                                       const Icon(Icons.wifi,
-//                                           color: Colors.green),
-//                                       Text("GSM",
-//                                           style: AppStyle.cardfooter
-//                                               .copyWith(fontSize: 10)),
-//                                     ],
-//                                   ),
-//                                   const SizedBox(width: 15),
-//                                   Column(
-//                                     children: [
-//                                       const Icon(Icons.power,
-//                                           color: Colors.green),
-//                                       Text("Ignition",
-//                                           style: AppStyle.cardfooter
-//                                               .copyWith(fontSize: 10)),
-//                                     ],
-//                                   ),
-//                                 ],
-//                               ),
-//                               Column(
-//                                 children: [
-//                                   Text("Expires On",
-//                                       style: AppStyle.cardfooter),
-//                                   Chip(
-//                                     backgroundColor: Colors.green.shade200,
-//                                     label: Text("Unlimited",
-//                                         style: AppStyle.cardfooter
-//                                             .copyWith(fontSize: 11)),
-//                                   ),
-//                                 ],
-//                               ),
-//                             ],
-//                           ),
-//                         ),
-//                       ],
-//                     ),
-//                   ),
-//                 ),
-//               ],
-//             ),
-//           );
-//         },
+//           )
+//         ],
 //       ),
 //     );
 //   }
