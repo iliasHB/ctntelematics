@@ -469,22 +469,10 @@ class _DashboardPageState extends State<DashboardPage> {
                                                                     fontWeight:
                                                                         FontWeight
                                                                             .w300),
-                                                            maxLines:
-                                                                1, // Restrict to a single line for count as well
-                                                            overflow:
-                                                                TextOverflow
-                                                                    .ellipsis,
+                                                            maxLines: 1, // Restrict to a single line for count as well
+                                                            overflow: TextOverflow.ellipsis,
                                                           );
                                                         }
-
-                                                        final onlineVehicles =
-                                                            vehicles.where((v) {
-                                                          return v
-                                                                  .locationInfo
-                                                                  .tracker!
-                                                                  .status ==
-                                                              "online";
-                                                        }).toList();
                                                         return Text(
                                                           '${vehicleCounts['offline'] ?? 0}',
                                                           style: AppStyle
@@ -625,7 +613,23 @@ class _DashboardPageState extends State<DashboardPage> {
                                   );
                                 } else {
                                   return Center(
-                                      child: Text('No records found', style: AppStyle.cardfooter,));
+                                      child: Column(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        crossAxisAlignment: CrossAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            'No records found',
+                                            style: AppStyle.cardfooter,
+                                          ),
+                                          SizedBox(height: 10.0,),
+                                          CustomSecondaryButton(
+                                              label: 'Refresh',
+                                              onPressed: () {
+                                                BlocProvider.of<DashVehiclesBloc>(context)
+                                                    .add(DashVehicleEvent(dashVehicleReqEntity));
+                                              })
+                                        ],
+                                      ));
                                 }
                               }, listener: (context, state) {
                                 if (state is DashboardFailure) {
