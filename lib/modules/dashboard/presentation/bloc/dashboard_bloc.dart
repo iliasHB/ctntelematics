@@ -35,12 +35,9 @@ class DashVehiclesBloc extends Bloc<DashboardEvent, DashboardState> {
         token: event.dashVehicleReqEntity.token,
         contentType: event.dashVehicleReqEntity.contentType,
       ));
-      print('hellllooooooo>>>>>>>>>>');
       yield DashboardDone(resp); // Emit success state after getting the user
-      print('hellllooooooo>>ffffffffff>>>>>>>>');
 
     } catch (error) {
-      print('errorr2::::: $error');
       if (error is ApiErrorException) {
         yield DashboardFailure(error.message); // Emit API error message
       } else if (error is NetworkException) {

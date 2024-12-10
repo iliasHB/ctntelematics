@@ -522,8 +522,8 @@ class GpsProcessor {
     }
 
     // Calculate route start and end
-    DateTime routeStart =  DateTime.parse(movingData.first.created_at);//movingData.first.created_at;
-    DateTime routeEnd =  DateTime.parse(movingData.last.created_at);//movingData.last.created_at;
+    DateTime routeStart =  DateTime.parse(movingData.first.fix_time);//movingData.first.created_at;
+    DateTime routeEnd =  DateTime.parse(movingData.last.fix_time);//movingData.last.created_at;
     Duration moveDuration = routeEnd.difference(routeStart);
 
     // Maximum speed and average speed
@@ -559,9 +559,9 @@ class GpsProcessor {
       final speed = double.tryParse(gpsData[i].speed) ?? 0.0;
 
       // Parse created_at as DateTime
-      final createdAt = DateTime.tryParse(gpsData[i].created_at);
+      final createdAt = DateTime.tryParse(gpsData[i].fix_time);
       if (createdAt == null) {
-        throw FormatException('Invalid date format in created_at: ${gpsData[i].created_at}');
+        throw FormatException('Invalid date format in created_at: ${gpsData[i].fix_time}');
       }
 
       if (speed == 0.0) {
@@ -580,9 +580,9 @@ class GpsProcessor {
 
     // If the last entry is a stop, add its duration
     if (stopStartTime != null) {
-      final lastCreatedAt = DateTime.tryParse(gpsData.last.created_at);
+      final lastCreatedAt = DateTime.tryParse(gpsData.last.fix_time);
       if (lastCreatedAt == null) {
-        throw FormatException('Invalid date format in last created_at: ${gpsData.last.created_at}');
+        throw FormatException('Invalid date format in last created_at: ${gpsData.last.fix_time}');
       }
       totalStopDuration += lastCreatedAt.difference(stopStartTime);
     }

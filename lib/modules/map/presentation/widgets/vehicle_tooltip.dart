@@ -50,7 +50,7 @@ class VehicleToolTipDialog {
                 borderRadius: BorderRadius.circular(10.0),
               ),
               height: 200,
-              width: size.width,
+              width: MediaQuery.of(context).size.width,
               child: Padding(
                 padding:
                     const EdgeInsets.only(left: 10.0, top: 10.0, bottom: 10.0),
@@ -325,6 +325,10 @@ class VehicleToolTipDialog {
   }
 }
 
+
+
+
+
 class VehicleTooltip extends StatelessWidget {
   String? number_plate, driver, vehicle_id, phone_no, location;
   VehicleTooltip(
@@ -336,19 +340,27 @@ class VehicleTooltip extends StatelessWidget {
       required this.location});
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text("Driver: $driver", style: AppStyle.cardfooter),
-            Text("Vehicle ID: $vehicle_id", style: AppStyle.cardfooter),
-            Text("Phone Number: $phone_no", style: AppStyle.cardfooter),
-            Text("Location: $location", style: AppStyle.cardfooter),
-          ],
-        ),
-      ],
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: [
+          SizedBox(
+            width: size.width * 0.8, // Adjust as needed
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text("Driver: $driver", style: AppStyle.cardfooter),
+                Text("Vehicle ID: $vehicle_id", style: AppStyle.cardfooter),
+                Text("Phone Number: $phone_no", style: AppStyle.cardfooter),
+                Text("Location: $location", style: AppStyle.cardfooter,),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
+
+
 }

@@ -265,7 +265,7 @@ class VehicleShareRoute extends StatelessWidget {
                       ),
                       const Spacer(),
                       IconButton(
-                          onPressed: () => Navigator.pop(context),
+                          onPressed: onClose,
                           icon: const Icon(Icons.cancel_outlined))
                     ],
                   ),

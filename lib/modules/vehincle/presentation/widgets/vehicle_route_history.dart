@@ -454,66 +454,200 @@ class _RouteHistoryMapState extends State<RouteHistoryMap> {
   }
 
   void _animateVehicleMovement() async {
-    if (_currentIndex >= _polylineCoordinates.length ||
-        !_isPlaying ||
-        _isPaused) {
+    // Stop animation if reached the last point or conditions are not met
+    if (_currentIndex >= _polylineCoordinates.length - 1 || !_isPlaying || _isPaused) {
       return;
     }
 
+    // Get current and next positions
     LatLng currentLocation = _polylineCoordinates[_currentIndex];
-    // LatLng nextLocation = _polylineCoordinates[_currentIndex + 1];
+    LatLng nextLocation = _polylineCoordinates[_currentIndex + 1];
 
-    // Update the vehicle's speed based on the current index data
+    // Update speed and max speed dynamically
+    double currentSpeed = double.tryParse(vehicleSpeed) ?? 0;
     setState(() {
-      vehicleSpeed = widget.resp.data[_currentIndex].speed
-          .toString(); // Update vehicle speed
-      double currentSpeed = double.tryParse(vehicleSpeed) ?? 0;
-      // Update max speed if current speed is higher
+      vehicleSpeed = widget.resp.data[_currentIndex].speed.toString();
       if (currentSpeed > maxSpeed) {
         maxSpeed = currentSpeed;
       }
       _updateMoveAndStopDurations(double.tryParse(vehicleSpeed) ?? 0);
     });
-    // Call the method to update the vehicle's position
-    _updateVehiclePosition(currentLocation);
-    // // Calculate the bearing between the current and the next location
-    // double bearing = _calculateBearing(currentLocation, nextLocation);
 
-    await _mapController.animateCamera(CameraUpdate.newLatLng(currentLocation));
+    // Calculate bearing and distance to the next point
+    double bearing = _calculateBearing(currentLocation, nextLocation);
+    double distanceToNextPoint = _calculateDistance(currentLocation, nextLocation);
 
-    // Calculate the bearing between the current and the next location
-    if (_currentIndex < _polylineCoordinates.length - 1) {
-      LatLng nextLocation = _polylineCoordinates[_currentIndex + 1];
-      double distanceToNextPoint =
-          _calculateDistance(currentLocation, nextLocation);
-      print(
-          "Distance to next point: ${distanceToNextPoint.toStringAsFixed(2)} km");
+    // Get the selected animation duration from the speed map
+    Duration speedDuration = speedMap[widget.speed] ?? const Duration(seconds: 1);
 
-      double bearing = _calculateBearing(currentLocation, nextLocation);
+    // Interpolation logic for smooth marker movement
+    const int steps = 20; // Number of intermediate steps for smoother animation
+    for (int i = 1; i <= steps; i++) {
+      if (!_isPlaying || _isPaused) return; // Exit if animation is paused or stopped
 
-      await _mapController
-          .animateCamera(CameraUpdate.newLatLng(currentLocation));
+      // Linear interpolation factor
+      double t = i / steps;
+      LatLng interpolatedPosition = LatLng(
+        currentLocation.latitude + (nextLocation.latitude - currentLocation.latitude) * t,
+        currentLocation.longitude + (nextLocation.longitude - currentLocation.longitude) * t,
+      );
 
+      // Update marker position
       setState(() {
         _vehicleMarker = Marker(
           markerId: const MarkerId('vehicle'),
-          position: currentLocation,
-          icon: _customIcon ??
-              BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
+          position: interpolatedPosition,
+          icon: _customIcon ?? BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
           rotation: bearing,
           anchor: const Offset(0.5, 0.5),
         );
       });
+      _updateVehiclePosition(currentLocation);
+
+      // Optionally animate the camera to follow the vehicle
+      if (i % 5 == 0) {
+        await _mapController.animateCamera(CameraUpdate.newLatLng(interpolatedPosition));
+      }
+
+      // Wait for the next step
+      await Future.delayed(speedDuration ~/ steps);
     }
 
-    _fetchAddress(currentLocation.latitude, currentLocation.longitude);
+    // Fetch the address after movement (optional)
+    _fetchAddress(nextLocation.latitude, nextLocation.longitude);
+
+    // Move to the next point and recursively call the animation function
     _currentIndex++;
-    print("speed: ${speedMap[widget.speed]}");
-    // Use the speed parameter to determine the delay between movements
-    Duration delay = speedMap[widget.speed] ??
-        const Duration(seconds: 1); // Default to 1 second if speed is not set
-    Future.delayed(delay, _animateVehicleMovement); // Recursively animate
+    _animateVehicleMovement();
   }
+
+///----
+  // void _animateVehicleMovement() async {
+  //   if (_currentIndex >= _polylineCoordinates.length - 1 || !_isPlaying || _isPaused) {
+  //     return;
+  //   }
+  //
+  //   LatLng currentLocation = _polylineCoordinates[_currentIndex];
+  //   LatLng nextLocation = _polylineCoordinates[_currentIndex + 1];
+  //
+  //   double currentSpeed = double.tryParse(vehicleSpeed) ?? 0;
+  //
+  //   // Update the vehicle speed and max speed
+  //   setState(() {
+  //     vehicleSpeed = widget.resp.data[_currentIndex].speed.toString();
+  //     if (currentSpeed > maxSpeed) {
+  //       maxSpeed = currentSpeed;
+  //     }
+  //   });
+  //
+  //   // Calculate bearing and distance
+  //   double bearing = _calculateBearing(currentLocation, nextLocation);
+  //   double distanceToNextPoint = _calculateDistance(currentLocation, nextLocation);
+  //
+  //   // Calculate animation duration based on speed (lower speed = longer duration)
+  //   double durationFactor = currentSpeed > 0 ? 1 / currentSpeed : 1; // Example factor
+  //   Duration animationDuration = Duration(milliseconds: (1000 * durationFactor).toInt());
+  //
+  //   // Interpolate and animate marker movement
+  //   const int steps = 20; // Number of intermediate steps for smooth movement
+  //   for (int i = 1; i <= steps; i++) {
+  //     if (!_isPlaying || _isPaused) return; // Stop animation if paused or stopped
+  //
+  //     double t = i / steps; // Interpolation factor (0.0 to 1.0)
+  //     LatLng interpolatedPosition = LatLng(
+  //       currentLocation.latitude + (nextLocation.latitude - currentLocation.latitude) * t,
+  //       currentLocation.longitude + (nextLocation.longitude - currentLocation.longitude) * t,
+  //     );
+  //
+  //     setState(() {
+  //       _vehicleMarker = Marker(
+  //         markerId: const MarkerId('vehicle'),
+  //         position: interpolatedPosition,
+  //         icon: _customIcon ?? BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
+  //         rotation: bearing,
+  //         anchor: const Offset(0.5, 0.5),
+  //       );
+  //     });
+  //
+  //     // Smooth camera follow (optional)
+  //     if (i % 5 == 0) {
+  //       await _mapController.animateCamera(CameraUpdate.newLatLng(interpolatedPosition));
+  //     }
+  //
+  //     Duration delay = speedMap[widget.speed] ??
+  //         const Duration(seconds: 1);
+  //     await Future.delayed(delay, animationDuration ~/ steps); // Wait for the next step
+  //   }
+  //   _fetchAddress(currentLocation.latitude, currentLocation.longitude);
+  //
+  //   // Move to the next point
+  //   _currentIndex++;
+  //   _animateVehicleMovement(); // Recursive call for continuous movement
+  // }
+
+  ///----
+  // void _animateVehicleMovement() async {
+  //   if (_currentIndex >= _polylineCoordinates.length ||
+  //       !_isPlaying ||
+  //       _isPaused) {
+  //     return;
+  //   }
+  //
+  //   LatLng currentLocation = _polylineCoordinates[_currentIndex];
+  //   // LatLng nextLocation = _polylineCoordinates[_currentIndex + 1];
+  //
+  //   // Update the vehicle's speed based on the current index data
+  //   setState(() {
+  //     vehicleSpeed = widget.resp.data[_currentIndex].speed
+  //         .toString(); // Update vehicle speed
+  //     double currentSpeed = double.tryParse(vehicleSpeed) ?? 0;
+  //     // Update max speed if current speed is higher
+  //     if (currentSpeed > maxSpeed) {
+  //       maxSpeed = currentSpeed;
+  //     }
+  //     _updateMoveAndStopDurations(double.tryParse(vehicleSpeed) ?? 0);
+  //   });
+  //   // Call the method to update the vehicle's position
+  //   _updateVehiclePosition(currentLocation);
+  //   // // Calculate the bearing between the current and the next location
+  //   // double bearing = _calculateBearing(currentLocation, nextLocation);
+  //
+  //   await _mapController.animateCamera(CameraUpdate.newLatLng(currentLocation));
+  //
+  //   // Calculate the bearing between the current and the next location
+  //   if (_currentIndex < _polylineCoordinates.length - 1) {
+  //     LatLng nextLocation = _polylineCoordinates[_currentIndex + 1];
+  //     double distanceToNextPoint =
+  //         _calculateDistance(currentLocation, nextLocation);
+  //     print(
+  //         "Distance to next point: ${distanceToNextPoint.toStringAsFixed(2)} km");
+  //
+  //     double bearing = _calculateBearing(currentLocation, nextLocation);
+  //
+  //     await _mapController
+  //         .animateCamera(CameraUpdate.newLatLng(currentLocation));
+  //
+  //     setState(() {
+  //       _vehicleMarker = Marker(
+  //         markerId: const MarkerId('vehicle'),
+  //         position: currentLocation,
+  //         icon: _customIcon ??
+  //             BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
+  //         rotation: bearing,
+  //         anchor: const Offset(0.5, 0.5),
+  //       );
+  //     });
+  //   }
+  //
+  //   _fetchAddress(currentLocation.latitude, currentLocation.longitude);
+  //   _currentIndex++;
+  //   // print("speed: ${speedMap[widget.speed]}");
+  //   // Use the speed parameter to determine the delay between movements
+  //   Duration delay = speedMap[widget.speed] ??
+  //       const Duration(seconds: 1); // Default to 1 second if speed is not set
+  //   Future.delayed(delay, _animateVehicleMovement); // Recursively animate
+  // }
+
 
   void _fetchAddress(double latitude, double longitude) async {
     List<Placemark> placemarks =
@@ -931,7 +1065,7 @@ class _RouteLastLocationState extends State<RouteLastLocation> {
         future: _getAuthUserFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(child: CircularProgressIndicator( strokeWidth: 2.0, color: Colors.green,));
           } else if (snapshot.hasError) {
             return const Center(child: Text('Failed to fetch user data'));
           } else {
@@ -939,8 +1073,8 @@ class _RouteLastLocationState extends State<RouteLastLocation> {
             _markers.addAll([
               Marker(
                 icon: _customIcon!,
-                markerId: const MarkerId('id'),
-                position: LatLng(widget.latitude, widget.longitude),
+                markerId:  MarkerId('id'),
+                position: _center//LatLng(widget.latitude, widget.longitude),
               ),
             ]);
             return Flexible(
