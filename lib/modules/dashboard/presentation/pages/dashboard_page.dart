@@ -101,23 +101,19 @@ class _DashboardPageState extends State<DashboardPage> {
     return {
       'online': vehicles
           .where((v) =>
-              v.last_location?.status == "online" ||
-              v.last_location?.status == "Online")
+              v.last_location?.status!.toLowerCase() == "online")
           .length,
       'offline': vehicles
           .where((v) =>
-              v.last_location?.status == "offline" ||
-              v.last_location?.status == "Offline")
+              v.last_location?.status!.toLowerCase() == "offline" )
           .length,
       'idling': vehicles
           .where((v) =>
-              v.last_location?.status == "idling" ||
-              v.last_location?.status == "Idling")
+              v.last_location?.status!.toLowerCase() == "idling" )
           .length,
       'parked': vehicles
           .where((v) =>
-              v.last_location?.status == "parked" ||
-              v.last_location?.status == "Parked")
+              v.last_location?.status!.toLowerCase() == "parked")
           .length,
     };
   }
@@ -366,7 +362,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                             return VehicleStatusPieChart(
                                                 onlineCount: vehicleWebsocketCounts['online'] ?? 0,
                                                 offlineCount: vehicleCounts['offline'] ?? 0,
-                                                idlingCount: vehicleWebsocketCounts['idling'] ?? 0,
+                                                idlingCount: vehicleCounts['idling'] ?? 0,
                                                 parkedCount: vehicleCounts['parked'] ?? 0);
                                           },
                                         ),
@@ -524,6 +520,19 @@ class _DashboardPageState extends State<DashboardPage> {
                                                               .ellipsis,
                                                         );
                                                       }
+                                                      return Text(
+                                                        '${vehicleCounts['idling'] ?? 0}',
+                                                        style: AppStyle
+                                                            .cardfooter
+                                                            .copyWith(
+                                                            fontWeight:
+                                                            FontWeight
+                                                                .w300),
+                                                        maxLines:
+                                                        1, // Restrict to a single line for count as well
+                                                        overflow: TextOverflow
+                                                            .ellipsis,
+                                                      );
 
                                                       // final idlingVehicles =
                                                       //     vehicles.where((v) {
@@ -531,24 +540,25 @@ class _DashboardPageState extends State<DashboardPage> {
                                                       //           .vehicleStatus ==
                                                       //       "Idling";
                                                       //   // && v.locationInfo.tracker?.position?.ignition == "on";
-                                                      // }).toList();
+                                                      // }).toList();\
 
-                                                      final vehicleWebsocketCounts = _computeVehicleSocketCounts(vehicles);
-
-                                                      print('object websocket idling ::: ${vehicleWebsocketCounts['idling'] ?? 0}');
-                                                      return Text(
-                                                        '${vehicleWebsocketCounts['idling']}',
-                                                        style: AppStyle
-                                                            .cardfooter
-                                                            .copyWith(
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .w300),
-                                                        maxLines:
-                                                            1, // Restrict to a single line for count as well
-                                                        overflow: TextOverflow
-                                                            .ellipsis,
-                                                      );
+                                                      ///
+                                                      // final vehicleWebsocketCounts = _computeVehicleSocketCounts(vehicles);
+                                                      //
+                                                      // print('object websocket idling ::: ${vehicleWebsocketCounts['idling'] ?? 0}');
+                                                      // return Text(
+                                                      //   '${vehicleWebsocketCounts['idling']}',
+                                                      //   style: AppStyle
+                                                      //       .cardfooter
+                                                      //       .copyWith(
+                                                      //           fontWeight:
+                                                      //               FontWeight
+                                                      //                   .w300),
+                                                      //   maxLines:
+                                                      //       1, // Restrict to a single line for count as well
+                                                      //   overflow: TextOverflow
+                                                      //       .ellipsis,
+                                                      // );
                                                     },
                                                   )),
                                                   symbol: const CircleAvatar(

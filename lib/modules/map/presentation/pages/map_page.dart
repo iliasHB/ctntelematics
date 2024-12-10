@@ -189,13 +189,11 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
                     // Add markers for all vehicles' last known location
                     _updateMarkers(state.resp, vehicles: []);
 
-                    return BlocListener<VehicleLocationBloc,
-                        List<VehicleEntity>>(
+                    return BlocListener<VehicleLocationBloc, List<VehicleEntity>>(
                       listener: (context, vehicles) {
                         // Handle additional logic if needed
                       },
-                      child:
-                          BlocBuilder<VehicleLocationBloc, List<VehicleEntity>>(
+                      child: BlocBuilder<VehicleLocationBloc, List<VehicleEntity>>(
                         builder: (context, vehicles) {
                           // Update markers for vehicles that have moved
                           _updateMarkers(state.resp, vehicles: vehicles);
@@ -214,7 +212,7 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
                           'No records found',
                           style: AppStyle.cardfooter,
                         ),
-                        SizedBox(
+                        const SizedBox(
                           height: 10.0,
                         ),
                         CustomSecondaryButton(
@@ -235,15 +233,131 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
     );
   }
 
+  // void _updateMarkers(List<LastLocationRespEntity> allVehicles, {required List<VehicleEntity> vehicles,}) async {
+  //   // Map<String, Marker> updatedMarkers = Map.fromIterable(
+  //   //   _markers,
+  //   //   key: (marker) => marker.markerId.value,
+  //   //   value: (marker) => marker,
+  //   // );
+  //   List<Marker> updatedMarkers = List.from(_markers);
+  //
+  //   // Offline Vehicle Markers
+  //   for (var vehicle in allVehicles) {
+  //     final details = vehicle.vehicle?.details;
+  //     final lastLocation = details?.last_location;
+  //     if (details != null && lastLocation != null) {
+  //       _addGeofencePolygon(vehicle.vehicle?.geofence?.coordinates);
+  //       final currentPosition = LatLng(
+  //         double.parse(lastLocation.latitude.toString()),
+  //         double.parse(lastLocation.longitude.toString()),
+  //       );
+  //
+  //       if (_offlineCustomIcon == null) await _setOfflineCustomMarkerIcon();
+  //
+  //       updatedMarkers[int.parse(details.number_plate!)] = Marker(
+  //         icon: _offlineCustomIcon!,
+  //         markerId: MarkerId(details.number_plate!),
+  //         position: currentPosition,
+  //         onTap: () => _showVehicleToolTip(vehicle),
+  //         infoWindow: InfoWindow(title: details.number_plate),
+  //       );
+  //     }
+  //   }
+  //
+  //   // Online Vehicle Markers
+  //   for (var vehicle in vehicles) {
+  //     final locationInfo = vehicle.locationInfo;
+  //     final tracker = locationInfo.tracker;
+  //     if ((tracker?.status?.toLowerCase() == "online" &&
+  //             locationInfo.vehicleStatus.toLowerCase() == "moving" &&
+  //             tracker?.position?.latitude != null &&
+  //             tracker?.position?.longitude != null) ||
+  //         (tracker?.status?.toLowerCase() == "online" &&
+  //             locationInfo.vehicleStatus.toLowerCase() == "idling") ||
+  //         (tracker?.status?.toLowerCase() == "online" &&
+  //             locationInfo.vehicleStatus.toLowerCase() == "parked")) {
+  //       _addGeofencePolygon2(locationInfo.withinGeofence?.coordinates ?? []);
+  //       final currentPosition = LatLng(
+  //         double.parse(tracker!.position!.latitude.toString()),
+  //         double.parse(tracker.position!.longitude.toString()),
+  //       );
+  //
+  //       final numberPlate = locationInfo.numberPlate;
+  //       final previousPosition = _previousPositions[numberPlate];
+  //       _previousPositions[numberPlate] = currentPosition;
+  //
+  //       double? bearing;
+  //       if (previousPosition != null) {
+  //         bearing = _calculateBearing(previousPosition, currentPosition);
+  //       }
+  //
+  //       if (previousPosition == null ||
+  //           _calculateDistance(previousPosition, currentPosition) >= 1) {
+  //         if (_onlineCustomIcon == null) await _setOnlineCustomMarkerIcon();
+  //
+  //         // Interpolate marker movement for smooth animation
+  //         const int steps = 20; // Number of steps for interpolation
+  //         for (int i = 1; i <= steps; i++) {
+  //           final t = i / steps;
+  //           final interpolatedPosition = LatLng(
+  //             previousPosition == null
+  //                 ? currentPosition.latitude
+  //                 : previousPosition.latitude +
+  //                     (currentPosition.latitude - previousPosition.latitude) * t,
+  //             previousPosition == null
+  //                 ? currentPosition.longitude
+  //                 : previousPosition.longitude +
+  //                     (currentPosition.longitude - previousPosition.longitude) * t,
+  //           );
+  //
+  //           // Update the marker position
+  //           updatedMarkers[int.parse(numberPlate)] = Marker(
+  //             icon: _onlineCustomIcon ?? _offlineCustomIcon!,
+  //             markerId: MarkerId(numberPlate),
+  //             position: currentPosition,
+  //             onTap: () => _showVehicleToolTip(vehicle),
+  //             infoWindow: InfoWindow(title: numberPlate),
+  //             rotation: bearing ?? 0,
+  //           );
+  //
+  //           // Smooth camera follow (optional)
+  //           if (i % 5 == 0) {
+  //             await mapController.animateCamera(CameraUpdate.newLatLng(interpolatedPosition));
+  //           }
+  //
+  //           // Delay for smooth animation
+  //           await Future.delayed(const Duration(milliseconds: 50));
+  //         }
+  //
+  //         // updatedMarkers[int.parse(numberPlate)] = Marker(
+  //         //   icon: _onlineCustomIcon!,
+  //         //   markerId: MarkerId(numberPlate),
+  //         //   position: currentPosition,
+  //         //   onTap: () => _showVehicleToolTip(vehicle),
+  //         //   infoWindow: InfoWindow(title: numberPlate),
+  //         //   rotation: bearing ?? 0,
+  //         // );
+  //       }
+  //     }
+  //   }
+  //
+  //   WidgetsBinding.instance.addPostFrameCallback((_) {
+  //     if (mounted) {
+  //       setState(() {
+  //         _marker = updatedMarkers;
+  //       });
+  //     }
+  //   });
+  // }
+
   void _updateMarkers(List<LastLocationRespEntity> allVehicles,
       {required List<VehicleEntity> vehicles}) async {
     // Set<Marker> updatedMarkers = {};
     List<Marker> updatedMarkers = List.from(_markers);
 
-    /// Offline markers
+    /// Offline vehicle markers
     for (var vehicle in allVehicles) {
-      if (vehicle.vehicle != null &&
-          vehicle.vehicle!.details?.last_location != null) {
+      if (vehicle.vehicle != null && vehicle.vehicle!.details?.last_location != null) {
         _addGeofencePolygon(vehicle.vehicle?.geofence?.coordinates);
 
         final currentPosition = LatLng(
@@ -268,7 +382,27 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
               markerId: MarkerId(numberPlate),
               position: currentPosition,
               onTap: () {
-                _showVehicleToolTip(vehicle);
+                _showVehicleOfflineToolTip(
+                  number_plate: vehicle.vehicle?.details!.number_plate,
+                  vin: vehicle.vehicle?.details?.vin,
+                  address: vehicle.vehicle?.address,
+                  phone: vehicle.vehicle?.driver?.phone,
+                  name: vehicle.vehicle?.driver?.name,
+                  brand: vehicle.vehicle?.details?.brand,
+                  model: vehicle.vehicle?.details?.model,
+                  token: token,
+                  latitude: vehicle.vehicle?.details?.last_location?.latitude,
+                  longitude: vehicle.vehicle?.details?.last_location?.longitude,
+                  voltage_level: vehicle.vehicle?.details?.last_location?.voltage_level,
+                  speed: vehicle.vehicle?.details?.last_location?.speed,
+                  real_time_gps: vehicle.vehicle?.details?.last_location?.real_time_gps,
+                  status: vehicle.vehicle?.details?.last_location?.status,
+                  gsm_signal_strength: vehicle.vehicle?.details?.last_location?.gsm_signal_strength,
+                  updated_at: vehicle.vehicle?.details?.last_location?.updated_at,
+                  email: vehicle.vehicle?.driver?.email,
+                  country: vehicle.vehicle?.driver?.country,
+                  licence_number: vehicle.vehicle?.driver?.licence_number,
+                );
               },
               infoWindow: InfoWindow(
                 title: numberPlate,
@@ -278,62 +412,38 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
         }
       }
     }
-    // for (var vehicle in allVehicles) {
-    //   if (vehicle.vehicle != null &&
-    //       vehicle.vehicle!.details?.last_location != null) {
-    //     _addGeofencePolygon(vehicle.vehicle?.geofence?.coordinates);
-    //     final currentPosition = LatLng(
-    //       double.parse(vehicle.vehicle!.details!.last_location!.latitude.toString()),
-    //       double.parse(vehicle.vehicle!.details!.last_location!.longitude.toString()),
-    //     );
-    //     final numberPlate = vehicle.vehicle!.details!.number_plate!;
-    //     if (vehicle.vehicle!.details?.last_location?.status != 'Moving') {
-    //       updatedMarkers.add(
-    //         Marker(
-    //           icon: _offlineCustomIcon ?? BitmapDescriptor.defaultMarker,
-    //           markerId: MarkerId(numberPlate),
-    //           position: currentPosition,
-    //           onTap: () => _showVehicleToolTip(vehicle),
-    //           infoWindow: InfoWindow(title: numberPlate),
-    //         ),
-    //       );
-    //     }
-    //   }
-    // }
 
-    /// Online markers
+    /// Online moving vehicle markers
     for (var vehicle in vehicles) {
       print("vehicle status: ${vehicles[0].locationInfo.vehicleStatus}");
       print("tracker status: ${vehicles[0].locationInfo.tracker?.status}");
 
-      if ((vehicle.locationInfo.vehicleStatus == "Moving" &&
-                  vehicle.locationInfo.tracker!.status == "online" &&
-                  vehicle.locationInfo.tracker!.position!.latitude != null &&
-                  vehicle.locationInfo.tracker!.position!.longitude != null ||
-              vehicle.locationInfo.tracker!.status == "Online") ||
-          (vehicle.locationInfo.vehicleStatus == "Parked" &&
-                  vehicle.locationInfo.tracker!.status == "online" &&
-                  vehicle.locationInfo.tracker!.position!.latitude != null &&
-                  vehicle.locationInfo.tracker!.position!.longitude != null ||
-              vehicle.locationInfo.tracker!.status == "Online") ||
-          (vehicle.locationInfo.vehicleStatus == "Idling" &&
-                  vehicle.locationInfo.tracker!.status == "online" &&
-                  vehicle.locationInfo.tracker!.position!.latitude != null &&
-                  vehicle.locationInfo.tracker!.position!.longitude != null ||
-              vehicle.locationInfo.tracker!.status == "Online")) {
+      if ((vehicle.locationInfo.vehicleStatus.toLowerCase() == "moving" &&
+              vehicle.locationInfo.tracker!.status!.toLowerCase() == "online" &&
+              vehicle.locationInfo.tracker!.position!.latitude != null &&
+              vehicle.locationInfo.tracker!.position!.longitude != null)
+      // ||
+          // (vehicle.locationInfo.vehicleStatus.toLowerCase() == "parked" &&
+          //     vehicle.locationInfo.tracker!.status!.toLowerCase() == "online" &&
+          //     vehicle.locationInfo.tracker!.position!.latitude != null &&
+          //     vehicle.locationInfo.tracker!.position!.longitude != null) ||
+          // (vehicle.locationInfo.vehicleStatus.toLowerCase() == "idling" &&
+          //     vehicle.locationInfo.tracker!.status!.toLowerCase() == "online" &&
+          //     vehicle.locationInfo.tracker!.position!.latitude != null &&
+          //     vehicle.locationInfo.tracker!.position!.longitude != null)
+      ) {
         _addGeofencePolygon2(
           vehicle.locationInfo.withinGeofence?.coordinates ?? [],
         );
+
         final currentPosition = LatLng(
           double.parse(
               vehicle.locationInfo.tracker!.position!.latitude.toString()),
           double.parse(
               vehicle.locationInfo.tracker!.position!.longitude.toString()),
         );
-        final numberPlate = vehicle.locationInfo.numberPlate;
 
-        // Smoothly animate marker movement
-        // updatedMarkers.removeWhere((marker) => marker.markerId.value == numberPlate);
+        final numberPlate = vehicle.locationInfo.numberPlate;
 
         // Retrieve the previous position for bearing calculation
         final previousPosition = _previousPositions[numberPlate];
@@ -341,138 +451,161 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
         // Cache the current position as the new previous position
         _previousPositions[numberPlate] = currentPosition;
 
-        // if (_onlineCustomIcon == null) {
-        //   _setOnlineCustomMarkerIcon();
-        // }
-
-        // // Smoothly animate marker movement
-        // if (previousPosition != null) {
-        //   _animateMarkerMovement(numberPlate, previousPosition, currentPosition, vehicle);
-        // } else {
-        //   // No previous position: directly add a marker at the new position
-        //   updatedMarkers.add(
-        //     Marker(
-        //       markerId: MarkerId(numberPlate),
-        //       position: currentPosition,
-        //       icon: _onlineCustomIcon ?? _offlineCustomIcon!,
-        //       onTap: () => _showVehicleToolTip(vehicle),
-        //       infoWindow: InfoWindow(
-        //         title: numberPlate,
-        //       ),
-        //     ),
-        //   );
-        // }
-
-
-        ///-----
-
-              // Calculate bearing if we have a previous position
+        // Calculate bearing if we have a previous position
         double? bearing;
         if (previousPosition != null) {
           bearing = _calculateBearing(previousPosition, currentPosition);
         }
 
+        // Remove any existing marker with the same ID
         updatedMarkers.removeWhere((marker) => marker.markerId.value == numberPlate);
 
-
-        // Add marker only if the vehicle has moved significantly
-        // Adjust the distance threshold to update markers more frequently if necessary
-        if (previousPosition == null || _calculateDistance(previousPosition, currentPosition) >= 1 ) {
+        // Add or update the marker only if the vehicle has moved significantly
+        if (previousPosition == null || _calculateDistance(previousPosition, currentPosition) >= 1) {
           if (_onlineCustomIcon == null) {
-            _setOnlineCustomMarkerIcon();
+            await _setOnlineCustomMarkerIcon();
           }
 
-          _markers.add(
-            Marker(
-              icon: _onlineCustomIcon ?? _offlineCustomIcon!,
-                  // BitmapDescriptor.defaultMarker,
-              // itmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
-              markerId: MarkerId(numberPlate),
-              position: currentPosition,
-              onTap: () {
-                _showVehicleToolTip(vehicle);
-              },
-              infoWindow: InfoWindow(
-                title: numberPlate,
-              ),
-              rotation: bearing ?? 0, // Set bearing if available
-            ),
-          );
+          // Interpolate marker movement for smooth animation
+          const int steps = 50; // Number of steps for interpolation
+          for (int i = 1; i <= steps; i++) {
+            final t = i / steps;
+            final interpolatedPosition = LatLng(
+              previousPosition == null
+                  ? currentPosition.latitude
+                  : previousPosition.latitude +
+                      (currentPosition.latitude - previousPosition.latitude) *
+                          t,
+              previousPosition == null
+                  ? currentPosition.longitude
+                  : previousPosition.longitude +
+                      (currentPosition.longitude - previousPosition.longitude) *
+                          t,
+            );
 
-          // Smoothly animate the camera to the new position
-          await mapController.animateCamera(CameraUpdate.newLatLng(currentPosition));
-          // mapController.animateCamera(CameraUpdate.newLatLng(currentPosition));
+            // Update the marker position
+            _markers.add(
+              Marker(
+                icon: _onlineCustomIcon ?? _offlineCustomIcon!,
+                markerId: MarkerId(numberPlate),
+                position: interpolatedPosition,
+                onTap: () {
+                  _showVehicleOnlineToolTip(
+                    numberPlate: vehicle.locationInfo.numberPlate,
+                    vin: vehicle.locationInfo.vin,
+                    address: '',
+                    phone: '',
+                    name: '',
+                    brand: vehicle.locationInfo.brand,
+                    model: vehicle.locationInfo.model,
+                    token: token,
+                    latitude: vehicle.locationInfo.tracker?.position?.latitude,
+                    longitude:
+                        vehicle.locationInfo.tracker?.position?.longitude,
+                    batteryLevel:
+                        vehicle.locationInfo.tracker?.position?.batteryLevel,
+                    speed: vehicle.locationInfo.tracker?.position?.speed,
+                    real_time_gps: false,
+                    status: vehicle.locationInfo.tracker?.status,
+                    gsmRssi: vehicle.locationInfo.tracker?.position?.gsmRssi,
+                    lastUpdate: vehicle.locationInfo.tracker?.lastUpdate,
+                    email: '',
+                    country: '',
+                    licence_number: '',
+                  );
+                },
+                infoWindow: InfoWindow(
+                  title: numberPlate,
+                ),
+                rotation: bearing ?? 0, // Apply calculated bearing
+              ),
+            );
+
+            // // Smooth camera follow (optional)
+            // if (i % 5 == 0) {
+            //   await mapController.animateCamera(CameraUpdate.newLatLng(interpolatedPosition));
+            // }
+
+            // Delay for smooth animation
+            await Future.delayed(const Duration(milliseconds: 50));
+          }
         }
       }
     }
 
-    setState(() {
-      _marker = updatedMarkers;
-    });
-  }
-  void _animateMarkerMovement(
-      String numberPlate, LatLng startPosition, LatLng endPosition, VehicleEntity vehicle) {
-    print('Animating marker for: $numberPlate');
-    const int animationDuration = 1000; // Animation duration in milliseconds
-
-    final AnimationController controller = AnimationController(
-      vsync: this, // Ensure your widget implements `TickerProviderStateMixin`
-      duration: const Duration(milliseconds: animationDuration),
-    );
-
-    final Animation<double> latTween = Tween<double>(
-      begin: startPosition.latitude,
-      end: endPosition.latitude,
-    ).animate(controller);
-
-    final Animation<double> lngTween = Tween<double>(
-      begin: startPosition.longitude,
-      end: endPosition.longitude,
-    ).animate(controller);
-
-    controller.addListener(() {
-      final intermediatePosition = LatLng(latTween.value, lngTween.value);
-
-      // Find the marker index
-      final index = _marker.indexWhere((marker) => marker.markerId.value == numberPlate);
-      print('Index found for numberPlate $numberPlate: $index');
-      if (index == -1) {
-        print('Marker not found for numberPlate $numberPlate, adding a new one.');
-        _marker.add(
-          Marker(
-            markerId: MarkerId(numberPlate),
-            position: endPosition,
-            icon: _onlineCustomIcon ?? _offlineCustomIcon!,
-            onTap: () => _showVehicleToolTip(vehicle),
-            infoWindow: InfoWindow(
-              title: numberPlate,
-            ),
-          ),
-        );
-      } else {
-        // Update the existing marker
-        print('Updating marker for numberPlate $numberPlate at index $index');
-        _marker[index] = Marker(
-          markerId: _marker[index].markerId,
-          position: intermediatePosition,
-          icon: _onlineCustomIcon ?? _offlineCustomIcon!,
-          onTap: () => _showVehicleToolTip(vehicle),
-          infoWindow: InfoWindow(
-            title: numberPlate,
-          ),
-          rotation: _calculateBearing(startPosition, intermediatePosition),
-        );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        setState(() {
+          _marker = updatedMarkers;
+        });
       }
-// Trigger UI update
-//       setState(() {});
-    });
-
-    controller.forward().whenComplete(() {
-      controller.dispose();
-      print('Animation complete for: $numberPlate');
     });
   }
 
+  ///
+
+//   void _animateMarkerMovement(String numberPlate, LatLng startPosition, LatLng endPosition, VehicleEntity vehicle) {
+//     print('Animating marker for: $numberPlate');
+//     const int animationDuration = 1000; // Animation duration in milliseconds
+//
+//     final AnimationController controller = AnimationController(
+//       vsync: this, // Ensure your widget implements `TickerProviderStateMixin`
+//       duration: const Duration(milliseconds: animationDuration),
+//     );
+//
+//     final Animation<double> latTween = Tween<double>(
+//       begin: startPosition.latitude,
+//       end: endPosition.latitude,
+//     ).animate(controller);
+//
+//     final Animation<double> lngTween = Tween<double>(
+//       begin: startPosition.longitude,
+//       end: endPosition.longitude,
+//     ).animate(controller);
+//
+//     controller.addListener(() {
+//       final intermediatePosition = LatLng(latTween.value, lngTween.value);
+//
+//       // Find the marker index
+//       final index = _marker.indexWhere((marker) => marker.markerId.value == numberPlate);
+//       print('Index found for numberPlate $numberPlate: $index');
+//       if (index == -1) {
+//         print('Marker not found for numberPlate $numberPlate, adding a new one.');
+//         _marker.add(
+//           Marker(
+//             markerId: MarkerId(numberPlate),
+//             position: endPosition,
+//             icon: _onlineCustomIcon ?? _offlineCustomIcon!,
+//             onTap: () => _showVehicleToolTip(vehicle),
+//             infoWindow: InfoWindow(
+//               title: numberPlate,
+//             ),
+//           ),
+//         );
+//       } else {
+//         // Update the existing marker
+//         print('Updating marker for numberPlate $numberPlate at index $index');
+//         _marker[index] = Marker(
+//           markerId: _marker[index].markerId,
+//           position: intermediatePosition,
+//           icon: _onlineCustomIcon ?? _offlineCustomIcon!,
+//           onTap: () => _showVehicleToolTip(vehicle),
+//           infoWindow: InfoWindow(
+//             title: numberPlate,
+//           ),
+//           rotation: _calculateBearing(startPosition, intermediatePosition),
+//         );
+//       }
+// // Trigger UI update
+// //       setState(() {});
+//     });
+//
+//     controller.forward().whenComplete(() {
+//       controller.dispose();
+//       print('Animation complete for: $numberPlate');
+//     });
+//   }
+  ///
 
   // void _animateMarkerMovement(String numberPlate, LatLng startPosition, LatLng endPosition, VehicleEntity vehicle) {
   //   print('object::::::::::::: $numberPlate');
@@ -842,28 +975,93 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
     return radians * 180 / pi;
   }
 
-  void _showVehicleToolTip(vehicle) {
+  _showVehicleOnlineToolTip(
+      {required String numberPlate,
+      required String vin,
+      required String address,
+      required String phone,
+      required String name,
+      required String brand,
+      required String model,
+      String? token,
+      double? latitude,
+      double? longitude,
+      int? batteryLevel,
+      double? speed,
+      required bool real_time_gps,
+      String? status,
+      int? gsmRssi,
+      String? lastUpdate,
+      required String email,
+      required String country,
+      required String licence_number}) {
+    // print('object-numberplate::::: ${numberPlate}');
     VehicleToolTipDialog.showVehicleToolTipDialog(
       context,
-      vehicle.vehicle!.details!.number_plate,
-      vehicle.vehicle!.details!.vin,
-      vehicle.vehicle!.address,
-      vehicle.vehicle!.driver!.phone,
-      vehicle.vehicle!.driver!.name,
-      vehicle.vehicle!.details!.brand,
-      vehicle.vehicle!.details!.model,
+      numberPlate,
+      vin,
+      address,
+      phone,
+      name,
+      brand,
+      model,
       token,
-      vehicle.vehicle!.details!.last_location!.latitude,
-      vehicle.vehicle!.details!.last_location!.longitude,
-      vehicle.vehicle.details.last_location.voltage_level,
-      vehicle.vehicle.details.last_location.speed,
-      vehicle.vehicle.details.last_location.real_time_gps,
-      vehicle.vehicle.details.last_location.status,
-      vehicle.vehicle.details.last_location.gsm_signal_strength,
-      vehicle.vehicle.details.last_location.updated_at,
-      vehicle.vehicle!.driver!.email,
-      vehicle.vehicle!.driver!.country,
-      vehicle.vehicle!.driver!.licence_number,
+      latitude.toString(),
+      longitude.toString(),
+      batteryLevel.toString(),
+      speed.toString(),
+      real_time_gps,
+      status,
+      gsmRssi.toString(),
+      lastUpdate,
+      email,
+      country,
+      licence_number,
+    );
+  }
+
+  void _showVehicleOfflineToolTip(
+      {String? number_plate,
+      String? vin,
+      String? address,
+      String? phone,
+      String? name,
+      String? brand,
+      String? model,
+      String? token,
+      String? latitude,
+      String? longitude,
+      String? voltage_level,
+      String? speed,
+      bool? real_time_gps,
+      String? status,
+      String? gsm_signal_strength,
+      String? updated_at,
+      String? email,
+      String? country,
+      String? licence_number}) {
+    // print('object-numberplate::::: ${vehicle.details!.number_plate}');
+    VehicleToolTipDialog.showVehicleToolTipDialog(
+      context,
+      number_plate,
+      vin,
+      address,
+      phone,
+      name,
+      brand,
+      model,
+      token,
+      latitude,
+      longitude,
+      voltage_level,
+      speed,
+      real_time_gps!,
+      status,
+      gsm_signal_strength,
+      updated_at,
+      email,
+      country,
+      licence_number,
     );
   }
 
@@ -934,7 +1132,7 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
             double.parse(data.vehicle!.details!.last_location!.longitude!)),
         icon: _offlineCustomIcon!,
         onTap: () {
-          _showVehicleToolTip(data);
+          //_showVehicleOfflineToolTip(data);
         },
       );
     }).toSet();
