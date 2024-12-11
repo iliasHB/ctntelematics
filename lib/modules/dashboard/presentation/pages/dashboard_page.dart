@@ -6,6 +6,8 @@ import 'package:ctntelematics/core/widgets/appBar.dart';
 import 'package:ctntelematics/core/widgets/custom_button.dart';
 import 'package:ctntelematics/modules/dashboard/domain/entitties/resp_entities/dash_vehicle_resp_entity.dart';
 import 'package:ctntelematics/modules/eshop/presentation/widgets/eshop_widget.dart';
+import 'package:ctntelematics/modules/map/domain/entitties/req_entities/token_req_entity.dart';
+import 'package:ctntelematics/modules/map/domain/entitties/resp_entities/last_location_resp_entity.dart';
 import 'package:ctntelematics/modules/profile/presentation/widgets/maintenance.dart';
 import 'package:ctntelematics/modules/websocket/domain/entitties/resp_entities/vehicle_entity.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -18,10 +20,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/usecase/provider_usecase.dart';
 import '../../../../core/widgets/advert.dart';
+import '../../../../core/widgets/vehicel_realTime_status.dart';
 import '../../../../service_locator.dart';
 import '../../../eshop/domain/entitties/req_entities/token_req_entity.dart';
 import '../../../eshop/presentation/bloc/eshop_bloc.dart';
 import '../../../eshop/presentation/widgets/product_review.dart';
+import '../../../map/presentation/bloc/map_bloc.dart';
 import '../../../websocket/data/datasources/pusher_service.dart';
 import '../../../websocket/presentation/bloc/vehicle_location_bloc.dart';
 import '../../domain/entitties/req_entities/dash_vehicle_req_entity.dart';
@@ -97,24 +101,30 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   // Helper function to compute counts
-  Map<String, int> _computeVehicleCounts(List<DashDatumEntity> vehicles) {
+  Map<String, int> _computeVehicleCounts(
+      List<LastLocationRespEntity> vehicles) {
     return {
       'online': vehicles
           .where((v) =>
-              v.last_location?.status!.toLowerCase() == "online")
+      v.vehicle?.details?.last_location?.status!.toLowerCase() ==
+          "online")
           .length,
       'offline': vehicles
           .where((v) =>
-              v.last_location?.status!.toLowerCase() == "offline" )
+      v.vehicle?.details?.last_location?.status!.toLowerCase() ==
+          "offline")
           .length,
       'idling': vehicles
           .where((v) =>
-              v.last_location?.status!.toLowerCase() == "idling" )
+      v.vehicle?.details?.last_location?.status!.toLowerCase() ==
+          "idling")
           .length,
       'parked': vehicles
           .where((v) =>
-              v.last_location?.status!.toLowerCase() == "parked")
+      v.vehicle?.details?.last_location?.status!.toLowerCase() ==
+          "parked")
           .length,
+      'vehicles': vehicles.length
     };
   }
 
@@ -123,8 +133,8 @@ class _DashboardPageState extends State<DashboardPage> {
     return {
       'moving': vehicles
           .where((v) =>
-      v.locationInfo.tracker!.status == "Moving" ||
-          v.locationInfo.tracker!.status == "moving")
+              v.locationInfo.tracker!.status == "Moving" ||
+              v.locationInfo.tracker!.status == "moving")
           .length,
       'online': vehicles
           .where((v) =>
@@ -161,55 +171,61 @@ class _DashboardPageState extends State<DashboardPage> {
   Widget build(BuildContext context) {
     final isShopNow = context.watch<ShopNowProvider>().isShopNow;
     final isVehicleTrip = context.watch<VehicleTripProvider>().isVehicleTrip;
-    final isMaintenanceReminder =
-        context.watch<MaintenanceReminderProvider>().isMaintenanceReminder;
-    final dashVehicleReqEntity = DashVehicleReqEntity(
+    final isMaintenanceReminder = context.watch<MaintenanceReminderProvider>().isMaintenanceReminder;
+    final isQuickLinkReminder = context.watch<QuickLinkProvider>().isQuickLink;
+    final isOdometerReminder = context.watch<OdometerProvider>().isOdometer;
+    final dashVehicleReqEntity = TokenReqEntity(
         token: token ?? "", contentType: 'application/json');
     return Scaffold(
       appBar: AnimatedAppBar(
         firstname: first_name ?? "",
-        onVehiclePerformanceSelected: (selectedPerformance) {
-          setState(() {
-            vehiclePerformance = selectedPerformance!;
-          });
-        },
-        onMileageSelected: (selectedMileage) {
-          setState(() {
-            mileage = selectedMileage!;
-          });
-        },
-        onOdometerSelected: (selectedOdometer) {
-          setState(() {
-            odometer = selectedOdometer!;
-          });
-        },
-        onMaintenanceReminderSelected: (selectedMaintenanceReminder) {
-          setState(() {
-            maintenanceReminder = selectedMaintenanceReminder!;
-          });
-        },
-        onFaultCodesSelected: (selectedFaultCodes) {
-          setState(() {
-            faultCodes = selectedFaultCodes!;
-          });
-        },
-        onShopNowSelected: (selectedShopNow) {
-          setState(() {
-            shopNow = selectedShopNow!;
-          });
-        },
-        onQuickLinkSelected: (selectedQuickLin) {
-          setState(() {
-            quickLink = selectedQuickLin!;
-          });
-        },
+        // onVehiclePerformanceSelected: (selectedPerformance) {
+        //   setState(() {
+        //     vehiclePerformance = selectedPerformance!;
+        //   });
+        // },
+        // onMileageSelected: (selectedMileage) {
+        //   setState(() {
+        //     mileage = selectedMileage!;
+        //   });
+        // },
+        // onOdometerSelected: (selectedOdometer) {
+        //   setState(() {
+        //     odometer = selectedOdometer!;
+        //   });
+        // },
+        // onMaintenanceReminderSelected: (selectedMaintenanceReminder) {
+        //   setState(() {
+        //     maintenanceReminder = selectedMaintenanceReminder!;
+        //   });
+        // },
+        // onFaultCodesSelected: (selectedFaultCodes) {
+        //   setState(() {
+        //     faultCodes = selectedFaultCodes!;
+        //   });
+        // },
+        // onShopNowSelected: (selectedShopNow) {
+        //   setState(() {
+        //     shopNow = selectedShopNow!;
+        //   });
+        // },
+        // onQuickLinkSelected: (selectedQuickLin) {
+        //   setState(() {
+        //     quickLink = selectedQuickLin!;
+        //   });
+        // },
+        // onQuickLinkSelected: (selectedQuickLin) {
+        //   setState(() {
+        //     quickLink = selectedQuickLin!;
+        //   });
+        // },
       ),
       body: isLoading
-          ? Center(
-              child: Container(
+          ? const Center(
+              child: SizedBox(
                   height: 25,
                   width: 25,
-                  child: const CircularProgressIndicator(
+                  child: CircularProgressIndicator(
                     strokeWidth: 2.0,
                   )))
           : SingleChildScrollView(
@@ -312,11 +328,11 @@ class _DashboardPageState extends State<DashboardPage> {
                           SizedBox(
                             height: getVerticalSize(280),
                             child: BlocProvider(
-                              create: (_) => sl<DashVehiclesBloc>()
-                                ..add(DashVehicleEvent(dashVehicleReqEntity)),
-                              child: BlocConsumer<DashVehiclesBloc,
-                                  DashboardState>(builder: (context, state) {
-                                if (state is DashboardLoading) {
+                              create: (_) => sl<LastLocationBloc>()
+                                ..add(LastLocationEvent(dashVehicleReqEntity)),
+                              child: BlocConsumer<LastLocationBloc,
+                                  MapState>(builder: (context, state) {
+                                if (state is MapLoading) {
                                   return const SizedBox(
                                     height: 25,
                                     width: 25,
@@ -327,8 +343,8 @@ class _DashboardPageState extends State<DashboardPage> {
                                       ),
                                     ),
                                   );
-                                } else if (state is DashboardDone) {
-                                  final vehiclesData = state.resp.data ?? [];
+                                } else if (state is GetLastLocationDone) {
+                                  final vehiclesData = state.resp ?? [];
                                   final vehicleCounts =
                                       _computeVehicleCounts(vehiclesData);
 
@@ -361,9 +377,14 @@ class _DashboardPageState extends State<DashboardPage> {
 
                                             return VehicleStatusPieChart(
                                                 onlineCount: vehicleWebsocketCounts['online'] ?? 0,
-                                                offlineCount: vehicleCounts['offline'] ?? 0,
-                                                idlingCount: vehicleCounts['idling'] ?? 0,
-                                                parkedCount: vehicleCounts['parked'] ?? 0);
+                                                offlineCount: VehicleRealTimeStatus.checkStatusChange(vehiclesData, vehicles, 'offline', vehicleCounts['offline']),
+                                                idlingCount: VehicleRealTimeStatus.checkStatusChange(vehiclesData, vehicles, 'idling', vehicleCounts['idling']),
+                                                parkedCount: VehicleRealTimeStatus.checkStatusChange(vehiclesData, vehicles, 'parked', vehicleCounts['parked']),
+
+                                                // offlineCount: vehicleCounts['offline'] ?? 0,
+                                                // idlingCount: vehicleCounts['idling'] ?? 0,
+                                                // parkedCount: vehicleCounts['parked'] ?? 0
+                                            );
                                           },
                                         ),
                                       ),
@@ -426,8 +447,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                                                   fontWeight:
                                                                       FontWeight
                                                                           .w300),
-                                                          maxLines:
-                                                              1, // Restrict to a single line for count as well
+                                                          maxLines: 1, // Restrict to a single line for count as well
                                                           overflow: TextOverflow
                                                               .ellipsis,
                                                         );
@@ -470,17 +490,15 @@ class _DashboardPageState extends State<DashboardPage> {
                                                           );
                                                         }
                                                         return Text(
-                                                          '${vehicleCounts['offline'] ?? 0}',
+                                                          '${VehicleRealTimeStatus.checkStatusChange(vehiclesData, vehicles, 'offline', vehicleCounts['offline'])}',
                                                           style: AppStyle
                                                               .cardfooter
                                                               .copyWith(
                                                                   fontWeight:
                                                                       FontWeight
                                                                           .w300),
-                                                          maxLines:
-                                                              1, // Restrict to a single line for count as well
-                                                          overflow: TextOverflow
-                                                              .ellipsis,
+                                                          maxLines: 1, // Restrict to a single line for count as well
+                                                          overflow: TextOverflow.ellipsis,
                                                         );
                                                       },
                                                     ),
@@ -505,7 +523,6 @@ class _DashboardPageState extends State<DashboardPage> {
                                                     builder:
                                                         (context, vehicles) {
                                                       if (vehicles.isEmpty) {
-                                                        print('object idling ::: ${vehicleCounts['idling'] ?? 0}');
                                                         return Text(
                                                           '${vehicleCounts['idling'] ?? 0}',
                                                           style: AppStyle
@@ -521,44 +538,17 @@ class _DashboardPageState extends State<DashboardPage> {
                                                         );
                                                       }
                                                       return Text(
-                                                        '${vehicleCounts['idling'] ?? 0}',
+                                                        '${VehicleRealTimeStatus.checkStatusChange(vehiclesData, vehicles, 'idling', vehicleCounts['idling'])}',
                                                         style: AppStyle
                                                             .cardfooter
                                                             .copyWith(
-                                                            fontWeight:
-                                                            FontWeight
-                                                                .w300),
-                                                        maxLines:
-                                                        1, // Restrict to a single line for count as well
-                                                        overflow: TextOverflow
-                                                            .ellipsis,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w300),
+                                                        maxLines: 1, // Restrict to a single line for count as well
+                                                        overflow: TextOverflow.ellipsis,
                                                       );
 
-                                                      // final idlingVehicles =
-                                                      //     vehicles.where((v) {
-                                                      //   return v.locationInfo
-                                                      //           .vehicleStatus ==
-                                                      //       "Idling";
-                                                      //   // && v.locationInfo.tracker?.position?.ignition == "on";
-                                                      // }).toList();\
-
-                                                      ///
-                                                      // final vehicleWebsocketCounts = _computeVehicleSocketCounts(vehicles);
-                                                      //
-                                                      // print('object websocket idling ::: ${vehicleWebsocketCounts['idling'] ?? 0}');
-                                                      // return Text(
-                                                      //   '${vehicleWebsocketCounts['idling']}',
-                                                      //   style: AppStyle
-                                                      //       .cardfooter
-                                                      //       .copyWith(
-                                                      //           fontWeight:
-                                                      //               FontWeight
-                                                      //                   .w300),
-                                                      //   maxLines:
-                                                      //       1, // Restrict to a single line for count as well
-                                                      //   overflow: TextOverflow
-                                                      //       .ellipsis,
-                                                      // );
                                                     },
                                                   )),
                                                   symbol: const CircleAvatar(
@@ -591,14 +581,12 @@ class _DashboardPageState extends State<DashboardPage> {
                                                                   fontWeight:
                                                                       FontWeight
                                                                           .w300),
-                                                          maxLines:
-                                                              1, // Restrict to a single line for count as well
-                                                          overflow: TextOverflow
-                                                              .ellipsis,
+                                                          maxLines: 1, // Restrict to a single line for count as well
+                                                          overflow: TextOverflow.ellipsis,
                                                         );
                                                       }
                                                       return Text(
-                                                        '${vehicleCounts['parked'] ?? 0}',
+                                                        '${VehicleRealTimeStatus.checkStatusChange(vehiclesData, vehicles, 'parked', vehicleCounts['parked'])}',
                                                         style: AppStyle
                                                             .cardfooter
                                                             .copyWith(
@@ -624,28 +612,34 @@ class _DashboardPageState extends State<DashboardPage> {
                                 } else {
                                   return Center(
                                       child: Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        crossAxisAlignment: CrossAxisAlignment.center,
-                                        children: [
-                                          Text(
-                                            'No records found',
-                                            style: AppStyle.cardfooter,
-                                          ),
-                                          SizedBox(height: 10.0,),
-                                          CustomSecondaryButton(
-                                              label: 'Refresh',
-                                              onPressed: () {
-                                                BlocProvider.of<DashVehiclesBloc>(context)
-                                                    .add(DashVehicleEvent(dashVehicleReqEntity));
-                                              })
-                                        ],
-                                      ));
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        'No records found',
+                                        style: AppStyle.cardfooter,
+                                      ),
+                                      const SizedBox(
+                                        height: 10.0,
+                                      ),
+                                      CustomSecondaryButton(
+                                          label: 'Refresh',
+                                          onPressed: () {
+                                            BlocProvider.of<LastLocationBloc>(
+                                                    context)
+                                                .add(LastLocationEvent(
+                                                    dashVehicleReqEntity));
+                                          })
+                                    ],
+                                  ));
                                 }
                               }, listener: (context, state) {
-                                if (state is DashboardFailure) {
+                                if (state is MapFailure) {
                                   if (state.message
                                       .contains("Unauthenticated")) {
-                                    Navigator.pushNamedAndRemoveUntil(context, "/login", (route) => false);
+                                    Navigator.pushNamedAndRemoveUntil(
+                                        context, "/login", (route) => false);
                                   }
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(content: Text(state.message)),
@@ -1194,7 +1188,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                                                 }
                                                                 return Center(
                                                                   child:
-                                                                      Container(
+                                                                      SizedBox(
                                                                     height: 20,
                                                                     width: 20,
                                                                     child:
@@ -1317,7 +1311,9 @@ class _DashboardPageState extends State<DashboardPage> {
                                         if (state.message
                                             .contains("Unauthenticated")) {
                                           Navigator.pushNamedAndRemoveUntil(
-                                              context, "/login", (route) => false);
+                                              context,
+                                              "/login",
+                                              (route) => false);
                                         }
                                         ScaffoldMessenger.of(context)
                                             .showSnackBar(
@@ -1434,40 +1430,159 @@ class _DashboardPageState extends State<DashboardPage> {
                               ],
                             ),
                           ),
-                    // odometer == false
-                    //     ? const SizedBox(height: 0)
-                    //     : const SizedBox(height: 24),
-                    // odometer == false
+
+                    // SizedBox(height: 20,),
+                    // isQuickLinkReminder == false
                     //     ? Container()
                     //     : Container(
-                    //         padding: const EdgeInsets.all(16.0),
-                    //         // height: 350,
-                    //         decoration: BoxDecoration(
-                    //           color: Colors.grey.shade200,
-                    //           borderRadius: BorderRadius.circular(12),
-                    //         ),
-                    //         child: Column(
-                    //           children: [
-                    //             Container(
-                    //                 padding: const EdgeInsets.all(8.0),
-                    //                 decoration: BoxDecoration(
-                    //                   color: Colors.green.shade200,
-                    //                   borderRadius: BorderRadius.circular(12),
-                    //                 ),
-                    //                 child: DashboardComponentTitle(
-                    //                   title: 'Odometer',
-                    //                   subTitle: "In KM, Top 10",
-                    //                 )),
-                    //             const SizedBox(
-                    //               height: 10,
+                    //   padding: const EdgeInsets.all(16.0),
+                    //   // height: 350,
+                    //   decoration: BoxDecoration(
+                    //     color: Colors.grey.shade200,
+                    //     borderRadius: BorderRadius.circular(12),
+                    //   ),
+                    //   child: Column(
+                    //     children: [
+                    //       Container(
+                    //           padding: const EdgeInsets.all(8.0),
+                    //           decoration: BoxDecoration(
+                    //             color: Colors.green.shade200,
+                    //             borderRadius: BorderRadius.circular(12),
+                    //           ),
+                    //           child: DashboardComponentTitle(
+                    //             logo: const CircleAvatar(
+                    //               backgroundColor: Colors.white,
+                    //               child: Icon(
+                    //                 CupertinoIcons.link,
+                    //                 size: 25,
+                    //                 color: Colors.green,
+                    //               ),
                     //             ),
-                    //             Column(
-                    //               crossAxisAlignment: CrossAxisAlignment.start,
-                    //               children: [_buildOdometerList()],
-                    //             ),
-                    //           ],
+                    //             title: 'Quick Link',
+                    //             subTitle: "Recent Status",
+                    //           )),
+                    //       const SizedBox(height: 10,),
+                    //       SizedBox(
+                    //         // height: 170,
+                    //         child: SingleChildScrollView(
+                    //           scrollDirection: Axis.horizontal,
+                    //           child: Column(
+                    //             crossAxisAlignment: CrossAxisAlignment.start,
+                    //             children: [
+                    //               Row(
+                    //                 children: [
+                    //                   SizedBox(
+                    //                     width: 180, // Set a fixed width for each card
+                    //                     child: VehicleStatusCard(
+                    //                         status: 'Moving',
+                    //                         count: Text('0',
+                    //                           style: AppStyle.cardfooter.copyWith(
+                    //                               fontWeight: FontWeight.w300),
+                    //                           maxLines: 1,
+                    //                           overflow: TextOverflow.ellipsis,
+                    //                         ),
+                    //                         color: Colors.green,
+                    //                         icon: const Icon(
+                    //                             CupertinoIcons.car_detailed,
+                    //                             color: Colors.white)),
+                    //                   ),
+                    //                   SizedBox(
+                    //                     width: 180, // Set a fixed width for each card
+                    //                     child: VehicleStatusCard(
+                    //                         status: 'Offline',
+                    //                         count: SizedBox(
+                    //                             height: 15,
+                    //                             width: 15,
+                    //                             child: Container()),
+                    //                         color: Colors.red,
+                    //                         icon: const Icon(
+                    //                           CupertinoIcons.square_fill,
+                    //                           color: Colors.white,
+                    //                         )),
+                    //                   ),
+                    //                 ],
+                    //               ),
+                    //              Row(
+                    //                children: [
+                    //                  SizedBox(
+                    //                    width: 180,
+                    //                    child: VehicleStatusCard(
+                    //                        status: 'Idling',
+                    //                        count: SizedBox(
+                    //                            height: 15,
+                    //                            width: 15,
+                    //                            child: Container()),
+                    //                        color: Colors.yellow,
+                    //                        icon: const Icon(
+                    //                            CupertinoIcons.square_split_2x1_fill,
+                    //                            color: Colors.white)),
+                    //                  ),
+                    //                  SizedBox(
+                    //                    width: 180, // Set a f
+                    //                    child: VehicleStatusCard(
+                    //                      status: 'Parked',
+                    //                      count: SizedBox(
+                    //                          height: 15,
+                    //                          width: 15,
+                    //                          child: Container()),
+                    //                      color: Colors.black,
+                    //                      icon: Icon(CupertinoIcons.wifi_slash,
+                    //                          color: Colors.white),
+                    //                    ),
+                    //                  ),
+                    //                ],
+                    //              )
+                    //
+                    //             ],
+                    //           ),
                     //         ),
-                    //       ),
+                    //       )
+                    //
+                    //
+                    //     ],
+                    //   ),
+                    // ),
+
+                    const SizedBox(height: 20,),
+                    isOdometerReminder == false
+                        ? Container()
+                        : Container(
+                            padding: const EdgeInsets.all(16.0),
+                            // height: 350,
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade200,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Column(
+                              children: [
+                                Container( // Icons.assistant_direction_outlined,
+                                    padding: const EdgeInsets.all(8.0),
+                                    decoration: BoxDecoration(
+                                      color: Colors.green.shade200,
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: DashboardComponentTitle(
+                                      title: 'Odometer',
+                                      subTitle: "In KM, Top 10",
+                                      logo: const CircleAvatar(
+                                        backgroundColor: Colors.white,
+                                        child: Icon(
+                                          Icons.assistant_direction_outlined,
+                                          size: 25,
+                                          color: Colors.green,
+                                        ),
+                                      ),
+                                    )),
+                                const SizedBox(
+                                  height: 10,
+                                ),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [_buildOdometerList()],
+                                ),
+                              ],
+                            ),
+                          ),
                     const SizedBox(
                       height: 50,
                     ),
@@ -1790,7 +1905,11 @@ class VehicleStatusPieChart extends StatelessWidget {
     print('parkedCount:::::: $parkedCount');
     final total = onlineCount + offlineCount + idlingCount + parkedCount;
     if (total == 0) {
-      return const Center(child: Text('No data available'));
+      return Center(
+          child: Text(
+        'No data available',
+        style: AppStyle.cardfooter,
+      ));
     }
 
     return SizedBox(
@@ -1871,6 +1990,26 @@ class _BuildVehicleStatus extends StatelessWidget {
     );
   }
 }
+
+
+///
+// final vehicleWebsocketCounts = _computeVehicleSocketCounts(vehicles);
+//
+// print('object websocket idling ::: ${vehicleWebsocketCounts['idling'] ?? 0}');
+// return Text(
+//   '${vehicleWebsocketCounts['idling']}',
+//   style: AppStyle
+//       .cardfooter
+//       .copyWith(
+//           fontWeight:
+//               FontWeight
+//                   .w300),
+//   maxLines:
+//       1, // Restrict to a single line for count as well
+//   overflow: TextOverflow
+//       .ellipsis,
+// );
+///
 
 //   GridView.count(
 //   crossAxisCount: 2,
@@ -2128,69 +2267,72 @@ class _BuildVehicleStatus extends StatelessWidget {
 //     ),
 //   );
 // }
+///----
+Widget _buildOdometerList() {
+  // final data = [
+  //   {"name": "OBD Plug and Play", "value": 2894368940},
+  //   {"name": "CM-U-11-0654-Y", "value": 216774},
+  //   {"name": "DM-GA327615", "value": 56127},
+  //   {"name": "Motor Sheild", "value": 56127},
+  //   {"name": "DM-GA-39-3528-Arra", "value": 56127},
+  //   {"name": "DM-GHA-171796", "value": 56127},
+  // ];
 
-// Widget _buildOdometerList() {
-//   final data = [
-//     {"name": "OBD Plug and Play", "value": 2894368940},
-//     {"name": "CM-U-11-0654-Y", "value": 216774},
-//     {"name": "DM-GA327615", "value": 56127},
-//     {"name": "Motor Sheild", "value": 56127},
-//     {"name": "DM-GA-39-3528-Arra", "value": 56127},
-//     {"name": "DM-GHA-171796", "value": 56127},
-//   ];
-//
-//   return Padding(
-//     padding: EdgeInsets.zero,
-//     child: ListView.separated(
-//       shrinkWrap: true, // Prevents ListView from expanding infinitely
-//       padding: EdgeInsets.zero,
-//       itemCount: data.length,
-//       separatorBuilder: (_, __) => const SizedBox(height: 8),
-//       itemBuilder: (context, index) {
-//         final item = data[index];
-//         return _buildOdometerRow(
-//             item["name"] as String, item["value"] as int);
-//       },
-//     ),
-//   );
-// }
+  return Padding(
+    padding: EdgeInsets.zero,
+    child: ListView.separated(
+      shrinkWrap: true, // Prevents ListView from expanding infinitely
+      padding: EdgeInsets.zero,
+      itemCount: 1,
+      separatorBuilder: (_, __) => const SizedBox(height: 8),
+      itemBuilder: (context, index) {
+        return Center(
+          child: Text("No record found", style: AppStyle.cardfooter,),
+        );
+        // final item = data[index];
+        // return _buildOdometerRow(
+        //     item["name"] as String, item["value"] as int);
+      },
+    ),
+  );
+}
 ///
-// Widget _buildOdometerRow(String name, int value) {
-//   return Row(
-//     children: [
-//       Expanded(
-//         flex: 4,
-//         child:
-//             Text(name, style: AppStyle.cardSubtitle.copyWith(fontSize: 12)),
-//       ),
-//       Expanded(
-//         flex: 6,
-//         child: Stack(
-//           children: [
-//             const Divider(
-//               thickness: 1,
-//               color: Colors.grey,
-//               endIndent: 0,
-//             ),
-//             Positioned(
-//               right: 0,
-//               bottom: 0,
-//               // top: 0,
-//               child: Container(
-//                 // height: 100,
-//                 padding:
-//                     const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
-//                 decoration: BoxDecoration(
-//                   color: Colors.green.shade300,
-//                   borderRadius: BorderRadius.circular(4.0),
-//                 ),
-//                 child: Text(value.toString(),
-//                     style: AppStyle.cardfooter.copyWith(fontSize: 12)),
-//               ),
-//             ),
-//           ],
-//         ),
-//       ),
-//     ],
-//   );
-// }
+Widget _buildOdometerRow(String name, int value) {
+  return Row(
+    children: [
+      Expanded(
+        flex: 4,
+        child:
+            Text(name, style: AppStyle.cardSubtitle.copyWith(fontSize: 12)),
+      ),
+      Expanded(
+        flex: 6,
+        child: Stack(
+          children: [
+            const Divider(
+              thickness: 1,
+              color: Colors.grey,
+              endIndent: 0,
+            ),
+            Positioned(
+              right: 0,
+              bottom: 0,
+              // top: 0,
+              child: Container(
+                // height: 100,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+                decoration: BoxDecoration(
+                  color: Colors.green.shade300,
+                  borderRadius: BorderRadius.circular(4.0),
+                ),
+                child: Text(value.toString(),
+                    style: AppStyle.cardfooter.copyWith(fontSize: 12)),
+              ),
+            ),
+          ],
+        ),
+      ),
+    ],
+  );
+}

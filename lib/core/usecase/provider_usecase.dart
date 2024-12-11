@@ -66,6 +66,32 @@ class VehicleTripProvider extends ChangeNotifier {
   }
 }
 
+class QuickLinkProvider extends ChangeNotifier {
+  bool _isQuickLink = false;
+
+  bool get isQuickLink => _isQuickLink;
+
+
+  void toggleQuickLink(bool value) {
+    _isQuickLink = value;
+    // _isAdvert = value;
+    notifyListeners(); // Notify listeners about the state change
+  }
+}
+
+
+class OdometerProvider extends ChangeNotifier {
+  bool _isOdometer = false;
+  // bool _isAdvert = false;
+
+  bool get isOdometer => _isOdometer;
+
+  void toggleOdometer(bool value) {
+    _isOdometer = value;
+    // _isAdvert = value;
+    notifyListeners(); // Notify listeners about the state change
+  }
+}
 
 
 

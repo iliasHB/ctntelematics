@@ -146,8 +146,11 @@ class _VehicleRouteLastLocationState extends State<VehicleRouteLastLocation> {
                 );
               }
 
-              // FutureBuilder is ready, proceed with BlocBuilder
-              return BlocBuilder<VehicleLocationBloc, List<VehicleEntity>>(
+              return BlocListener<VehicleLocationBloc, List<VehicleEntity>>(
+                  listener: (context, vehicles) {
+                // Handle additional logic if needed
+              },
+              child: BlocBuilder<VehicleLocationBloc, List<VehicleEntity>>(
                 builder: (context, vehicles) {
                   final isGeofence = context.watch<GeofenceProvider>().isGeofence;
 
@@ -168,32 +171,58 @@ class _VehicleRouteLastLocationState extends State<VehicleRouteLastLocation> {
                     return buildMap(isGeofence, center);
                   }
 
-                  // Filter for moving and online vehicles
-                  final movingVehicles = vehicles.where((v) {
-                    return v.locationInfo.vehicleStatus.toLowerCase() == "moving" &&
-                        (v.locationInfo.vin == widget.vin &&
-                            v.locationInfo.tracker?.status!.toLowerCase() == "online");
-                  }).toList();
-
-                  if (movingVehicles.isNotEmpty) {
-                    // Handle the first moving vehicle
-                    final currentVehicle = movingVehicles[0];
-                    final tracker = currentVehicle.locationInfo.tracker!;
+                  if(vehicles[0].locationInfo.vehicleStatus.toLowerCase() == "moving" &&
+                      vehicles[0].locationInfo.tracker?.status!.toLowerCase() == "online" &&
+                      vehicles[0].locationInfo.vin == widget.vin) {
+                    // // Handle the first moving vehicle
+                    // final currentVehicle = movingVehicles[0];
+                    // final tracker = currentVehicle.locationInfo.tracker!;
                     final LatLng targetPosition = LatLng(
-                      tracker.position!.latitude!.toDouble(),
-                      tracker.position!.longitude!.toDouble(),
+                      widget.latitude!.toDouble(),
+                      widget.longitude!.toDouble(),
                     );
+                    // LatLng(
+                    //   tracker.position!.latitude!.toDouble(),
+                    //   tracker.position!.longitude!.toDouble(),
+                    // );
 
                     // Smoothly animate the vehicle's movement
                     _animateVehicleMovement(
                       markerId: widget.number_plate,
                       newPosition: targetPosition,
                     );
-
                     return buildMap(isGeofence, targetPosition);
                   }
+                  // Filter for moving and online vehicles
+                  // final movingVehicles = vehicles.where((v) {
+                  //   return v.locationInfo.vehicleStatus.toLowerCase() == "moving" &&
+                  //       (v.locationInfo.vin == widget.vin &&
+                  //           v.locationInfo.tracker?.status!.toLowerCase() == "online");
+                  // }).toList();
+
+                  // if (movingVehicles.isNotEmpty) {
+                  //   // Handle the first moving vehicle
+                  //   final currentVehicle = movingVehicles[0];
+                  //   final tracker = currentVehicle.locationInfo.tracker!;
+                  //   final LatLng targetPosition = LatLng(
+                  //     widget.latitude!.toDouble(),
+                  //     widget.longitude!.toDouble(),
+                  //   );
+                  //   // LatLng(
+                  //   //   tracker.position!.latitude!.toDouble(),
+                  //   //   tracker.position!.longitude!.toDouble(),
+                  //   // );
+                  //
+                  //   // Smoothly animate the vehicle's movement
+                  //   _animateVehicleMovement(
+                  //     markerId: widget.number_plate,
+                  //     newPosition: targetPosition,
+                  //   );
+                  //
+                  //   // return buildMap(isGeofence, targetPosition);
+                  // }
                   // Handle case where no vehicles are moving
-                  if (movingVehicles.isEmpty) {
+                  else {
                     final LatLng center = LatLng(widget.latitude!.toDouble(), widget.longitude!.toDouble());
                     _markers.clear(); // Clear existing markers if necessary
                     _markers.add(
@@ -210,6 +239,7 @@ class _VehicleRouteLastLocationState extends State<VehicleRouteLastLocation> {
 
                   return buildMap(isGeofence, center); // Placeholder
                 },
+              )
               );
             },
           ),
@@ -356,10 +386,19 @@ class _VehicleRouteLastLocationState extends State<VehicleRouteLastLocation> {
     final bearing = atan2(x, y) * 180 / pi;
     return (bearing + 360) % 360; // Normalize to 0-360
   }
+
   Future<void> _animateVehicleMovement({
     required String markerId,
     required LatLng newPosition,
   }) async {
+    // _markers.add(
+    //   Marker(
+    //     icon: _offlineCustomIcon!,
+    //     markerId: MarkerId(widget.number_plate),
+    //     position: newPosition,
+    //     infoWindow: InfoWindow(title: widget.number_plate),
+    //   ),
+    // );
     // Get the current marker (or fallback to a default position if none exists)
     final oldMarker = _markers.firstWhere(
           (marker) => marker.markerId.value == markerId,
@@ -372,15 +411,13 @@ class _VehicleRouteLastLocationState extends State<VehicleRouteLastLocation> {
     LatLng oldPosition = oldMarker.position;
 
     // Calculate the number of steps for interpolation (e.g., 50 steps)
-    int steps = _calculateSteps(oldPosition, newPosition);
+    int steps = 50;//_calculateSteps(oldPosition, newPosition);
 
     // Calculate the bearing (optional for marker rotation)
     double bearing = _calculateBearing(oldPosition, newPosition);
 
-    if (_movingCustomIcon == null) {
-      await _setOnlineCustomMarkerIcon(); // Ensure you have a custom icon
-    }
-
+    // // Remove old marker and add a new one with the interpolated position
+    // _markers.removeWhere((marker) => marker.markerId.value == markerId);
     // Loop over the number of steps to animate the marker smoothly
     for (int i = 0; i <= steps; i++) {
       // Calculate the interpolation factor (0.0 to 1.0)
@@ -389,8 +426,10 @@ class _VehicleRouteLastLocationState extends State<VehicleRouteLastLocation> {
       // Get the interpolated position between old and new
       LatLng interpolatedPosition = _interpolatePosition(oldPosition, newPosition, t);
 
-      // Remove old marker and add a new one with the interpolated position
-      _markers.removeWhere((marker) => marker.markerId.value == markerId);
+      if (_movingCustomIcon == null) {
+        await _setOnlineCustomMarkerIcon(); // Ensure you have a custom icon
+      }
+
       _markers.add(
         Marker(
           markerId: MarkerId(markerId),
@@ -404,16 +443,16 @@ class _VehicleRouteLastLocationState extends State<VehicleRouteLastLocation> {
       // Optionally animate the camera to follow the vehicle
       mapController.animateCamera(CameraUpdate.newLatLng(interpolatedPosition));
 
-      // Trigger a UI rebuild after the position update
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          setState(() {});
-        }
-      });
-
       // Delay between steps to make the movement smooth (adjust the duration as necessary)
       await Future.delayed(const Duration(milliseconds: 50));
     }
+
+    // Trigger a UI rebuild after the position update
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        setState(() {});
+      }
+    });
   }
 
   int _calculateSteps(LatLng oldPosition, LatLng newPosition) {
@@ -428,36 +467,64 @@ class _VehicleRouteLastLocationState extends State<VehicleRouteLastLocation> {
     return LatLng(lat, lng);
   }
 
-
   Widget buildMap(bool isGeofence, LatLng center) {
     return GoogleMap(
       onMapCreated: (GoogleMapController controller) {
         mapController = controller;
 
-        // Optionally move camera to Nigeria when map loads
+        // Move camera to focus on the exact vehicle location
         mapController.moveCamera(
           CameraUpdate.newCameraPosition(
             CameraPosition(
-              target: center, // Center of Nigeria
-              zoom: 6.0, // Adjust zoom for a clear view of Nigeria
+              target: center, // Focus on vehicle's location
+              zoom: 15.0, // Adjust zoom level for clarity
             ),
           ),
         );
       },
       initialCameraPosition: CameraPosition(
-        target: center, // Center of Nigeria
-        zoom: 6.0, // Adjust zoom for initialization
+        target: center,
+        zoom: 15.0, // Set a clear zoom level for initialization
       ),
       markers: Set<Marker>.of(_markers),
       polygons: isGeofence && _geofencePolygon != null
           ? {_geofencePolygon!}
           : {}, // Toggle geofence
-      // onCameraIdle: () {
-      //   _fetchMarkersInViewport();
-      // },
     );
   }
 
+
+  // Widget buildMap(bool isGeofence, LatLng center) {
+  //   return GoogleMap(
+  //     onMapCreated: (GoogleMapController controller) {
+  //       mapController = controller;
+  //
+  //       // Optionally move camera to Nigeria when map loads
+  //       mapController.moveCamera(
+  //         CameraUpdate.newCameraPosition(
+  //           CameraPosition(
+  //             target: center, // Center of Nigeria
+  //             zoom: 6.0, // Adjust zoom for a clear view of Nigeria
+  //           ),
+  //         ),
+  //       );
+  //     },
+  //     initialCameraPosition: CameraPosition(
+  //       target: center,
+  //       zoom: 100.0, // Adjust zoom for initialization
+  //     ),
+  //     markers: Set<Marker>.of(_markers),
+  //     polygons: isGeofence && _geofencePolygon != null
+  //         ? {_geofencePolygon!}
+  //         : {}, // Toggle geofence
+  //     // onCameraIdle: () {
+  //     //   _fetchMarkersInViewport();
+  //     // },
+  //   );
+  // }
+
+
+  ///
 // // Build GoogleMap widget
 //   Widget buildMap(LatLng center) {
 //     return GoogleMap(

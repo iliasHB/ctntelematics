@@ -58,247 +58,186 @@ class VehicleToolTipDialog {
                   // mainAxisAlignment: MainAxisAlignment.start,
                   // crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Column(
-                    //   mainAxisAlignment: MainAxisAlignment.center,
-                    //   children: [
-                    //     Text(
-                    //       "0",
-                    //       style: TextStyle(
-                    //           color: Colors.green.shade100,
-                    //           fontSize: 60,
-                    //           fontWeight: FontWeight.w900),
-                    //     ),
-                    //     const Text("KM/H",
-                    //         style: TextStyle(
-                    //             color: Colors.black,
-                    //             fontSize: 20,
-                    //             fontWeight: FontWeight.bold))
-                    //   ],
-                    // ),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Align(
-                                alignment: Alignment.topLeft,
-                                child: Text(number_plate!,
-                                    style: AppStyle.pageTitle
-                                        .copyWith(color: Colors.red)),
-                              ),
-                              // Align(
-                              //   alignment: Alignment.topRight,
-                              //     child: Icon(Icons.cancel, size: 30,)),
-                            ],
-                          ),
-                          // Row(
-                          //   children: [
-                          //     Text(
-                          //       "Driver: $name",
-                          //       style: AppStyle.cardSubtitle
-                          //     ),
-                          //   ],
-                          // ),
-                          VehicleTooltip(
-                              number_plate: number_plate,
-                              driver: name,
-                              vehicle_id: vin,
-                              phone_no: phone,
-                              location: address),
-                          const SizedBox(height: 10),
-                          Container(
-                            padding: const EdgeInsets.all(0.0),
-                            // color: Colors.lightBlue,
-                            width: size.width - 110,
-                            child: Row(
-                              // mainAxisSize: MainAxisSize.min,
+                      child: SingleChildScrollView(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                // Flexible(
-                                //   flex: 2,
-                                //   child:
-                                Container(
-                                  padding: const EdgeInsets.all(00.0),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(5),
-                                  ),
-                                  child: Column(
-                                    children: [
-                                      // const Text(
-                                      //   '3500.50KM',
-                                      //   style: TextStyle(
-                                      //     fontSize: 18,
-                                      //     fontWeight: FontWeight.bold,
-                                      //     color: Colors.black,
-                                      //   ),
-                                      // ),
-                                      // const SizedBox(
-                                      //   height: 5,
-                                      // ),
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                            vertical: 10.0, horizontal: 0.0),
-                                        decoration: BoxDecoration(
-                                          borderRadius:
-                                              BorderRadius.circular(5),
-                                          color: Colors.white,
-                                        ),
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceEvenly,
-                                          children: [
-                                            InkWell(
-                                                onTap: () => Navigator
-                                                        .of(context)
-                                                    .push(MaterialPageRoute(
-                                                        builder: (context) =>
-                                                            VehicleRouteHistory1(
-                                                                brand!,
-                                                                model!,
-                                                                vin!,
-                                                                double.parse(
-                                                                    latitude!),
-                                                                double.parse(
-                                                                    longitude!),
-                                                                token!))),
-
-                                                // VehicleRouteHistory
-                                                //     .showVehicleRouteDialog(
-                                                //         context,
-                                                //         brand,
-                                                //         model,
-                                                //         vin,
-                                                //         latitude,
-                                                //         longitude,
-                                                //         token),
-                                                // VehicleRouteHistory.showVehicleRouteDialog(
-                                                //     context, brand, model, vin, latitude, longitude, token);
-
-                                                child: const Icon(Icons.cable)),
-                                            const SizedBox(
-                                              width: 20,
-                                            ),
-                                            InkWell(
-                                                onTap: () {
-                                                  VehicleShare
-                                                      .showVehicleShareDialog(
+                                Align(
+                                  alignment: Alignment.topLeft,
+                                  child: Text(number_plate!,
+                                      style: AppStyle.pageTitle
+                                          .copyWith(color: Colors.red)),
+                                ),
+                                // Align(
+                                //   alignment: Alignment.topRight,
+                                //     child: Icon(Icons.cancel, size: 30,)),
+                              ],
+                            ),
+                            VehicleTooltip(
+                                number_plate: number_plate,
+                                driver: name,
+                                vehicle_id: vin,
+                                phone_no: phone,
+                                location: address),
+                            Container(
+                              padding: const EdgeInsets.all(0.0),
+                              // color: Colors.lightBlue,
+                              width: size.width - 110,
+                              child: Row(
+                                // mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(00.0),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(5),
+                                    ),
+                                    child: Column(
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                              vertical: 10.0, horizontal: 0.0),
+                                          decoration: BoxDecoration(
+                                            borderRadius:
+                                                BorderRadius.circular(5),
+                                            color: Colors.white,
+                                          ),
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceEvenly,
+                                            children: [
+                                              InkWell(
+                                                  onTap: () => Navigator
+                                                          .of(context)
+                                                      .push(MaterialPageRoute(
+                                                          builder: (context) =>
+                                                              VehicleRouteHistory1(
+                                                                  brand!,
+                                                                  model!,
+                                                                  vin!,
+                                                                  double.parse(
+                                                                      latitude!),
+                                                                  double.parse(
+                                                                      longitude!),
+                                                                  token!))),
+                        
+                                                  child: const Icon(Icons.cable)),
+                                              const SizedBox(
+                                                width: 20,
+                                              ),
+                                              InkWell(
+                                                  onTap: () {
+                                                    VehicleShare
+                                                        .showVehicleShareDialog(
+                                                            context,
+                                                            brand,
+                                                            model,
+                                                            vin,
+                                                            token,
+                                                            latitude,
+                                                            longitude);
+                                                  },
+                                                  child: const Icon(
+                                                      Icons.share_outlined)),
+                                              const SizedBox(
+                                                width: 20,
+                                              ),
+                                              InkWell(
+                                                  onTap: () => VehicleLivePreview
+                                                      .showTopModal(
                                                           context,
                                                           brand,
                                                           model,
                                                           vin,
                                                           token,
                                                           latitude,
-                                                          longitude);
-                                                },
-                                                child: const Icon(
-                                                    Icons.share_outlined)),
-                                            const SizedBox(
-                                              width: 20,
-                                            ),
-                                            InkWell(
-                                                onTap: () => VehicleLivePreview
-                                                    .showTopModal(
-                                                        context,
-                                                        brand,
-                                                        model,
-                                                        vin,
-                                                        token,
-                                                        latitude,
-                                                        longitude),
-                                                child: const Icon(CupertinoIcons
-                                                    .photo_camera)),
-                                            const SizedBox(
-                                              width: 20,
-                                            ),
-                                            InkWell(
-                                                onTap: () {
-                                                  showModalBottomSheet(
-                                                      context: context,
-                                                      isDismissible: false,
-                                                      isScrollControlled: true,
-                                                      //useSafeArea: true,
-                                                      shape:
-                                                          const RoundedRectangleBorder(
-                                                        borderRadius:
-                                                            BorderRadius.only(
-                                                                topLeft: Radius
-                                                                    .circular(
-                                                                        20),
-                                                                topRight: Radius
-                                                                    .circular(
-                                                                        20)),
-                                                      ),
-                                                      builder: (BuildContext
-                                                          context) {
-                                                        return VehicleOperation(
-                                                            voltage_level:
-                                                                voltage_level!,
-                                                            speed: speed!,
-                                                            latitude: latitude!,
-                                                            longitude:
-                                                                longitude!,
-                                                            real_time_gps:
-                                                                real_time_gps,
-                                                            status: status ?? "N/A",
-                                                            gsm_signal_strength:
-                                                                gsm_signal_strength!,
-                                                            updated_at:
-                                                                updated_at!,
-                                                            number_plate:
-                                                                number_plate,
-                                                            vin: vin!,
-                                                            token: token!,
-                                                          brand: brand!,
-                                                            model: model!
-                                                        );
-                                                      });
-                                                },
-                                                child: const Icon(CupertinoIcons
-                                                    .rectangle_on_rectangle)),
-                                            const SizedBox(
-                                              width: 20,
-                                            ),
-                                            InkWell(
-                                                onTap: () {
-                                                  VehicleDriverDialog
-                                                      .showDriverDialog(
-                                                          context,
-                                                          name,
-                                                          phone,
-                                                          email,
-                                                          country,
-                                                          licence_number,
-                                                          vin,
-                                                          address,
-                                                          number_plate);
-                                                },
-                                                child: const Icon(
-                                                    CupertinoIcons.person)),
-                                          ],
+                                                          longitude),
+                                                  child: const Icon(CupertinoIcons
+                                                      .photo_camera)),
+                                              const SizedBox(
+                                                width: 20,
+                                              ),
+                                              InkWell(
+                                                  onTap: () {
+                                                    showModalBottomSheet(
+                                                        context: context,
+                                                        isDismissible: false,
+                                                        isScrollControlled: true,
+                                                        //useSafeArea: true,
+                                                        shape:
+                                                            const RoundedRectangleBorder(
+                                                          borderRadius:
+                                                              BorderRadius.only(
+                                                                  topLeft: Radius
+                                                                      .circular(
+                                                                          20),
+                                                                  topRight: Radius
+                                                                      .circular(
+                                                                          20)),
+                                                        ),
+                                                        builder: (BuildContext
+                                                            context) {
+                                                          return VehicleOperation(
+                                                              voltage_level:
+                                                                  voltage_level!,
+                                                              speed: speed!,
+                                                              latitude: latitude!,
+                                                              longitude:
+                                                                  longitude!,
+                                                              real_time_gps:
+                                                                  real_time_gps,
+                                                              status: status ?? "N/A",
+                                                              gsm_signal_strength:
+                                                                  gsm_signal_strength!,
+                                                              updated_at:
+                                                                  updated_at!,
+                                                              number_plate:
+                                                                  number_plate,
+                                                              vin: vin!,
+                                                              token: token!,
+                                                            brand: brand!,
+                                                              model: model!
+                                                          );
+                                                        });
+                                                  },
+                                                  child: const Icon(CupertinoIcons
+                                                      .rectangle_on_rectangle)),
+                                              const SizedBox(
+                                                width: 20,
+                                              ),
+                                              InkWell(
+                                                  onTap: () {
+                                                    VehicleDriverDialog
+                                                        .showDriverDialog(
+                                                            context,
+                                                            name,
+                                                            phone,
+                                                            email,
+                                                            country,
+                                                            licence_number,
+                                                            vin,
+                                                            address,
+                                                            number_plate);
+                                                  },
+                                                  child: const Icon(
+                                                      CupertinoIcons.person)),
+                                            ],
+                                          ),
                                         ),
-                                      ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
-                                ),
-                                // ),
-                                // const SizedBox(
-                                //   width: 10,
-                                // ),
-                                // Flexible(
-                                //   flex: 1,
-                                //   child: Container(
-                                //       // color: Colors.black12,
-                                //       child:
-                                //           Image.asset("assets/images/car.png")),
-                                // ),
-                              ],
-                            ),
-                          )
-                        ],
+                                ],
+                              ),
+                            )
+                          ],
+                        ),
                       ),
                     ),
                   ],

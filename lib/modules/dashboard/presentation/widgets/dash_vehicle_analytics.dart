@@ -567,8 +567,7 @@ class _VehicleRouteDataAnalyticsState extends State<VehicleRouteDataAnalytics> {
                     radius: 5,
                   ),
                   const SizedBox(width: 10,),
-                  Text('offline',
-                      style: AppStyle.cardSubtitle.copyWith(fontSize: 14))
+                  Text('offline', style: AppStyle.cardSubtitle.copyWith(fontSize: 14))
                 ],
               ),
               const SizedBox(height: 20),
@@ -711,9 +710,9 @@ class Analytics {
     int offlineCount = 0;
 
     for (var vehicle in vehicles) {
-      if (vehicle.connected == 'online' || vehicle.connected == 'Online') {
+      if (vehicle.connected.toString().toLowerCase() == 'online') {
         onlineCount++;
-      } else if (vehicle.connected == 'offline' || vehicle.connected == 'Offline') {
+      } else if (vehicle.connected.toString().toLowerCase() == 'offline') {
         offlineCount++;
       }
     }

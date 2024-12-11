@@ -63,9 +63,8 @@ class _VehicleInformationState extends State<VehicleInformation> {
                       _DetailItem(title: 'Brand', value: widget.vehicle.brand!),
                       _DetailItem(title: "Model", value: widget.vehicle.model!),
                       _DetailItem(title: "Type", value: widget.vehicle.type!),
-                      _DetailItem(
-                          title: "Number Plate", value: widget.vehicle.number_plate!),
-                      _DetailItem(title: "End Latitude", value: "Not Available"),
+                      _DetailItem(title: "Number Plate", value: widget.vehicle.number_plate!),
+                      const _DetailItem(title: "End Latitude", value: "Not Available"),
                     ],
                   ),
                 ],
