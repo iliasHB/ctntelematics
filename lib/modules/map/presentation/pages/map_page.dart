@@ -30,7 +30,7 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
 
   BitmapDescriptor? _offlineCustomIcon;
   BitmapDescriptor? _onlineCustomIcon;
-
+  Map<String, List<LatLng>> _routes = {};
   final double _geofenceRadius = 5000;
   PrefUtils prefUtils = PrefUtils();
   Polygon? _geofencePolygon;
@@ -233,127 +233,57 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
     );
   }
 
-  // void _updateMarkers(List<LastLocationRespEntity> allVehicles, {required List<VehicleEntity> vehicles,}) async {
-  //   // Map<String, Marker> updatedMarkers = Map.fromIterable(
-  //   //   _markers,
-  //   //   key: (marker) => marker.markerId.value,
-  //   //   value: (marker) => marker,
-  //   // );
-  //   List<Marker> updatedMarkers = List.from(_markers);
-  //
-  //   // Offline Vehicle Markers
-  //   for (var vehicle in allVehicles) {
-  //     final details = vehicle.vehicle?.details;
-  //     final lastLocation = details?.last_location;
-  //     if (details != null && lastLocation != null) {
-  //       _addGeofencePolygon(vehicle.vehicle?.geofence?.coordinates);
-  //       final currentPosition = LatLng(
-  //         double.parse(lastLocation.latitude.toString()),
-  //         double.parse(lastLocation.longitude.toString()),
-  //       );
-  //
-  //       if (_offlineCustomIcon == null) await _setOfflineCustomMarkerIcon();
-  //
-  //       updatedMarkers[int.parse(details.number_plate!)] = Marker(
-  //         icon: _offlineCustomIcon!,
-  //         markerId: MarkerId(details.number_plate!),
-  //         position: currentPosition,
-  //         onTap: () => _showVehicleToolTip(vehicle),
-  //         infoWindow: InfoWindow(title: details.number_plate),
-  //       );
-  //     }
-  //   }
-  //
-  //   // Online Vehicle Markers
-  //   for (var vehicle in vehicles) {
-  //     final locationInfo = vehicle.locationInfo;
-  //     final tracker = locationInfo.tracker;
-  //     if ((tracker?.status?.toLowerCase() == "online" &&
-  //             locationInfo.vehicleStatus.toLowerCase() == "moving" &&
-  //             tracker?.position?.latitude != null &&
-  //             tracker?.position?.longitude != null) ||
-  //         (tracker?.status?.toLowerCase() == "online" &&
-  //             locationInfo.vehicleStatus.toLowerCase() == "idling") ||
-  //         (tracker?.status?.toLowerCase() == "online" &&
-  //             locationInfo.vehicleStatus.toLowerCase() == "parked")) {
-  //       _addGeofencePolygon2(locationInfo.withinGeofence?.coordinates ?? []);
-  //       final currentPosition = LatLng(
-  //         double.parse(tracker!.position!.latitude.toString()),
-  //         double.parse(tracker.position!.longitude.toString()),
-  //       );
-  //
-  //       final numberPlate = locationInfo.numberPlate;
-  //       final previousPosition = _previousPositions[numberPlate];
-  //       _previousPositions[numberPlate] = currentPosition;
-  //
-  //       double? bearing;
-  //       if (previousPosition != null) {
-  //         bearing = _calculateBearing(previousPosition, currentPosition);
-  //       }
-  //
-  //       if (previousPosition == null ||
-  //           _calculateDistance(previousPosition, currentPosition) >= 1) {
-  //         if (_onlineCustomIcon == null) await _setOnlineCustomMarkerIcon();
-  //
-  //         // Interpolate marker movement for smooth animation
-  //         const int steps = 20; // Number of steps for interpolation
-  //         for (int i = 1; i <= steps; i++) {
-  //           final t = i / steps;
-  //           final interpolatedPosition = LatLng(
-  //             previousPosition == null
-  //                 ? currentPosition.latitude
-  //                 : previousPosition.latitude +
-  //                     (currentPosition.latitude - previousPosition.latitude) * t,
-  //             previousPosition == null
-  //                 ? currentPosition.longitude
-  //                 : previousPosition.longitude +
-  //                     (currentPosition.longitude - previousPosition.longitude) * t,
-  //           );
-  //
-  //           // Update the marker position
-  //           updatedMarkers[int.parse(numberPlate)] = Marker(
-  //             icon: _onlineCustomIcon ?? _offlineCustomIcon!,
-  //             markerId: MarkerId(numberPlate),
-  //             position: currentPosition,
-  //             onTap: () => _showVehicleToolTip(vehicle),
-  //             infoWindow: InfoWindow(title: numberPlate),
-  //             rotation: bearing ?? 0,
-  //           );
-  //
-  //           // Smooth camera follow (optional)
-  //           if (i % 5 == 0) {
-  //             await mapController.animateCamera(CameraUpdate.newLatLng(interpolatedPosition));
-  //           }
-  //
-  //           // Delay for smooth animation
-  //           await Future.delayed(const Duration(milliseconds: 50));
-  //         }
-  //
-  //         // updatedMarkers[int.parse(numberPlate)] = Marker(
-  //         //   icon: _onlineCustomIcon!,
-  //         //   markerId: MarkerId(numberPlate),
-  //         //   position: currentPosition,
-  //         //   onTap: () => _showVehicleToolTip(vehicle),
-  //         //   infoWindow: InfoWindow(title: numberPlate),
-  //         //   rotation: bearing ?? 0,
-  //         // );
-  //       }
-  //     }
-  //   }
-  //
-  //   WidgetsBinding.instance.addPostFrameCallback((_) {
-  //     if (mounted) {
-  //       setState(() {
-  //         _marker = updatedMarkers;
-  //       });
-  //     }
-  //   });
-  // }
+
+  Widget buildMap(bool isGeofence) {
+    return GoogleMap(
+      onMapCreated: (GoogleMapController controller) {
+        mapController = controller;
+
+        // Optionally move camera to Nigeria when map loads
+        mapController.moveCamera(
+          CameraUpdate.newCameraPosition(
+            const CameraPosition(
+              target: LatLng(9.0820, 8.6753), // Center of Nigeria
+              zoom: 6.0, // Adjust zoom for a clear view of Nigeria
+            ),
+          ),
+        );
+      },
+      initialCameraPosition: const CameraPosition(
+        target: LatLng(9.0820, 8.6753), // Center of Nigeria
+        zoom: 6.0, // Adjust zoom for initialization
+      ),
+      markers: Set<Marker>.of(_markers),
+      polylines: _buildPolylines(), // Add polylines
+      polygons: isGeofence && _geofencePolygon != null
+          ? {_geofencePolygon!}
+          : {}, // Toggle geofence
+      onCameraIdle: () {
+        _fetchMarkersInViewport();
+      },
+    );
+  }
+
+  Set<Polyline> _buildPolylines() {
+    return _routes.entries.map((entry) {
+      final numberPlate = entry.key;
+      final route = entry.value;
+
+      return Polyline(
+        polylineId: PolylineId(numberPlate),
+        points: route,
+        color: Colors.blue, // Line color
+        width: 2, // Line width
+      );
+    }).toSet();
+  }
+
 
   void _updateMarkers(List<LastLocationRespEntity> allVehicles,
       {required List<VehicleEntity> vehicles}) async {
     // Set<Marker> updatedMarkers = {};
     List<Marker> updatedMarkers = List.from(_markers);
+
 
     /// Offline vehicle markers
     for (var vehicle in allVehicles) {
@@ -382,26 +312,29 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
               markerId: MarkerId(numberPlate),
               position: currentPosition,
               onTap: () {
+                mapController.animateCamera(
+                  CameraUpdate.newLatLngZoom(currentPosition, 15.0), // Reduced zoom level
+                );
                 _showVehicleOfflineToolTip(
                   number_plate: vehicle.vehicle?.details!.number_plate,
-                  vin: vehicle.vehicle?.details?.vin,
-                  address: vehicle.vehicle?.address,
-                  phone: vehicle.vehicle?.driver?.phone,
-                  name: vehicle.vehicle?.driver?.name,
-                  brand: vehicle.vehicle?.details?.brand,
-                  model: vehicle.vehicle?.details?.model,
+                  vin: vehicle.vehicle?.details?.vin ?? "N/A",
+                  address: vehicle.vehicle?.address ?? "N/A",
+                  phone: vehicle.vehicle?.driver?.phone ?? "N/A",
+                  name: vehicle.vehicle?.driver?.name ?? "N/A",
+                  brand: vehicle.vehicle?.details?.brand ?? "N/A",
+                  model: vehicle.vehicle?.details?.model ?? "N/A",
                   token: token,
-                  latitude: vehicle.vehicle?.details?.last_location?.latitude,
-                  longitude: vehicle.vehicle?.details?.last_location?.longitude,
-                  voltage_level: vehicle.vehicle?.details?.last_location?.voltage_level,
-                  speed: vehicle.vehicle?.details?.last_location?.speed,
+                  latitude: vehicle.vehicle?.details?.last_location?.latitude ?? "N/A",
+                  longitude: vehicle.vehicle?.details?.last_location?.longitude ?? "N/A",
+                  voltage_level: vehicle.vehicle?.details?.last_location?.voltage_level ?? "N/A",
+                  speed: vehicle.vehicle?.details?.last_location?.speed ?? "N/A",
                   real_time_gps: vehicle.vehicle?.details?.last_location?.real_time_gps,
-                  status: vehicle.vehicle?.details?.last_location?.status,
+                  status: vehicle.vehicle?.details?.last_location?.status ?? "N/A",
                   gsm_signal_strength: vehicle.vehicle?.details?.last_location?.gsm_signal_strength,
-                  updated_at: vehicle.vehicle?.details?.last_location?.updated_at,
-                  email: vehicle.vehicle?.driver?.email,
-                  country: vehicle.vehicle?.driver?.country,
-                  licence_number: vehicle.vehicle?.driver?.licence_number,
+                  updated_at: vehicle.vehicle?.details?.last_location?.created_at  ??  vehicle.vehicle?.details?.last_location?.fix_time,
+                  email: vehicle.vehicle?.driver?.email ?? "N/A",
+                  country: vehicle.vehicle?.driver?.country ?? "N/A",
+                  licence_number: vehicle.vehicle?.driver?.licence_number ?? "N/A",
                 );
               },
               infoWindow: InfoWindow(
@@ -417,6 +350,10 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
     for (var vehicle in vehicles) {
       print("vehicle status: ${vehicles[0].locationInfo.vehicleStatus}");
       print("tracker status: ${vehicles[0].locationInfo.tracker?.status}");
+
+      var vehicleDetails = allVehicles.firstWhere(
+            (v) => v.vehicle?.details?.number_plate == vehicle.locationInfo.numberPlate,
+      );
 
       if ((vehicle.locationInfo.vehicleStatus.toLowerCase() == "moving" &&
               vehicle.locationInfo.tracker!.status!.toLowerCase() == "online" &&
@@ -437,13 +374,17 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
         );
 
         final currentPosition = LatLng(
-          double.parse(
-              vehicle.locationInfo.tracker!.position!.latitude.toString()),
-          double.parse(
-              vehicle.locationInfo.tracker!.position!.longitude.toString()),
+          double.parse(vehicle.locationInfo.tracker!.position!.latitude.toString()),
+          double.parse(vehicle.locationInfo.tracker!.position!.longitude.toString()),
         );
 
         final numberPlate = vehicle.locationInfo.numberPlate;
+
+        // Add current position to the route for this vehicle
+        if (!_routes.containsKey(numberPlate)) {
+          _routes[numberPlate] = [];
+        }
+        _routes[numberPlate]!.add(currentPosition);
 
         // Retrieve the previous position for bearing calculation
         final previousPosition = _previousPositions[numberPlate];
@@ -490,28 +431,29 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
                 markerId: MarkerId(numberPlate),
                 position: interpolatedPosition,
                 onTap: () {
+                  mapController.animateCamera(
+                    CameraUpdate.newLatLngZoom(currentPosition, 15.0), // Reduced zoom level
+                  );
                   _showVehicleOnlineToolTip(
                     numberPlate: vehicle.locationInfo.numberPlate,
                     vin: vehicle.locationInfo.vin,
-                    address: '',
-                    phone: '',
-                    name: '',
+                    address: vehicleDetails.vehicle?.address == null ? "N/A" : vehicleDetails.vehicle!.address!,
+                    phone: vehicleDetails.vehicle?.driver?.phone! == null ? "N/A" :  vehicleDetails.vehicle!.driver!.phone!,
+                    name: vehicleDetails.vehicle?.driver?.name! == null ? "N/A" : vehicleDetails.vehicle!.driver!.name!,
                     brand: vehicle.locationInfo.brand,
                     model: vehicle.locationInfo.model,
                     token: token,
-                    latitude: vehicle.locationInfo.tracker?.position?.latitude,
-                    longitude:
-                        vehicle.locationInfo.tracker?.position?.longitude,
-                    batteryLevel:
-                        vehicle.locationInfo.tracker?.position?.batteryLevel,
-                    speed: vehicle.locationInfo.tracker?.position?.speed,
-                    real_time_gps: false,
-                    status: vehicle.locationInfo.tracker?.status,
-                    gsmRssi: vehicle.locationInfo.tracker?.position?.gsmRssi,
-                    lastUpdate: vehicle.locationInfo.tracker?.lastUpdate,
-                    email: '',
-                    country: '',
-                    licence_number: '',
+                    latitude: vehicle.locationInfo.tracker?.position?.latitude ?? 0.0000000,
+                    longitude: vehicle.locationInfo.tracker?.position?.longitude ?? 0.0000000,
+                    batteryLevel: vehicle.locationInfo.tracker?.position?.batteryLevel,
+                    speed: vehicle.locationInfo.tracker?.position?.speed ?? 0.00,
+                    real_time_gps: vehicleDetails.vehicle?.details?.last_location?.real_time_gps ?? false,
+                    status: vehicle.locationInfo.tracker?.status ?? "N/A",
+                    gsmRssi: vehicle.locationInfo.tracker?.position?.gsmRssi ?? 0,
+                    lastUpdate: vehicle.locationInfo.tracker?.lastUpdate ?? DateTime.now().toString(),
+                    email: vehicleDetails.vehicle?.driver?.email ?? "N/A",
+                    country: vehicleDetails.vehicle?.driver?.country ?? "N/A",
+                    licence_number: vehicleDetails.vehicle?.driver?.licence_number ?? "N/A"
                   );
                 },
                 infoWindow: InfoWindow(
@@ -807,148 +749,8 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
   //   }
   // }
 
-  Widget buildMap(bool isGeofence) {
-    return GoogleMap(
-      onMapCreated: (GoogleMapController controller) {
-        mapController = controller;
 
-        // Optionally move camera to Nigeria when map loads
-        mapController.moveCamera(
-          CameraUpdate.newCameraPosition(
-            const CameraPosition(
-              target: LatLng(9.0820, 8.6753), // Center of Nigeria
-              zoom: 6.0, // Adjust zoom for a clear view of Nigeria
-            ),
-          ),
-        );
-      },
-      initialCameraPosition: const CameraPosition(
-        target: LatLng(9.0820, 8.6753), // Center of Nigeria
-        zoom: 6.0, // Adjust zoom for initialization
-      ),
-      markers: Set<Marker>.of(_markers),
-      polygons: isGeofence && _geofencePolygon != null
-          ? {_geofencePolygon!}
-          : {}, // Toggle geofence
-      onCameraIdle: () {
-        _fetchMarkersInViewport();
-      },
-    );
-  }
 
-  // void _updateMarkers(List<LastLocationRespEntity> allVehicles, {required List<VehicleEntity> vehicles,}) {
-  //   bool shouldUpdateOfflineIcon = false;
-  //   final updatedMarkers = <Marker>{}; // Temporary set for updated markers
-  //   _markers.clear(); // Clear existing markers
-  //
-  //   // Add markers for all vehicles' last known locations (stationary vehicles)
-  //   for (var vehicle in allVehicles) {
-  //     print('Processing allVehicles...');
-  //     if (vehicle.vehicle != null &&
-  //         vehicle.vehicle!.details?.last_location != null) {
-  //       _addGeofencePolygon(vehicle.vehicle?.geofence?.coordinates);
-  //
-  //       final currentPosition = LatLng(
-  //         double.parse(
-  //             vehicle.vehicle!.details!.last_location!.latitude.toString()),
-  //         double.parse(
-  //             vehicle.vehicle!.details!.last_location!.longitude.toString()),
-  //       );
-  //
-  //       final numberPlate = vehicle.vehicle!.details!.number_plate!;
-  //
-  //       // Check if the current position has changed
-  //       if (!_previousPositions.containsKey(numberPlate) ||
-  //           _previousPositions[numberPlate] != currentPosition) {
-  //         shouldUpdateOfflineIcon = true;
-  //       }
-  //
-  //       // Cache the current position as the previous position
-  //       _previousPositions[numberPlate] = currentPosition;
-  //
-  //       // Add stationary vehicle marker
-  //       _markers.add(
-  //         Marker(
-  //           icon: _offlineCustomIcon!, // Icon for stationary vehicles
-  //           markerId: MarkerId(numberPlate),
-  //           position: currentPosition,
-  //           onTap: () {
-  //             _showVehicleToolTip(vehicle);
-  //           },
-  //           infoWindow: InfoWindow(
-  //             title: numberPlate,
-  //           ),
-  //         ),
-  //       );
-  //     }
-  //   }
-  //
-  //   // Update the custom offline marker icon if needed
-  //   if (shouldUpdateOfflineIcon) {
-  //     _setOfflineCustomMarkerIcon();
-  //   }
-  //
-  //   // Add markers for moving vehicles
-  //   for (var vehicle in vehicles) {
-  //     print("Processing moving vehicles...");
-  //     if ((vehicle.locationInfo.vehicleStatus == "Moving" &&
-  //             vehicle.locationInfo.tracker?.position?.latitude != null &&
-  //             vehicle.locationInfo.tracker?.position?.longitude != null) ||
-  //         vehicle.locationInfo.vehicleStatus == "moving") {
-  //       _addGeofencePolygon2(
-  //           vehicle.locationInfo.withinGeofence?.coordinates != null
-  //               ? vehicle.locationInfo.withinGeofence!.coordinates
-  //               : []);
-  //       final currentPosition = LatLng(
-  //         double.parse(
-  //             vehicle.locationInfo.tracker!.position!.latitude.toString()),
-  //         double.parse(
-  //             vehicle.locationInfo.tracker!.position!.longitude.toString()),
-  //       );
-  //
-  //       final numberPlate = vehicle.locationInfo.numberPlate;
-  //
-  //       // Retrieve the previous position for bearing calculation
-  //       final previousPosition = _previousPositions[numberPlate];
-  //
-  //       // Cache the current position as the new previous position
-  //       _previousPositions[numberPlate] = currentPosition;
-  //
-  //       // Calculate bearing if we have a previous position
-  //       double? bearing;
-  //       if (previousPosition != null) {
-  //         bearing = _calculateBearing(previousPosition, currentPosition);
-  //       }
-  //
-  //       // Add marker only if the vehicle has moved significantly
-  //       if (previousPosition == null ||
-  //           _calculateDistance(previousPosition, currentPosition) > 4.0) {
-  //         if (_onlineCustomIcon == null) {
-  //           _setOnlineCustomMarkerIcon();
-  //         }
-  //         _markers.add(
-  //           Marker(
-  //             icon: _onlineCustomIcon ?? BitmapDescriptor.defaultMarker, // Icon for moving vehicles
-  //             markerId: MarkerId(numberPlate),
-  //             position: currentPosition,
-  //             onTap: () {
-  //               _showVehicleToolTip(vehicle);
-  //             },
-  //             infoWindow: InfoWindow(
-  //               title: numberPlate,
-  //             ),
-  //             rotation: bearing ?? 0, // Set bearing if available
-  //           ),
-  //         );
-  //
-  //         // Smoothly animate the camera to the new position
-  //         mapController.animateCamera(CameraUpdate.newLatLng(currentPosition));
-  //       }
-  //     }
-  //   }
-  // }
-
-// Helper function to calculate distance between two points
 
   double _calculateBearing(LatLng start, LatLng end) {
     final lat1 = _toRadians(start.latitude);
@@ -1144,6 +946,240 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
     // Replace with actual API call to fetch vehicles within the bounds
   }
 }
+
+// void _updateMarkers(List<LastLocationRespEntity> allVehicles, {required List<VehicleEntity> vehicles,}) {
+//   bool shouldUpdateOfflineIcon = false;
+//   final updatedMarkers = <Marker>{}; // Temporary set for updated markers
+//   _markers.clear(); // Clear existing markers
+//
+//   // Add markers for all vehicles' last known locations (stationary vehicles)
+//   for (var vehicle in allVehicles) {
+//     print('Processing allVehicles...');
+//     if (vehicle.vehicle != null &&
+//         vehicle.vehicle!.details?.last_location != null) {
+//       _addGeofencePolygon(vehicle.vehicle?.geofence?.coordinates);
+//
+//       final currentPosition = LatLng(
+//         double.parse(
+//             vehicle.vehicle!.details!.last_location!.latitude.toString()),
+//         double.parse(
+//             vehicle.vehicle!.details!.last_location!.longitude.toString()),
+//       );
+//
+//       final numberPlate = vehicle.vehicle!.details!.number_plate!;
+//
+//       // Check if the current position has changed
+//       if (!_previousPositions.containsKey(numberPlate) ||
+//           _previousPositions[numberPlate] != currentPosition) {
+//         shouldUpdateOfflineIcon = true;
+//       }
+//
+//       // Cache the current position as the previous position
+//       _previousPositions[numberPlate] = currentPosition;
+//
+//       // Add stationary vehicle marker
+//       _markers.add(
+//         Marker(
+//           icon: _offlineCustomIcon!, // Icon for stationary vehicles
+//           markerId: MarkerId(numberPlate),
+//           position: currentPosition,
+//           onTap: () {
+//             _showVehicleToolTip(vehicle);
+//           },
+//           infoWindow: InfoWindow(
+//             title: numberPlate,
+//           ),
+//         ),
+//       );
+//     }
+//   }
+//
+//   // Update the custom offline marker icon if needed
+//   if (shouldUpdateOfflineIcon) {
+//     _setOfflineCustomMarkerIcon();
+//   }
+//
+//   // Add markers for moving vehicles
+//   for (var vehicle in vehicles) {
+//     print("Processing moving vehicles...");
+//     if ((vehicle.locationInfo.vehicleStatus == "Moving" &&
+//             vehicle.locationInfo.tracker?.position?.latitude != null &&
+//             vehicle.locationInfo.tracker?.position?.longitude != null) ||
+//         vehicle.locationInfo.vehicleStatus == "moving") {
+//       _addGeofencePolygon2(
+//           vehicle.locationInfo.withinGeofence?.coordinates != null
+//               ? vehicle.locationInfo.withinGeofence!.coordinates
+//               : []);
+//       final currentPosition = LatLng(
+//         double.parse(
+//             vehicle.locationInfo.tracker!.position!.latitude.toString()),
+//         double.parse(
+//             vehicle.locationInfo.tracker!.position!.longitude.toString()),
+//       );
+//
+//       final numberPlate = vehicle.locationInfo.numberPlate;
+//
+//       // Retrieve the previous position for bearing calculation
+//       final previousPosition = _previousPositions[numberPlate];
+//
+//       // Cache the current position as the new previous position
+//       _previousPositions[numberPlate] = currentPosition;
+//
+//       // Calculate bearing if we have a previous position
+//       double? bearing;
+//       if (previousPosition != null) {
+//         bearing = _calculateBearing(previousPosition, currentPosition);
+//       }
+//
+//       // Add marker only if the vehicle has moved significantly
+//       if (previousPosition == null ||
+//           _calculateDistance(previousPosition, currentPosition) > 4.0) {
+//         if (_onlineCustomIcon == null) {
+//           _setOnlineCustomMarkerIcon();
+//         }
+//         _markers.add(
+//           Marker(
+//             icon: _onlineCustomIcon ?? BitmapDescriptor.defaultMarker, // Icon for moving vehicles
+//             markerId: MarkerId(numberPlate),
+//             position: currentPosition,
+//             onTap: () {
+//               _showVehicleToolTip(vehicle);
+//             },
+//             infoWindow: InfoWindow(
+//               title: numberPlate,
+//             ),
+//             rotation: bearing ?? 0, // Set bearing if available
+//           ),
+//         );
+//
+//         // Smoothly animate the camera to the new position
+//         mapController.animateCamera(CameraUpdate.newLatLng(currentPosition));
+//       }
+//     }
+//   }
+// }
+
+// Helper function to calculate distance between two points
+///
+
+// void _updateMarkers(List<LastLocationRespEntity> allVehicles, {required List<VehicleEntity> vehicles,}) async {
+//   // Map<String, Marker> updatedMarkers = Map.fromIterable(
+//   //   _markers,
+//   //   key: (marker) => marker.markerId.value,
+//   //   value: (marker) => marker,
+//   // );
+//   List<Marker> updatedMarkers = List.from(_markers);
+//
+//   // Offline Vehicle Markers
+//   for (var vehicle in allVehicles) {
+//     final details = vehicle.vehicle?.details;
+//     final lastLocation = details?.last_location;
+//     if (details != null && lastLocation != null) {
+//       _addGeofencePolygon(vehicle.vehicle?.geofence?.coordinates);
+//       final currentPosition = LatLng(
+//         double.parse(lastLocation.latitude.toString()),
+//         double.parse(lastLocation.longitude.toString()),
+//       );
+//
+//       if (_offlineCustomIcon == null) await _setOfflineCustomMarkerIcon();
+//
+//       updatedMarkers[int.parse(details.number_plate!)] = Marker(
+//         icon: _offlineCustomIcon!,
+//         markerId: MarkerId(details.number_plate!),
+//         position: currentPosition,
+//         onTap: () => _showVehicleToolTip(vehicle),
+//         infoWindow: InfoWindow(title: details.number_plate),
+//       );
+//     }
+//   }
+//
+//   // Online Vehicle Markers
+//   for (var vehicle in vehicles) {
+//     final locationInfo = vehicle.locationInfo;
+//     final tracker = locationInfo.tracker;
+//     if ((tracker?.status?.toLowerCase() == "online" &&
+//             locationInfo.vehicleStatus.toLowerCase() == "moving" &&
+//             tracker?.position?.latitude != null &&
+//             tracker?.position?.longitude != null) ||
+//         (tracker?.status?.toLowerCase() == "online" &&
+//             locationInfo.vehicleStatus.toLowerCase() == "idling") ||
+//         (tracker?.status?.toLowerCase() == "online" &&
+//             locationInfo.vehicleStatus.toLowerCase() == "parked")) {
+//       _addGeofencePolygon2(locationInfo.withinGeofence?.coordinates ?? []);
+//       final currentPosition = LatLng(
+//         double.parse(tracker!.position!.latitude.toString()),
+//         double.parse(tracker.position!.longitude.toString()),
+//       );
+//
+//       final numberPlate = locationInfo.numberPlate;
+//       final previousPosition = _previousPositions[numberPlate];
+//       _previousPositions[numberPlate] = currentPosition;
+//
+//       double? bearing;
+//       if (previousPosition != null) {
+//         bearing = _calculateBearing(previousPosition, currentPosition);
+//       }
+//
+//       if (previousPosition == null ||
+//           _calculateDistance(previousPosition, currentPosition) >= 1) {
+//         if (_onlineCustomIcon == null) await _setOnlineCustomMarkerIcon();
+//
+//         // Interpolate marker movement for smooth animation
+//         const int steps = 20; // Number of steps for interpolation
+//         for (int i = 1; i <= steps; i++) {
+//           final t = i / steps;
+//           final interpolatedPosition = LatLng(
+//             previousPosition == null
+//                 ? currentPosition.latitude
+//                 : previousPosition.latitude +
+//                     (currentPosition.latitude - previousPosition.latitude) * t,
+//             previousPosition == null
+//                 ? currentPosition.longitude
+//                 : previousPosition.longitude +
+//                     (currentPosition.longitude - previousPosition.longitude) * t,
+//           );
+//
+//           // Update the marker position
+//           updatedMarkers[int.parse(numberPlate)] = Marker(
+//             icon: _onlineCustomIcon ?? _offlineCustomIcon!,
+//             markerId: MarkerId(numberPlate),
+//             position: currentPosition,
+//             onTap: () => _showVehicleToolTip(vehicle),
+//             infoWindow: InfoWindow(title: numberPlate),
+//             rotation: bearing ?? 0,
+//           );
+//
+//           // Smooth camera follow (optional)
+//           if (i % 5 == 0) {
+//             await mapController.animateCamera(CameraUpdate.newLatLng(interpolatedPosition));
+//           }
+//
+//           // Delay for smooth animation
+//           await Future.delayed(const Duration(milliseconds: 50));
+//         }
+//
+//         // updatedMarkers[int.parse(numberPlate)] = Marker(
+//         //   icon: _onlineCustomIcon!,
+//         //   markerId: MarkerId(numberPlate),
+//         //   position: currentPosition,
+//         //   onTap: () => _showVehicleToolTip(vehicle),
+//         //   infoWindow: InfoWindow(title: numberPlate),
+//         //   rotation: bearing ?? 0,
+//         // );
+//       }
+//     }
+//   }
+//
+//   WidgetsBinding.instance.addPostFrameCallback((_) {
+//     if (mounted) {
+//       setState(() {
+//         _marker = updatedMarkers;
+//       });
+//     }
+//   });
+// }
+
+///
 
 //  //
 // // Update markers for all vehicles and moving vehicles

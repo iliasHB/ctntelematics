@@ -42,6 +42,8 @@ void main() async {
         ChangeNotifierProvider(create: (_) => ShopNowProvider()),
         ChangeNotifierProvider(create: (_) => MaintenanceReminderProvider()),
         ChangeNotifierProvider(create: (_) => VehicleTripProvider()),
+        ChangeNotifierProvider(create: (_) => QuickLinkProvider()),
+        ChangeNotifierProvider(create: (_) => OdometerProvider()),
       ],
       child: const MyApp(),
     ),
