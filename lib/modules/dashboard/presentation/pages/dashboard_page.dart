@@ -106,23 +106,23 @@ class _DashboardPageState extends State<DashboardPage> {
     return {
       'online': vehicles
           .where((v) =>
-      v.vehicle?.details?.last_location?.status!.toLowerCase() ==
-          "online")
+              v.vehicle?.details?.last_location?.status!.toLowerCase() ==
+              "online")
           .length,
       'offline': vehicles
           .where((v) =>
-      v.vehicle?.details?.last_location?.status!.toLowerCase() ==
-          "offline")
+              v.vehicle?.details?.last_location?.status!.toLowerCase() ==
+              "offline")
           .length,
       'idling': vehicles
           .where((v) =>
-      v.vehicle?.details?.last_location?.status!.toLowerCase() ==
-          "idling")
+              v.vehicle?.details?.last_location?.status!.toLowerCase() ==
+              "idling")
           .length,
       'parked': vehicles
           .where((v) =>
-      v.vehicle?.details?.last_location?.status!.toLowerCase() ==
-          "parked")
+              v.vehicle?.details?.last_location?.status!.toLowerCase() ==
+              "parked")
           .length,
       'vehicles': vehicles.length
     };
@@ -131,31 +131,22 @@ class _DashboardPageState extends State<DashboardPage> {
   // Helper function to compute counts
   Map<String, int> _computeVehicleSocketCounts(List<VehicleEntity> vehicles) {
     return {
-      'moving': vehicles
-          .where((v) =>
-              v.locationInfo.tracker!.status == "Moving" ||
-              v.locationInfo.tracker!.status == "moving")
-          .length,
+      // 'moving': vehicles
+      //     .where((v) => v.locationInfo.vehicleStatus.toLowerCase() == "moving")
+      //     .length,
       'online': vehicles
           .where((v) =>
-              v.locationInfo.tracker!.status == "Online" ||
-              v.locationInfo.tracker!.status == "online")
-          .length,
-      'offline': vehicles
-          .where((v) =>
-              v.locationInfo.vehicleStatus == "Offline" ||
-              v.locationInfo.vehicleStatus == "offline")
-          .length,
-      'idling': vehicles
-          .where((v) =>
-              v.locationInfo.vehicleStatus == "Idling" ||
-              v.locationInfo.vehicleStatus == "idling")
-          .length,
-      'parked': vehicles
-          .where((v) =>
-              v.locationInfo.vehicleStatus == "Parked" ||
-              v.locationInfo.vehicleStatus == "parked")
-          .length,
+              v.locationInfo.tracker!.status?.toLowerCase() == "online" &&
+                  v.locationInfo.vehicleStatus.toLowerCase() == "moving").length,
+      // 'offline': vehicles
+      //     .where((v) => v.locationInfo.vehicleStatus.toLowerCase() == "offline")
+      //     .length,
+      // 'idling': vehicles
+      //     .where((v) => v.locationInfo.vehicleStatus.toLowerCase() == "idling")
+      //     .length,
+      // 'parked': vehicles
+      //     .where((v) => v.locationInfo.vehicleStatus.toLowerCase() == "parked")
+      //     .length,
     };
   }
 
@@ -171,11 +162,12 @@ class _DashboardPageState extends State<DashboardPage> {
   Widget build(BuildContext context) {
     final isShopNow = context.watch<ShopNowProvider>().isShopNow;
     final isVehicleTrip = context.watch<VehicleTripProvider>().isVehicleTrip;
-    final isMaintenanceReminder = context.watch<MaintenanceReminderProvider>().isMaintenanceReminder;
+    final isMaintenanceReminder =
+        context.watch<MaintenanceReminderProvider>().isMaintenanceReminder;
     final isQuickLinkReminder = context.watch<QuickLinkProvider>().isQuickLink;
     final isOdometerReminder = context.watch<OdometerProvider>().isOdometer;
-    final dashVehicleReqEntity = TokenReqEntity(
-        token: token ?? "", contentType: 'application/json');
+    final dashVehicleReqEntity =
+        TokenReqEntity(token: token ?? "", contentType: 'application/json');
     return Scaffold(
       appBar: AnimatedAppBar(
         firstname: first_name ?? "",
@@ -330,8 +322,8 @@ class _DashboardPageState extends State<DashboardPage> {
                             child: BlocProvider(
                               create: (_) => sl<LastLocationBloc>()
                                 ..add(LastLocationEvent(dashVehicleReqEntity)),
-                              child: BlocConsumer<LastLocationBloc,
-                                  MapState>(builder: (context, state) {
+                              child: BlocConsumer<LastLocationBloc, MapState>(
+                                  builder: (context, state) {
                                 if (state is MapLoading) {
                                   return const SizedBox(
                                     height: 25,
@@ -366,24 +358,52 @@ class _DashboardPageState extends State<DashboardPage> {
                                           builder: (context, vehicles) {
                                             if (vehicles.isEmpty) {
                                               return VehicleStatusPieChart(
-                                                onlineCount: vehicleCounts['online'] ?? 0,
-                                                offlineCount: vehicleCounts['offline'] ?? 0,
-                                                idlingCount: vehicleCounts['idling'] ?? 0,
-                                                parkedCount: vehicleCounts['parked'] ?? 0,
+                                                onlineCount:
+                                                    vehicleCounts['online'] ??
+                                                        0,
+                                                offlineCount:
+                                                    vehicleCounts['offline'] ??
+                                                        0,
+                                                idlingCount:
+                                                    vehicleCounts['idling'] ??
+                                                        0,
+                                                parkedCount:
+                                                    vehicleCounts['parked'] ??
+                                                        0,
                                               );
                                             }
 
-                                            final vehicleWebsocketCounts = _computeVehicleSocketCounts(vehicles);
+                                            final vehicleWebsocketCounts =
+                                                _computeVehicleSocketCounts(
+                                                    vehicles);
 
                                             return VehicleStatusPieChart(
-                                                onlineCount: vehicleWebsocketCounts['online'] ?? 0,
-                                                offlineCount: VehicleRealTimeStatus.checkStatusChange(vehiclesData, vehicles, 'offline', vehicleCounts['offline']),
-                                                idlingCount: VehicleRealTimeStatus.checkStatusChange(vehiclesData, vehicles, 'idling', vehicleCounts['idling']),
-                                                parkedCount: VehicleRealTimeStatus.checkStatusChange(vehiclesData, vehicles, 'parked', vehicleCounts['parked']),
+                                              onlineCount:
+                                                  vehicleWebsocketCounts['online'] ?? 0,
+                                              offlineCount:
+                                                  VehicleRealTimeStatus
+                                                      .checkStatusChange(
+                                                          vehiclesData,
+                                                          vehicles,
+                                                          'offline',
+                                                          vehicleCounts[
+                                                              'offline']),
+                                              idlingCount: VehicleRealTimeStatus
+                                                  .checkStatusChange(
+                                                      vehiclesData,
+                                                      vehicles,
+                                                      'idling',
+                                                      vehicleCounts['idling']),
+                                              parkedCount: VehicleRealTimeStatus
+                                                  .checkStatusChange(
+                                                      vehiclesData,
+                                                      vehicles,
+                                                      'parked',
+                                                      vehicleCounts['parked']),
 
-                                                // offlineCount: vehicleCounts['offline'] ?? 0,
-                                                // idlingCount: vehicleCounts['idling'] ?? 0,
-                                                // parkedCount: vehicleCounts['parked'] ?? 0
+                                              // offlineCount: vehicleCounts['offline'] ?? 0,
+                                              // idlingCount: vehicleCounts['idling'] ?? 0,
+                                              // parkedCount: vehicleCounts['parked'] ?? 0
                                             );
                                           },
                                         ),
@@ -429,11 +449,8 @@ class _DashboardPageState extends State<DashboardPage> {
                                                                     fontWeight:
                                                                         FontWeight
                                                                             .w300),
-                                                            maxLines:
-                                                                1, // Restrict to a single line for count as well
-                                                            overflow:
-                                                                TextOverflow
-                                                                    .ellipsis,
+                                                            maxLines: 1, // Restrict to a single line for count as well
+                                                            overflow: TextOverflow.ellipsis,
                                                           );
                                                         }
                                                         final vehicleWebsocketCounts =
@@ -485,8 +502,11 @@ class _DashboardPageState extends State<DashboardPage> {
                                                                     fontWeight:
                                                                         FontWeight
                                                                             .w300),
-                                                            maxLines: 1, // Restrict to a single line for count as well
-                                                            overflow: TextOverflow.ellipsis,
+                                                            maxLines:
+                                                                1, // Restrict to a single line for count as well
+                                                            overflow:
+                                                                TextOverflow
+                                                                    .ellipsis,
                                                           );
                                                         }
                                                         return Text(
@@ -497,8 +517,10 @@ class _DashboardPageState extends State<DashboardPage> {
                                                                   fontWeight:
                                                                       FontWeight
                                                                           .w300),
-                                                          maxLines: 1, // Restrict to a single line for count as well
-                                                          overflow: TextOverflow.ellipsis,
+                                                          maxLines:
+                                                              1, // Restrict to a single line for count as well
+                                                          overflow: TextOverflow
+                                                              .ellipsis,
                                                         );
                                                       },
                                                     ),
@@ -545,10 +567,11 @@ class _DashboardPageState extends State<DashboardPage> {
                                                                 fontWeight:
                                                                     FontWeight
                                                                         .w300),
-                                                        maxLines: 1, // Restrict to a single line for count as well
-                                                        overflow: TextOverflow.ellipsis,
+                                                        maxLines:
+                                                            1, // Restrict to a single line for count as well
+                                                        overflow: TextOverflow
+                                                            .ellipsis,
                                                       );
-
                                                     },
                                                   )),
                                                   symbol: const CircleAvatar(
@@ -581,8 +604,10 @@ class _DashboardPageState extends State<DashboardPage> {
                                                                   fontWeight:
                                                                       FontWeight
                                                                           .w300),
-                                                          maxLines: 1, // Restrict to a single line for count as well
-                                                          overflow: TextOverflow.ellipsis,
+                                                          maxLines:
+                                                              1, // Restrict to a single line for count as well
+                                                          overflow: TextOverflow
+                                                              .ellipsis,
                                                         );
                                                       }
                                                       return Text(
@@ -1543,7 +1568,9 @@ class _DashboardPageState extends State<DashboardPage> {
                     //   ),
                     // ),
 
-                    const SizedBox(height: 20,),
+                    const SizedBox(
+                      height: 20,
+                    ),
                     isOdometerReminder == false
                         ? Container()
                         : Container(
@@ -1555,7 +1582,8 @@ class _DashboardPageState extends State<DashboardPage> {
                             ),
                             child: Column(
                               children: [
-                                Container( // Icons.assistant_direction_outlined,
+                                Container(
+                                    // Icons.assistant_direction_outlined,
                                     padding: const EdgeInsets.all(8.0),
                                     decoration: BoxDecoration(
                                       color: Colors.green.shade200,
@@ -1991,7 +2019,6 @@ class _BuildVehicleStatus extends StatelessWidget {
   }
 }
 
-
 ///
 // final vehicleWebsocketCounts = _computeVehicleSocketCounts(vehicles);
 //
@@ -2287,7 +2314,10 @@ Widget _buildOdometerList() {
       separatorBuilder: (_, __) => const SizedBox(height: 8),
       itemBuilder: (context, index) {
         return Center(
-          child: Text("No record found", style: AppStyle.cardfooter,),
+          child: Text(
+            "No record found",
+            style: AppStyle.cardfooter,
+          ),
         );
         // final item = data[index];
         // return _buildOdometerRow(
@@ -2296,14 +2326,14 @@ Widget _buildOdometerList() {
     ),
   );
 }
+
 ///
 Widget _buildOdometerRow(String name, int value) {
   return Row(
     children: [
       Expanded(
         flex: 4,
-        child:
-            Text(name, style: AppStyle.cardSubtitle.copyWith(fontSize: 12)),
+        child: Text(name, style: AppStyle.cardSubtitle.copyWith(fontSize: 12)),
       ),
       Expanded(
         flex: 6,

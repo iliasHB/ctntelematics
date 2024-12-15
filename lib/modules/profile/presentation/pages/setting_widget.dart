@@ -17,6 +17,7 @@ import '../../../../core/usecase/databse_helper.dart';
 import '../../../../core/usecase/provider_usecase.dart';
 import '../../../../core/utils/app_export_util.dart';
 import '../../../../core/utils/pref_util.dart';
+import '../../../../service_locator.dart';
 import '../../../websocket/domain/entitties/resp_entities/vehicle_entity.dart';
 import '../../../websocket/presentation/bloc/vehicle_location_bloc.dart';
 import '../widgets/change_dialog.dart';
@@ -748,8 +749,10 @@ class _SettingState extends State<Setting> {
                       // ),
 
                       BlocConsumer<LogoutBloc, ProfileState>(
-                        listener: (context, state) {
+                        listener: (context, state) async {
                           if (state is ProfileDone) {
+                            await prefUtils.clearPreferencesData();
+                            resetApp();
                             Navigator.pushNamedAndRemoveUntil(
                               context,
                               '/login',

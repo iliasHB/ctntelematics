@@ -203,8 +203,8 @@ class _VehicleInformationState extends State<VehicleInformation> {
                 },
                 listener: (context, state) {
                   if (state is DashboardFailure) {
-                    if (state.message.contains("401")) {
-                      Navigator.pushNamed(context, "/login");
+                    if (state.message.contains("unauthenticated")) {
+                      Navigator.pushNamedAndRemoveUntil(context, "/login", (route) => false);
                     }
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text(state.message)),

@@ -7,6 +7,9 @@ abstract class MapState extends Equatable{
   @override
   List<Object?> get props => [];
 }
+// class InitialState extends MapState {
+//   // Define properties if needed
+// }
 
 class MapInitial extends MapState {}
 
