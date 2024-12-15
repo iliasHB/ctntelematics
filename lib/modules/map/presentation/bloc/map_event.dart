@@ -1,11 +1,19 @@
 part of 'map_bloc.dart';
 
-abstract class MapEvent extends Equatable{
+abstract class MapEvent extends Equatable {
   const MapEvent();
 
   @override
   List<Object?> get props => [];
 }
+
+class ClearAllDataEvent extends MapEvent {
+  const ClearAllDataEvent();
+
+  @override
+  List<Object?> get props => [];
+}
+
 
 class LastLocationEvent extends MapEvent {
   final TokenReqEntity tokenReqEntity;

@@ -37,7 +37,7 @@ class PusherService {
     }
   }
 
-  Future<void> _attemptReconnect({int delaySeconds = 5, int maxAttempts = 3}) async {
+  Future<void> _attemptReconnect({int delaySeconds = 5, int maxAttempts = 5}) async {
     for (int attempt = 1; attempt <= maxAttempts; attempt++) {
       print('Attempting to reconnect... Attempt $attempt');
       await Future.delayed(Duration(seconds: delaySeconds));
@@ -51,7 +51,7 @@ class PusherService {
   }
 
   Future<String> _getAuthToken(String channelName, String socketId) async {
-    const int maxRetries = 3; // Maximum number of retries
+    const int maxRetries = 5; // Maximum number of retries
     int attempt = 0;
 
     while (attempt < maxRetries) {
@@ -86,7 +86,7 @@ class PusherService {
         attempt++;
         if (attempt < maxRetries) {
           print('Retrying... Attempt: $attempt');
-          await Future.delayed(Duration(seconds: 2)); // Wait before retrying
+          await Future.delayed(const Duration(seconds: 2)); // Wait before retrying
         } else {
           print('Max retries reached. Failing.');
           throw e; // Rethrow the last exception after max retries
@@ -119,7 +119,6 @@ class PusherService {
         } else {
           await _subscribeToChannel('private-vehicle-owner.$userId', socketId);
         }
-        // await _subscribeToChannel('private-vehicle-owner.$userId', socketId);
       } else {
         print('Unexpected data format: $data'); // Handle unexpected format
       }

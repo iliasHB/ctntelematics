@@ -7,6 +7,7 @@ import 'package:ctntelematics/modules/map/domain/usecases/map_usecase.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/bloc_manager.dart';
 import '../../../../core/network/network_exception.dart';
 import '../../../../core/resources/map_data_state.dart';
 import '../../domain/entitties/req_entities/send_location_resp_entity.dart';
@@ -15,11 +16,27 @@ import '../../domain/entitties/resp_entities/resp_entity.dart';
 part 'map_event.dart';
 part 'map_state.dart';
 
-class LastLocationBloc extends Bloc<MapEvent, MapState>{
+
+final blocManager = BlocManager();
+
+
+abstract class BaseBloc<Event, State> extends Bloc<MapEvent, MapState> {
+  final MapState initialState;
+
+  BaseBloc(this.initialState) : super(initialState) {
+    // Ensure the event type adheres to the generic type
+    on<ClearAllDataEvent>((event, emit) => emit(initialState));
+  }
+}
+
+
+class LastLocationBloc extends BaseBloc<MapEvent, MapState>{
 
   final GetLastLocationUseCase getLastLocationUseCase;
 
   LastLocationBloc(this.getLastLocationUseCase) : super(MapInitial()) {
+    blocManager.registerBloc(this);
+
     on<LastLocationEvent>((event, emit) => emit.forEach<MapState>(
       mapEventToState(event),
       onData: (state) => state,
@@ -33,7 +50,6 @@ class LastLocationBloc extends Bloc<MapEvent, MapState>{
       var resp = await getLastLocationUseCase(event.tokenReqEntity);
       yield GetLastLocationDone(resp);
     } catch (error) {
-      print('error>>>>>>>000000: $error');
       if (error is ApiErrorException) {
         yield MapFailure(error.message); // Emit API error message
       } else if (error is NetworkException) {

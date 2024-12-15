@@ -171,7 +171,6 @@ class GetScheduleBloc extends Bloc<ProfileEvent, ProfileState> {
   }
 }
 
-
 class CreateScheduleBloc extends Bloc<ProfileEvent, ProfileState> {
   final CreateScheduleUseCase createScheduleUseCase;
 
@@ -202,8 +201,6 @@ class CreateScheduleBloc extends Bloc<ProfileEvent, ProfileState> {
     }
   }
 }
-
-
 
 class ProfileVehiclesBloc extends Bloc<ProfileEvent, ProfileState> {
   final ProfileVehicleUseCase profileVehicleUseCase;

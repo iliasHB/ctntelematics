@@ -23,19 +23,3 @@ abstract class PusherRepository {
   /// updates. Errors on the stream are expected to be handled by subscribers.
   Stream<Map<String, dynamic>> listenToVehicleUpdates();
 }
-
-///-------
-// /// An interface for interacting with the Pusher service.
-// abstract class PusherRepository {
-//   /// Connects to the Pusher service to start receiving events.
-//   /// Optionally, you can pass authentication details or other connection parameters if needed.
-//   void connect();
-//
-//   /// Disconnects from the Pusher service.
-//   void disconnect();
-//
-//   /// Listens for vehicle updates from the Pusher service.
-//   /// Returns a stream that emits updates in the form of a Map.
-//   /// This stream can support multiple listeners if implemented as a broadcast stream.
-//   Stream<Map<String, dynamic>> listenToVehicleUpdates();
-// }

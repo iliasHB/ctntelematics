@@ -11,6 +11,7 @@ import 'package:flutter_datetime_picker_plus/flutter_datetime_picker_plus.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../config/theme/app_style.dart';
+import '../../../../core/widgets/custom_button.dart';
 import '../../../../service_locator.dart';
 import '../../../vehincle/domain/entities/req_entities/route_history_req_entity.dart';
 import '../../../vehincle/presentation/bloc/vehicle_bloc.dart';
@@ -255,10 +256,18 @@ class TodayDashboardPage extends StatelessWidget {
               ),
             );
           } else if (state is GetVehicleRouteHistoryDone) {
-            print('rrrrrrrrrrr: ${state.resp.data[0].connected}');
             return VehicleRouteDataAnalytics(vehicles: state.resp.data, vin: vin);
           } else {
-            return Container();
+            return CustomSecondaryButton(
+                label: 'Refresh',
+                onPressed: () {
+                  BlocProvider.of<VehicleRouteHistoryBloc>(context)
+                      .add(VehicleRouteHistoryEvent(VehicleRouteHistoryReqEntity(
+                      vehicle_vin: vin,//'1HGBH41JXMN109186',//vin,
+                      time_from: timeFrom,//'2024-10-29 11:41:00',//timeFrom,
+                      time_to: timeTo,//'2024-10-30 11:42:00',//timeTo,
+                      token: token)));
+                });
           }
         },
         listener: (context, state) {
@@ -314,7 +323,16 @@ class ThreeDaysDashboardPage extends StatelessWidget {
           } else if (state is GetVehicleRouteHistoryDone) {
             return VehicleRouteDataAnalytics(vehicles: state.resp.data, vin: vin,);
           } else {
-            return Container();
+            return CustomSecondaryButton(
+                label: 'Refresh',
+                onPressed: () {
+                  BlocProvider.of<VehicleRouteHistoryBloc>(context)
+                      .add(VehicleRouteHistoryEvent(VehicleRouteHistoryReqEntity(
+                      vehicle_vin: vin,//'1HGBH41JXMN109186',//vin,
+                      time_from: timeFrom,//'2024-10-29 11:41:00',//timeFrom,
+                      time_to: timeTo,//'2024-10-30 11:42:00',//timeTo,
+                      token: token)));
+                });
           }
         },
         listener: (context, state) {
@@ -372,7 +390,16 @@ class OneWeekDashboardPage extends StatelessWidget {
           } else if (state is GetVehicleRouteHistoryDone) {
             return VehicleRouteDataAnalytics(vehicles: state.resp.data, vin: vin,);
           } else {
-            return Container();
+            return CustomSecondaryButton(
+                label: 'Refresh',
+                onPressed: () {
+                  BlocProvider.of<VehicleRouteHistoryBloc>(context)
+                      .add(VehicleRouteHistoryEvent(VehicleRouteHistoryReqEntity(
+                      vehicle_vin: vin,//'1HGBH41JXMN109186',//vin,
+                      time_from: timeFrom,//'2024-10-29 11:41:00',//timeFrom,
+                      time_to: timeTo,//'2024-10-30 11:42:00',//timeTo,
+                      token: token)));
+                });
           }
         },
         listener: (context, state) {
@@ -428,7 +455,16 @@ class YesterdayDashboardPage extends StatelessWidget {
           } else if (state is GetVehicleRouteHistoryDone) {
             return VehicleRouteDataAnalytics(vehicles: state.resp.data, vin: vin,);
           } else {
-            return Container();
+            return CustomSecondaryButton(
+                label: 'Refresh',
+                onPressed: () {
+                  BlocProvider.of<VehicleRouteHistoryBloc>(context)
+                      .add(VehicleRouteHistoryEvent(VehicleRouteHistoryReqEntity(
+                      vehicle_vin: vin,//'1HGBH41JXMN109186',//vin,
+                      time_from: timeFrom,//'2024-10-29 11:41:00',//timeFrom,
+                      time_to: timeTo,//'2024-10-30 11:42:00',//timeTo,
+                      token: token)));
+                });
           }
         },
         listener: (context, state) {

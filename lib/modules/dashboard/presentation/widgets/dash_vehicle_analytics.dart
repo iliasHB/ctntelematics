@@ -9,6 +9,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_datetime_picker_plus/flutter_datetime_picker_plus.dart';
 import 'package:intl/intl.dart';
 
+import '../../../../core/widgets/custom_button.dart';
 import '../../../../core/widgets/format_data.dart';
 import '../../../../service_locator.dart';
 import '../../../vehincle/domain/entities/resp_entities/route_history_resp_entity.dart';
@@ -282,12 +283,6 @@ class TodayDashboardPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // final routeHistoryReqEntity = VehicleRouteHistoryReqEntity(
-    //     vehicle_vin: widget.vin!,
-    //     time_from:
-    //     fromDate.toString().split('.').first ?? "N/A",
-    //     time_to: toDate.toString().split('.').first ?? "N/A",
-    //     token: widget.token!);
 
     return BlocProvider(
       create: (_) => sl<VehicleRouteHistoryBloc>()
@@ -310,10 +305,18 @@ class TodayDashboardPage extends StatelessWidget {
               ),
             );
           } else if (state is GetVehicleRouteHistoryDone) {
-            print("hhhhhhhhoooooooooooo");
             return VehicleRouteDataAnalytics(vehicles: state.resp.data, vin: vin);
           } else {
-            return Container();
+            return CustomSecondaryButton(
+                label: 'Refresh',
+                onPressed: () {
+                  BlocProvider.of<VehicleRouteHistoryBloc>(context)
+                      .add(VehicleRouteHistoryEvent(VehicleRouteHistoryReqEntity(
+                      vehicle_vin: vin,//'1HGBH41JXMN109186',//vin,
+                      time_from: timeFrom,//'2024-10-29 11:41:00',//timeFrom,
+                      time_to: timeTo,//'2024-10-30 11:42:00',//timeTo,
+                      token: token)));
+                });
           }
         },
         listener: (context, state) {
@@ -369,7 +372,16 @@ class ThreeDaysDashboardPage extends StatelessWidget {
           } else if (state is GetVehicleRouteHistoryDone) {
             return VehicleRouteDataAnalytics(vehicles: state.resp.data, vin: vin,);
           } else {
-            return Container();
+            return CustomSecondaryButton(
+                label: 'Refresh',
+                onPressed: () {
+                  BlocProvider.of<VehicleRouteHistoryBloc>(context)
+                      .add(VehicleRouteHistoryEvent(VehicleRouteHistoryReqEntity(
+                      vehicle_vin: vin,//'1HGBH41JXMN109186',//vin,
+                      time_from: timeFrom,//'2024-10-29 11:41:00',//timeFrom,
+                      time_to: timeTo,//'2024-10-30 11:42:00',//timeTo,
+                      token: token)));
+                });
           }
         },
         listener: (context, state) {
@@ -427,7 +439,16 @@ class OneWeekDashboardPage extends StatelessWidget {
           } else if (state is GetVehicleRouteHistoryDone) {
             return VehicleRouteDataAnalytics(vehicles: state.resp.data, vin: vin,);
           } else {
-            return Container();
+            return CustomSecondaryButton(
+                label: 'Refresh',
+                onPressed: () {
+                  BlocProvider.of<VehicleRouteHistoryBloc>(context)
+                      .add(VehicleRouteHistoryEvent(VehicleRouteHistoryReqEntity(
+                      vehicle_vin: vin,//'1HGBH41JXMN109186',//vin,
+                      time_from: timeFrom,//'2024-10-29 11:41:00',//timeFrom,
+                      time_to: timeTo,//'2024-10-30 11:42:00',//timeTo,
+                      token: token)));
+                });
           }
         },
         listener: (context, state) {
@@ -451,12 +472,12 @@ class YesterdayDashboardPage extends StatelessWidget {
   final int? dashboardRoute;
 
   const YesterdayDashboardPage({
-    Key? key,
+    super.key,
     required this.timeFrom,
     required this.timeTo,
     required this.vin,
     required this.token, this.dashboardRoute,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -483,7 +504,16 @@ class YesterdayDashboardPage extends StatelessWidget {
           } else if (state is GetVehicleRouteHistoryDone) {
             return VehicleRouteDataAnalytics(vehicles: state.resp.data, vin: vin,);
           } else {
-            return Container();
+            return CustomSecondaryButton(
+                label: 'Refresh',
+                onPressed: () {
+                  BlocProvider.of<VehicleRouteHistoryBloc>(context)
+                      .add(VehicleRouteHistoryEvent(VehicleRouteHistoryReqEntity(
+                      vehicle_vin: vin,//'1HGBH41JXMN109186',//vin,
+                      time_from: timeFrom,//'2024-10-29 11:41:00',//timeFrom,
+                      time_to: timeTo,//'2024-10-30 11:42:00',//timeTo,
+                      token: token)));
+                });
           }
         },
         listener: (context, state) {
@@ -552,24 +582,56 @@ class _VehicleRouteDataAnalyticsState extends State<VehicleRouteDataAnalytics> {
               Row(
                 children: [
                   const CircleAvatar(
-                    backgroundColor: Colors.green,
+                    backgroundColor: Colors.red,
                     radius: 5,
                   ),
                   const SizedBox(width: 10,),
-                  Text('online',
-                      style: AppStyle.cardSubtitle.copyWith(fontSize: 14))
+                  Text('Offline ',
+                      style: AppStyle.cardSubtitle.copyWith(fontSize: 14)),
+                  Text('(${analytics!.offlinePercentage.toStringAsFixed(1)}%)',
+                      style: AppStyle.cardfooter.copyWith(fontSize: 14))
                 ],
               ),
               Row(
                 children: [
                   const CircleAvatar(
-                    backgroundColor: Colors.red,
+                    backgroundColor: Colors.green,
                     radius: 5,
                   ),
                   const SizedBox(width: 10,),
-                  Text('offline', style: AppStyle.cardSubtitle.copyWith(fontSize: 14))
+                  Text('Moving ',
+                      style: AppStyle.cardSubtitle.copyWith(fontSize: 14)),
+                  Text('(${analytics!.movingPercentage.toStringAsFixed(1)}%)',
+                      style: AppStyle.cardfooter.copyWith(fontSize: 14))
                 ],
               ),
+              Row(
+                children: [
+                  const CircleAvatar(
+                    backgroundColor: Colors.blueGrey,
+                    radius: 5,
+                  ),
+                  const SizedBox(width: 10,),
+                  Text('Parked ',
+                      style: AppStyle.cardSubtitle.copyWith(fontSize: 14)),
+                  Text('(${analytics!.parkedPercentage.toStringAsFixed(1)}%)',
+                      style: AppStyle.cardfooter.copyWith(fontSize: 14))
+                ],
+              ),
+              Row(
+                children: [
+                  const CircleAvatar(
+                    backgroundColor: Colors.yellow,
+                    radius: 5,
+                  ),
+                  const SizedBox(width: 10,),
+                  Text('Idle ',
+                      style: AppStyle.cardSubtitle.copyWith(fontSize: 14)),
+                  Text('(${analytics!.idlePercentage.toStringAsFixed(1)}%)',
+                      style: AppStyle.cardfooter.copyWith(fontSize: 14))
+                ],
+              ),
+
               const SizedBox(height: 20),
               // Pie chart visualization
               Center(
@@ -579,74 +641,60 @@ class _VehicleRouteDataAnalyticsState extends State<VehicleRouteDataAnalytics> {
                   child: PieChart(
                     PieChartData(
                       sections: [
-                        if (analytics!.onlineCount > 0)
+                        if (analytics!.idleCount > 0)
                           PieChartSectionData(
-                            value: analytics!.onlineCount.toDouble(),
-                            color: Colors.green,
-                            title: '${analytics!.onlineCount}',
+                            value: analytics!.idlePercentage,
+                            color: Colors.yellow,
+                            title: '',//'${analytics!.idlePercentage.toStringAsFixed(1)}%',
                             radius: 100,
                             titleStyle: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold),
+                                color: Colors.white, fontWeight: FontWeight.bold),
                           ),
                         if (analytics!.offlineCount > 0)
                           PieChartSectionData(
-                            value: analytics!.offlineCount.toDouble(),
+                            value: analytics!.offlinePercentage,
                             color: Colors.red,
-                            title: '${analytics!.offlineCount}',
+                            title: "",//'${analytics!.offlinePercentage.toStringAsFixed(1)}%',
                             radius: 100,
                             titleStyle: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold),
+                                color: Colors.white, fontWeight: FontWeight.bold),
                           ),
-                        // Fallback for cases where both counts are zero
-                        if (analytics!.onlineCount == 0 &&
-                            analytics!.offlineCount == 0)
+                        if (analytics!.movingCount > 0)
+                          PieChartSectionData(
+                            value: analytics!.movingPercentage,
+                            color: Colors.green,
+                            title: '',//'${analytics!.movingPercentage.toStringAsFixed(1)}%',
+                            radius: 100,
+                            titleStyle: const TextStyle(
+                                color: Colors.white, fontWeight: FontWeight.bold),
+                          ),
+                        if (analytics!.parkedCount > 0)
+                          PieChartSectionData(
+                            value: analytics!.parkedPercentage,
+                            color: Colors.blueGrey,
+                            title: '',//'${analytics!.parkedPercentage.toStringAsFixed(1)}%',
+                            radius: 100,
+                            titleStyle: const TextStyle(
+                                color: Colors.white, fontWeight: FontWeight.bold),
+                          ),
+                        // Fallback for cases where all counts are zero
+                        if (analytics!.idleCount == 0 &&
+                            analytics!.offlineCount == 0 &&
+                            analytics!.movingCount == 0 &&
+                            analytics!.parkedCount == 0)
                           PieChartSectionData(
                             value: 1,
                             color: Colors.grey,
                             title: 'No Data',
                             radius: 60,
                             titleStyle: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold),
+                                color: Colors.white, fontWeight: FontWeight.bold),
                           ),
                       ],
                     ),
                   ),
                 ),
               ),
-              // const SizedBox(height: 20),
-              // Text(
-              //     'Vehicle Details:',
-              //     style:AppStyle.cardSubtitle.copyWith(fontSize: 14)
-              // ),
-              // const SizedBox(height: 10),
-              // SizedBox(
-              //   height: 400,
-              //   child: ListView.builder(
-              //     itemCount: widget.vehicles.length,
-              //     itemBuilder: (context, index) {
-              //       var vehicle = widget.vehicles[index];
-              //       return Card(
-              //         elevation: 3,
-              //         margin: const EdgeInsets.symmetric(vertical: 8),
-              //         child: ListTile(
-              //           title:  Text('Status: ${vehicle.connected}', style: AppStyle.cardfooter,),
-              //           subtitle: Text('DateTime: '+FormatData.formatTimestamp('${vehicle.created_at}'), style: AppStyle.cardfooter,),
-              //           trailing: Icon(
-              //             vehicle.connected == 'online'
-              //                 ? Icons.check_circle
-              //                 : Icons.remove_circle,
-              //             color: vehicle.connected == 'online'
-              //                 ? Colors.green
-              //                 : Colors.red,
-              //           ),
-              //         ),
-              //       );
-              //     },
-              //   ),
-              // ),
             ],
           ),
         ),
@@ -656,9 +704,62 @@ class _VehicleRouteDataAnalyticsState extends State<VehicleRouteDataAnalytics> {
 
 }
 
+class Analytics {
+  final int idleCount;
+  final int offlineCount;
+  final int movingCount;
+  final int parkedCount;
 
-Widget DashboardComponentTitle(
-    {required String title, required String subTitle}) {
+  Analytics({
+    required this.idleCount,
+    required this.offlineCount,
+    required this.movingCount,
+    required this.parkedCount,
+  });
+
+  int get totalCount => idleCount + offlineCount + movingCount + parkedCount;
+
+  double get idlePercentage => totalCount > 0 ? (idleCount / totalCount) * 100 : 0;
+  double get offlinePercentage => totalCount > 0 ? (offlineCount / totalCount) * 100 : 0;
+  double get movingPercentage => totalCount > 0 ? (movingCount / totalCount) * 100 : 0;
+  double get parkedPercentage => totalCount > 0 ? (parkedCount / totalCount) * 100 : 0;
+
+  static Analytics fromVehicleData(List<DatumEntity> vehicles) {
+    int idleCount = 0;
+    int offlineCount = 0;
+    int movingCount = 0;
+    int parkedCount = 0;
+
+    for (var vehicle in vehicles) {
+      switch (vehicle.status.toString().toLowerCase()) {
+        case 'idling':
+          idleCount++;
+          break;
+        case 'offline':
+          offlineCount++;
+          break;
+        case 'moving':
+          movingCount++;
+          break;
+        case 'parked':
+          parkedCount++;
+          break;
+        default:
+          break;
+      }
+    }
+
+    return Analytics(
+      idleCount: idleCount,
+      offlineCount: offlineCount,
+      movingCount: movingCount,
+      parkedCount: parkedCount,
+    );
+  }
+}
+
+
+Widget DashboardComponentTitle({required String title, required String subTitle}) {
   return Row(
     children: [
       const CircleAvatar(
@@ -699,24 +800,24 @@ Widget DashboardComponentTitle(
   );
 }
 
-class Analytics {
-  final int onlineCount;
-  final int offlineCount;
-
-  Analytics({required this.onlineCount, required this.offlineCount});
-
-  static Analytics fromVehicleData(List<DatumEntity> vehicles) {
-    int onlineCount = 0;
-    int offlineCount = 0;
-
-    for (var vehicle in vehicles) {
-      if (vehicle.connected.toString().toLowerCase() == 'online') {
-        onlineCount++;
-      } else if (vehicle.connected.toString().toLowerCase() == 'offline') {
-        offlineCount++;
-      }
-    }
-
-    return Analytics(onlineCount: onlineCount, offlineCount: offlineCount);
-  }
-}
+// class Analytics {
+//   final int onlineCount;
+//   final int offlineCount;
+//
+//   Analytics({required this.onlineCount, required this.offlineCount});
+//
+//   static Analytics fromVehicleData(List<DatumEntity> vehicles) {
+//     int onlineCount = 0;
+//     int offlineCount = 0;
+//
+//     for (var vehicle in vehicles) {
+//       if (vehicle.connected.toString().toLowerCase() == 'online') {
+//         onlineCount++;
+//       } else if (vehicle.connected.toString().toLowerCase() == 'offline') {
+//         offlineCount++;
+//       }
+//     }
+//
+//     return Analytics(onlineCount: onlineCount, offlineCount: offlineCount);
+//   }
+// }

@@ -7,8 +7,10 @@ import 'package:ctntelematics/modules/map/domain/usecases/map_usecase.dart';
 import 'package:ctntelematics/modules/websocket/data/datasources/pusher_service.dart';
 import 'package:ctntelematics/modules/websocket/presentation/bloc/vehicle_location_bloc.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:get_it/get_it.dart';
 
+import 'core/bloc_manager.dart';
 import 'modules/authentication/data/datasources/remote/auth_api_client.dart';
 import 'modules/authentication/data/repositories/auth_reposiory_impl.dart';
 import 'modules/authentication/domain/repositories/auth_repository.dart';
@@ -39,8 +41,12 @@ import 'modules/websocket/domain/repositories/pusher_repository.dart';
 import 'modules/websocket/domain/usecases/get_vehicle_location_update_usecase.dart';
 
 final sl = GetIt.instance;
+final blocManager = BlocManager();
 Future<void> initializeDependencies() async {
-  sl.registerSingleton(Dio());
+  // Check if Dio is already registered
+  if (!sl.isRegistered<Dio>()) {
+    sl.registerSingleton(Dio());
+  }
 
   // Register ApiClient
   sl.registerSingleton<AuthApiClient>(AuthApiClient(sl()));
@@ -119,7 +125,46 @@ Future<void> initializeDependencies() async {
 
 }
 
-// void setupDependencies(String token, String userId) {
-//   sl.registerSingleton<PusherRepository>(PusherRepositoryImpl(token, userId));
-//   sl.registerFactory(() => VehicleLocationBloc(sl<PusherRepository>()));
+void resetApp() async {
+  // Clear all Blocs
+  blocManager.clearAllBlocs();
+
+  // Reset dependency injection
+  await sl.reset(dispose: true); // Disposes all instances
+
+  // Reinitialize dependencies
+  initializeDependencies();
+
+  print(">>>>>> Dependencies reinitialized <<<<<<");
+}
+
+// void resetApp() {
+//
+//   // Clear all Blocs
+//   blocManager.clearAllBlocs();
+//
+//   // Reset dependency injection
+//   sl.reset();
+//
+//   // Reinitialize dependencies
+//   WidgetsFlutterBinding.ensureInitialized();
+//   initializeDependencies();
+//
+//   print(">>>>>> initializeDependencies <<<<<<");
+//
+// }
+
+
+///
+//
+// void resetAllBlocs() {
+//   sl<UserBloc>().add(ClearAllDataEvent());
+//   sl<SettingsBloc>().add(ClearAllDataEvent());
+//   sl<ProfileBloc>().add(ClearAllDataEvent());
+//   // Add other Blocs as needed
+// }
+//
+// void resetServices() {
+//   sl.resetLazySingleton<UserRepository>();
+//   sl.resetLazySingleton<SettingsRepository>();
 // }

@@ -14,10 +14,10 @@ class LastLocationRespEntity extends Equatable {
 
 class MapVehicleEntity extends Equatable {
   int? id;
-  DetailsEntity? details;
-  DriverEntity? driver;
+  MapDetailsEntity? details;
+  MapDriverEntity? driver;
   String? address;
-  GeofenceEntity? geofence;
+  MapGeofenceEntity? geofence;
   String? connected_status;
 
   MapVehicleEntity({
@@ -40,7 +40,7 @@ class MapVehicleEntity extends Equatable {
         connected_status];
 }
 
-class DetailsEntity extends Equatable {
+class MapDetailsEntity extends Equatable {
   int? id;
   String? brand;
   String? model;
@@ -52,12 +52,12 @@ class DetailsEntity extends Equatable {
   int? vehicle_owner_id;
   String? created_at;
   String? updated_at;
-  OwnerEntity? owner;
-  TrackerEntity? tracker;
-  LastLocationEntity? last_location;
-  SpeedLimitEntity? speed_limit;
+  MapOwnerEntity? owner;
+  MapTrackerEntity? tracker;
+  MapLastLocationEntity? last_location;
+  MapSpeedLimitEntity? speed_limit;
 
-  DetailsEntity({
+  MapDetailsEntity({
     required this.id,
     required this.brand,
     required this.model,
@@ -96,7 +96,7 @@ class DetailsEntity extends Equatable {
       ];
 }
 
-class LastLocationEntity extends Equatable{
+class MapLastLocationEntity extends Equatable{
   int? vehicle_id;
   int? tracker_id;
   String? latitude;
@@ -127,7 +127,7 @@ class LastLocationEntity extends Equatable{
   String? created_at;
   String? updated_at;
 
-  LastLocationEntity({
+  MapLastLocationEntity({
     required this.vehicle_id,
     required this.tracker_id,
     required this.latitude,
@@ -194,7 +194,7 @@ class LastLocationEntity extends Equatable{
   ];
 }
 
-class OwnerEntity extends Equatable {
+class MapOwnerEntity extends Equatable {
   int? id;
   String? first_name;
   String? last_name;
@@ -204,7 +204,7 @@ class OwnerEntity extends Equatable {
   String? created_at;
   String? updated_at;
 
-  OwnerEntity({
+  MapOwnerEntity({
     required this.id,
     required this.first_name,
     required this.last_name,
@@ -229,10 +229,10 @@ class OwnerEntity extends Equatable {
       ];
 }
 
-class SpeedLimitEntity extends Equatable {
+class MapSpeedLimitEntity extends Equatable {
   String speed_limit;
 
-  SpeedLimitEntity({
+  MapSpeedLimitEntity({
     required this.speed_limit,
   });
 
@@ -241,7 +241,7 @@ class SpeedLimitEntity extends Equatable {
   List<Object?> get props => [speed_limit];
 }
 
-class TrackerEntity extends Equatable {
+class MapTrackerEntity extends Equatable {
   String? device_id;
   String? protocol;
   String? ip;
@@ -251,7 +251,7 @@ class TrackerEntity extends Equatable {
   String? network_protocol;
   int? vehicle_id;
 
-  TrackerEntity({
+  MapTrackerEntity({
     required this.device_id,
     required this.protocol,
     required this.ip,
@@ -276,7 +276,7 @@ class TrackerEntity extends Equatable {
       ];
 }
 
-class DriverEntity extends Equatable {
+class MapDriverEntity extends Equatable {
   int? id;
   String? name;
   String? email;
@@ -297,7 +297,7 @@ class DriverEntity extends Equatable {
   String? created_at;
   String? updated_at;
 
-  DriverEntity({
+  MapDriverEntity({
     required this.id,
     required this.name,
     required this.email,
@@ -344,13 +344,13 @@ class DriverEntity extends Equatable {
   ];
 }
 
-class GeofenceEntity extends Equatable {
-  List<CenterEntity> coordinates;
+class MapGeofenceEntity extends Equatable {
+  List<MapCenterEntity> coordinates;
   String? zone;
   bool? is_in_geofence;
-  CircleDataEntity? circle_data;
+  MapCircleDataEntity? circle_data;
 
-  GeofenceEntity({
+  MapGeofenceEntity({
     required this.coordinates,
     required this.zone,
     required this.is_in_geofence,
@@ -367,11 +367,11 @@ class GeofenceEntity extends Equatable {
   ];
 }
 
-class CircleDataEntity extends Equatable {
-  CenterEntity? center;
+class MapCircleDataEntity extends Equatable {
+  MapCenterEntity? center;
   double? radius;
 
-  CircleDataEntity({
+  MapCircleDataEntity({
     required this.center,
     required this.radius,
   });
@@ -384,11 +384,11 @@ class CircleDataEntity extends Equatable {
   ];
 }
 
-class CenterEntity extends Equatable{
+class MapCenterEntity extends Equatable{
   double lng;
   double lat;
 
-  CenterEntity({
+  MapCenterEntity({
     required this.lng,
     required this.lat,
   });

@@ -59,7 +59,7 @@ class VehicleModel extends MapVehicleEntity {
       };
 }
 
-class DetailsModel extends DetailsEntity {
+class DetailsModel extends MapDetailsEntity {
   DetailsModel({
     required super.id,
     required super.brand,
@@ -126,7 +126,7 @@ class DetailsModel extends DetailsEntity {
       };
 }
 
-class LastLocationModel extends LastLocationEntity {
+class LastLocationModel extends MapLastLocationEntity {
   LastLocationModel({
     required super.vehicle_id,
     required super.tracker_id,
@@ -224,7 +224,7 @@ class LastLocationModel extends LastLocationEntity {
       };
 }
 
-class OwnerModel extends OwnerEntity {
+class OwnerModel extends MapOwnerEntity {
   OwnerModel({
     required super.id,
     required super.first_name,
@@ -259,7 +259,7 @@ class OwnerModel extends OwnerEntity {
       };
 }
 
-class SpeedLimitModel extends SpeedLimitEntity {
+class SpeedLimitModel extends MapSpeedLimitEntity {
   // String speedLimit;
 
   SpeedLimitModel({
@@ -276,7 +276,7 @@ class SpeedLimitModel extends SpeedLimitEntity {
       };
 }
 
-class TrackerModel extends TrackerEntity {
+class TrackerModel extends MapTrackerEntity {
   TrackerModel({
     required super.device_id,
     required super.protocol,
@@ -311,7 +311,7 @@ class TrackerModel extends TrackerEntity {
       };
 }
 
-class DriverModel extends DriverEntity {
+class DriverModel extends MapDriverEntity {
   DriverModel({
     required super.id,
     required super.name,
@@ -377,7 +377,7 @@ class DriverModel extends DriverEntity {
       };
 }
 
-class GeofenceModel extends GeofenceEntity {
+class GeofenceModel extends MapGeofenceEntity {
   GeofenceModel({
     required super.coordinates,
     required super.zone,
@@ -405,7 +405,7 @@ class GeofenceModel extends GeofenceEntity {
       };
 }
 
-class CircleDataModel extends CircleDataEntity {
+class CircleDataModel extends MapCircleDataEntity {
   CircleDataModel({
     required super.center,
     required super.radius,
@@ -425,7 +425,7 @@ class CircleDataModel extends CircleDataEntity {
       };
 }
 
-class CenterModel extends CenterEntity {
+class CenterModel extends MapCenterEntity {
   CenterModel({
     required super.lng,
     required super.lat,
