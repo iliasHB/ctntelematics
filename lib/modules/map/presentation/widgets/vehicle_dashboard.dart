@@ -8,6 +8,7 @@ import 'package:flutter_datetime_picker_plus/flutter_datetime_picker_plus.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../core/widgets/custom_button.dart';
+import '../../../../core/widgets/gps_processor.dart';
 import '../../../../service_locator.dart';
 import '../../../vehincle/domain/entities/req_entities/route_history_req_entity.dart';
 import '../../../vehincle/presentation/bloc/vehicle_bloc.dart';
@@ -246,22 +247,29 @@ class TodayDashboardPage extends StatelessWidget {
           } else if (state is GetVehicleRouteHistoryDone) {
             return DashboardVehicleRouteData(vehicle: state.resp);
           } else {
-            return CustomSecondaryButton(
-                label: 'Refresh',
-                onPressed: () {
-                  BlocProvider.of<VehicleRouteHistoryBloc>(context)
-                      .add(VehicleRouteHistoryEvent(VehicleRouteHistoryReqEntity(
-                      vehicle_vin: vin,//'1HGBH41JXMN109186',//vin,
-                      time_from: timeFrom,//'2024-10-29 11:41:00',//timeFrom,
-                      time_to: timeTo,//'2024-10-30 11:42:00',//timeTo,
-                      token: token)));
-                });
+            return Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text("Unable to fetch data, Please try again", style: AppStyle.cardfooter.copyWith(fontSize: 12),),
+                SizedBox(height: 10,),
+                CustomSecondaryButton(
+                    label: 'Refresh',
+                    onPressed: () {
+                      BlocProvider.of<VehicleRouteHistoryBloc>(context)
+                          .add(VehicleRouteHistoryEvent(VehicleRouteHistoryReqEntity(
+                          vehicle_vin: vin,//'1HGBH41JXMN109186',//vin,
+                          time_from: timeFrom,//'2024-10-29 11:41:00',//timeFrom,
+                          time_to: timeTo,//'2024-10-30 11:42:00',//timeTo,
+                          token: token)));
+                    }),
+              ],
+            );
           }
         },
         listener: (context, state) {
           if (state is VehicleFailure) {
             if (state.message.contains("Unauthenticated")) {
-              Navigator.pushNamed(context, "/login");
+              Navigator.pushNamedAndRemoveUntil(context, "/login", (route) => false);
             }
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(state.message)),
@@ -310,22 +318,30 @@ class ThreeDaysDashboardPage extends StatelessWidget {
           } else if (state is GetVehicleRouteHistoryDone) {
             return DashboardVehicleRouteData(vehicle: state.resp);
           } else {
-            return CustomSecondaryButton(
-                label: 'Refresh',
-                onPressed: () {
-                  BlocProvider.of<VehicleRouteHistoryBloc>(context)
-                      .add(VehicleRouteHistoryEvent(VehicleRouteHistoryReqEntity(
-                      vehicle_vin: vin,//'1HGBH41JXMN109186',//vin,
-                      time_from: timeFrom,//'2024-10-29 11:41:00',//timeFrom,
-                      time_to: timeTo,//'2024-10-30 11:42:00',//timeTo,
-                      token: token)));
-                });
+            return Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text("Unable to fetch data, Please try again", style: AppStyle.cardfooter.copyWith(fontSize: 12),),
+                SizedBox(height: 10,),
+
+                CustomSecondaryButton(
+                    label: 'Refresh',
+                    onPressed: () {
+                      BlocProvider.of<VehicleRouteHistoryBloc>(context)
+                          .add(VehicleRouteHistoryEvent(VehicleRouteHistoryReqEntity(
+                          vehicle_vin: vin,//'1HGBH41JXMN109186',//vin,
+                          time_from: timeFrom,//'2024-10-29 11:41:00',//timeFrom,
+                          time_to: timeTo,//'2024-10-30 11:42:00',//timeTo,
+                          token: token)));
+                    }),
+              ],
+            );
           }
         },
         listener: (context, state) {
           if (state is VehicleFailure) {
             if (state.message.contains("Unauthenticated")) {
-              Navigator.pushNamed(context, "/login");
+              Navigator.pushNamedAndRemoveUntil(context, "/login", (route) => false);
             }
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(state.message)),
@@ -376,22 +392,29 @@ class OneWeekDashboardPage extends StatelessWidget {
           } else if (state is GetVehicleRouteHistoryDone) {
             return DashboardVehicleRouteData(vehicle: state.resp);
           } else {
-            return CustomSecondaryButton(
-                label: 'Refresh',
-                onPressed: () {
-                  BlocProvider.of<VehicleRouteHistoryBloc>(context)
-                      .add(VehicleRouteHistoryEvent(VehicleRouteHistoryReqEntity(
-                      vehicle_vin: vin,//'1HGBH41JXMN109186',//vin,
-                      time_from: timeFrom,//'2024-10-29 11:41:00',//timeFrom,
-                      time_to: timeTo,//'2024-10-30 11:42:00',//timeTo,
-                      token: token)));
-                });
+            return Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text("Unable to fetch data, Please try again", style: AppStyle.cardfooter.copyWith(fontSize: 12),),
+                SizedBox(height: 10,),
+                CustomSecondaryButton(
+                    label: 'Refresh',
+                    onPressed: () {
+                      BlocProvider.of<VehicleRouteHistoryBloc>(context)
+                          .add(VehicleRouteHistoryEvent(VehicleRouteHistoryReqEntity(
+                          vehicle_vin: vin,//'1HGBH41JXMN109186',//vin,
+                          time_from: timeFrom,//'2024-10-29 11:41:00',//timeFrom,
+                          time_to: timeTo,//'2024-10-30 11:42:00',//timeTo,
+                          token: token)));
+                    }),
+              ],
+            );
           }
         },
         listener: (context, state) {
           if (state is VehicleFailure) {
             if (state.message.contains("Unauthenticated")) {
-              Navigator.pushNamed(context, "/login");
+              Navigator.pushNamedAndRemoveUntil(context, "/login", (route) => false);
             }
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(state.message)),
@@ -440,22 +463,30 @@ class YesterdayDashboardPage extends StatelessWidget {
           } else if (state is GetVehicleRouteHistoryDone) {
             return DashboardVehicleRouteData(vehicle: state.resp);
           } else {
-            return CustomSecondaryButton(
-                label: 'Refresh',
-                onPressed: () {
-                  BlocProvider.of<VehicleRouteHistoryBloc>(context)
-                      .add(VehicleRouteHistoryEvent(VehicleRouteHistoryReqEntity(
-                      vehicle_vin: vin,//'1HGBH41JXMN109186',//vin,
-                      time_from: timeFrom,//'2024-10-29 11:41:00',//timeFrom,
-                      time_to: timeTo,//'2024-10-30 11:42:00',//timeTo,
-                      token: token)));
-                });
+            return Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text("Unable to fetch data, Please try again", style: AppStyle.cardfooter.copyWith(fontSize: 12),),
+                SizedBox(height: 10,),
+                CustomSecondaryButton(
+                    label: 'Refresh',
+                    onPressed: () {
+                      BlocProvider.of<VehicleRouteHistoryBloc>(context)
+                          .add(VehicleRouteHistoryEvent(VehicleRouteHistoryReqEntity(
+                          vehicle_vin: vin,//'1HGBH41JXMN109186',//vin,
+                          time_from: timeFrom,//'2024-10-29 11:41:00',//timeFrom,
+                          time_to: timeTo,//'2024-10-30 11:42:00',//timeTo,
+                          token: token)));
+                    }),
+              ],
+            );
           }
         },
         listener: (context, state) {
           if (state is VehicleFailure) {
             if (state.message.contains("Unauthenticated")) {
-              Navigator.pushNamed(context, "/login");
+              Navigator.pushNamedAndRemoveUntil(context, "/login", (route) => false);
             }
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(state.message)),
@@ -499,10 +530,7 @@ class FilterByDateTime extends StatelessWidget {
           print('token- : $token');
           if (state is VehicleLoading) {
             return const Center(
-              child: Padding(
-                padding: EdgeInsets.only(top: 10.0),
-                child: CircularProgressIndicator(strokeWidth: 2.0, color: Colors.green,),
-              ),
+              child: CustomContainerLoadingButton()
             );
           } else if (state is GetVehicleRouteHistoryDone) {
             return DashboardVehicleRouteData(vehicle: state.resp);
@@ -513,7 +541,7 @@ class FilterByDateTime extends StatelessWidget {
         listener: (context, state) {
           if (state is VehicleFailure) {
             if (state.message.contains("Unauthenticated")) {
-              Navigator.pushNamed(context, "/login");
+              Navigator.pushNamedAndRemoveUntil(context, "/login", (route) => false);
             }
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(state.message)),
@@ -525,139 +553,139 @@ class FilterByDateTime extends StatelessWidget {
   }
 }
 
-class GpsProcessor {
-
-  static Map<String, dynamic> calculateMetrics(List<DatumEntity> gpsData) {
-    if (gpsData.isEmpty) {
-      return {
-        'routeStart': 0,
-        'routeEnd': 0,
-        'moveDuration': 0,
-        'stopDuration': 0,
-        'maxSpeed': 0.0,
-        'averageSpeed': 0.0,
-        'stopCount': 0,
-      };
-    }
-
-    // Filter out stationary data (speed == 0)
-    List<DatumEntity> movingData = gpsData.where((data) {
-      final speed = double.tryParse(data.speed) ?? 0.0;
-      return speed > 0.0;
-    }).toList();
-
-    if (movingData.isEmpty) {
-      return {
-        'routeStart': gpsData.first.created_at,
-        'routeEnd': gpsData.last.created_at,
-        'moveDuration': 0.0,
-        'stopDuration': 0.0,
-        'maxSpeed': 0.0,
-        'averageSpeed': 0.0,
-        'stopCount': gpsData.length,
-      };
-    }
-
-    // Calculate route start and end
-    DateTime routeStart =  DateTime.parse(movingData.first.fix_time);//movingData.first.created_at;
-    DateTime routeEnd =  DateTime.parse(movingData.last.fix_time);//movingData.last.created_at;
-    Duration moveDuration = routeEnd.difference(routeStart);
-
-    // Maximum speed and average speed
-    double maxSpeed = movingData
-        .map((data) => double.tryParse(data.speed) ?? 0.0)
-        .reduce((a, b) => a > b ? a : b);
-
-    double averageSpeed = movingData
-        .map((data) => double.tryParse(data.speed) ?? 0.0)
-        .reduce((a, b) => a + b) /
-        movingData.length;
-
-    // Count stops and total stop duration
-    int stopCount = gpsData.length - movingData.length;
-    Duration totalStopDuration = _calculateStopDuration(gpsData);
-
-    return {
-      'routeStart': routeStart.toString(),
-      'routeEnd': routeEnd.toString(),
-      'moveDuration': moveDuration.inMinutes,
-      'stopDuration': totalStopDuration.inMinutes,
-      'maxSpeed': maxSpeed,
-      'averageSpeed': averageSpeed,
-      'stopCount': stopCount,
-    };
-  }
-
-  static Duration _calculateStopDuration(List<DatumEntity> gpsData) {
-    Duration totalStopDuration = Duration.zero;
-    DateTime? stopStartTime;
-
-    for (int i = 0; i < gpsData.length; i++) {
-      final speed = double.tryParse(gpsData[i].speed) ?? 0.0;
-
-      // Parse created_at as DateTime
-      final createdAt = DateTime.tryParse(gpsData[i].fix_time);
-      if (createdAt == null) {
-        throw FormatException('Invalid date format in created_at: ${gpsData[i].fix_time}');
-      }
-
-      if (speed == 0.0) {
-        // Start tracking stop time if not already tracking
-        if (stopStartTime == null) {
-          stopStartTime = createdAt;
-        }
-      } else {
-        // If a stop period ends, calculate the duration
-        if (stopStartTime != null) {
-          totalStopDuration += createdAt.difference(stopStartTime);
-          stopStartTime = null; // Reset stop start time
-        }
-      }
-    }
-
-    // If the last entry is a stop, add its duration
-    if (stopStartTime != null) {
-      final lastCreatedAt = DateTime.tryParse(gpsData.last.fix_time);
-      if (lastCreatedAt == null) {
-        throw FormatException('Invalid date format in last created_at: ${gpsData.last.fix_time}');
-      }
-      totalStopDuration += lastCreatedAt.difference(stopStartTime);
-    }
-
-    return totalStopDuration;
-  }
-
-
-// static Duration _calculateStopDuration(List<DatumEntity> gpsData) {
-  //   Duration totalStopDuration = Duration.zero;
-  //
-  //   DateTime? stopStartTime;
-  //
-  //   for (int i = 0; i < gpsData.length; i++) {
-  //     final speed = double.tryParse(gpsData[i].speed) ?? 0.0;
-  //
-  //     if (speed == 0.0) {
-  //       // Start tracking stop time if not already tracking
-  //       if (stopStartTime == null) {
-  //         stopStartTime = gpsData[i].created_at;
-  //       }
-  //     } else {
-  //       // If a stop period ends, calculate the duration
-  //       if (stopStartTime != null) {
-  //         totalStopDuration += gpsData[i].created_at.difference(stopStartTime);
-  //         stopStartTime = null; // Reset stop start time
-  //       }
-  //     }
-  //   }
-  //
-  //   // If the last entry is a stop, add its duration
-  //   if (stopStartTime != null) {
-  //     totalStopDuration += gpsData.last.created_at.difference(stopStartTime);
-  //   }
-  //
-  //   return totalStopDuration;
-  // }
-}
+// class GpsProcessor {
+//
+//   static Map<String, dynamic> calculateMetrics(List<DatumEntity> gpsData) {
+//     if (gpsData.isEmpty) {
+//       return {
+//         'routeStart': 0,
+//         'routeEnd': 0,
+//         'moveDuration': 0,
+//         'stopDuration': 0,
+//         'maxSpeed': 0.0,
+//         'averageSpeed': 0.0,
+//         'stopCount': 0,
+//       };
+//     }
+//
+//     // Filter out stationary data (speed == 0)
+//     List<DatumEntity> movingData = gpsData.where((data) {
+//       final speed = double.tryParse(data.speed) ?? 0.0;
+//       return speed > 0.0;
+//     }).toList();
+//
+//     if (movingData.isEmpty) {
+//       return {
+//         'routeStart': gpsData.first.created_at,
+//         'routeEnd': gpsData.last.created_at,
+//         'moveDuration': 0.0,
+//         'stopDuration': 0.0,
+//         'maxSpeed': 0.0,
+//         'averageSpeed': 0.0,
+//         'stopCount': gpsData.length,
+//       };
+//     }
+//
+//     // Calculate route start and end
+//     DateTime routeStart =  DateTime.parse(movingData.first.fix_time);//movingData.first.created_at;
+//     DateTime routeEnd =  DateTime.parse(movingData.last.fix_time);//movingData.last.created_at;
+//     Duration moveDuration = routeEnd.difference(routeStart);
+//
+//     // Maximum speed and average speed
+//     double maxSpeed = movingData
+//         .map((data) => double.tryParse(data.speed) ?? 0.0)
+//         .reduce((a, b) => a > b ? a : b);
+//
+//     double averageSpeed = movingData
+//         .map((data) => double.tryParse(data.speed) ?? 0.0)
+//         .reduce((a, b) => a + b) /
+//         movingData.length;
+//
+//     // Count stops and total stop duration
+//     int stopCount = gpsData.length - movingData.length;
+//     Duration totalStopDuration = _calculateStopDuration(gpsData);
+//
+//     return {
+//       'routeStart': routeStart.toString(),
+//       'routeEnd': routeEnd.toString(),
+//       'moveDuration': moveDuration.inMinutes,
+//       'stopDuration': totalStopDuration.inMinutes,
+//       'maxSpeed': maxSpeed,
+//       'averageSpeed': averageSpeed,
+//       'stopCount': stopCount,
+//     };
+//   }
+//
+//   static Duration _calculateStopDuration(List<DatumEntity> gpsData) {
+//     Duration totalStopDuration = Duration.zero;
+//     DateTime? stopStartTime;
+//
+//     for (int i = 0; i < gpsData.length; i++) {
+//       final speed = double.tryParse(gpsData[i].speed) ?? 0.0;
+//
+//       // Parse created_at as DateTime
+//       final createdAt = DateTime.tryParse(gpsData[i].fix_time);
+//       if (createdAt == null) {
+//         throw FormatException('Invalid date format in created_at: ${gpsData[i].fix_time}');
+//       }
+//
+//       if (speed == 0.0) {
+//         // Start tracking stop time if not already tracking
+//         if (stopStartTime == null) {
+//           stopStartTime = createdAt;
+//         }
+//       } else {
+//         // If a stop period ends, calculate the duration
+//         if (stopStartTime != null) {
+//           totalStopDuration += createdAt.difference(stopStartTime);
+//           stopStartTime = null; // Reset stop start time
+//         }
+//       }
+//     }
+//
+//     // If the last entry is a stop, add its duration
+//     if (stopStartTime != null) {
+//       final lastCreatedAt = DateTime.tryParse(gpsData.last.fix_time);
+//       if (lastCreatedAt == null) {
+//         throw FormatException('Invalid date format in last created_at: ${gpsData.last.fix_time}');
+//       }
+//       totalStopDuration += lastCreatedAt.difference(stopStartTime);
+//     }
+//
+//     return totalStopDuration;
+//   }
+//
+//
+// // static Duration _calculateStopDuration(List<DatumEntity> gpsData) {
+//   //   Duration totalStopDuration = Duration.zero;
+//   //
+//   //   DateTime? stopStartTime;
+//   //
+//   //   for (int i = 0; i < gpsData.length; i++) {
+//   //     final speed = double.tryParse(gpsData[i].speed) ?? 0.0;
+//   //
+//   //     if (speed == 0.0) {
+//   //       // Start tracking stop time if not already tracking
+//   //       if (stopStartTime == null) {
+//   //         stopStartTime = gpsData[i].created_at;
+//   //       }
+//   //     } else {
+//   //       // If a stop period ends, calculate the duration
+//   //       if (stopStartTime != null) {
+//   //         totalStopDuration += gpsData[i].created_at.difference(stopStartTime);
+//   //         stopStartTime = null; // Reset stop start time
+//   //       }
+//   //     }
+//   //   }
+//   //
+//   //   // If the last entry is a stop, add its duration
+//   //   if (stopStartTime != null) {
+//   //     totalStopDuration += gpsData.last.created_at.difference(stopStartTime);
+//   //   }
+//   //
+//   //   return totalStopDuration;
+//   // }
+// }
 
 class DashboardVehicleRouteData extends StatefulWidget {
   final VehicleRouteHistoryRespEntity vehicle;
@@ -686,6 +714,7 @@ class _DashboardVehicleRouteDataState extends State<DashboardVehicleRouteData> {
 
   @override
   Widget build(BuildContext context) {
+    print('move duration: ${metrics['moveDuration']}');
     return Scaffold(
       body: Padding(
         padding: const EdgeInsets.all(8.0),
@@ -735,9 +764,10 @@ class _DashboardVehicleRouteDataState extends State<DashboardVehicleRouteData> {
             // Move Duration
             _buildMetricCard(
               title: "Move Duration",
-              value: metrics['moveDuration'] != null
-                  ? "${metrics['moveDuration']} mins"
-                  : "N/A",
+              value: FormatData.formatTime(metrics['moveDuration']),
+              // metrics['moveDuration'] != null
+              //     ? "${metrics['moveDuration']} mins"
+              //     : "N/A",
               icon: Icon(
                 Icons.av_timer_rounded,
                 color: Colors.green.shade300,
@@ -747,9 +777,10 @@ class _DashboardVehicleRouteDataState extends State<DashboardVehicleRouteData> {
             // Stop Duration
             _buildMetricCard(
               title: "Stop Duration",
-              value: metrics['stopDuration'] != null
-                  ? "${metrics['stopDuration']} mins"
-                  : "N/A",
+              value: FormatData.formatTime(metrics['stopDuration']),
+              // metrics['stopDuration'] != null
+              //     ? "${metrics['stopDuration']} mins"
+              //     : "N/A",
               icon: Icon(
                 Icons.av_timer_rounded,
                 color: Colors.red.shade300,

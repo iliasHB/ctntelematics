@@ -112,11 +112,15 @@ class _ProductReviewState extends State<ProductReview> {
                         return child;
                       }
                       return Center(
-                        child: CircularProgressIndicator(
-                          value: loadingProgress.expectedTotalBytes != null
-                              ? loadingProgress.cumulativeBytesLoaded /
-                                  (loadingProgress.expectedTotalBytes ?? 1)
-                              : null,
+                        child: SizedBox(
+                          child: CircularProgressIndicator(
+                            color: Colors.green,
+                            strokeWidth: 2.0,
+                            value: loadingProgress.expectedTotalBytes != null
+                                ? loadingProgress.cumulativeBytesLoaded /
+                                    (loadingProgress.expectedTotalBytes ?? 1)
+                                : null,
+                          ),
                         ),
                       );
                     },
@@ -314,10 +318,7 @@ class _ProductReviewState extends State<ProductReview> {
                   builder: (context, state) {
                     if (state is EshopLoading) {
                       return const Center(
-                        child: Padding(
-                          padding: EdgeInsets.only(top: 10.0),
-                          child: CircularProgressIndicator(strokeWidth: 2.0),
-                        ),
+                        child: CustomContainerLoadingButton()
                       );
                     } else if (state is EshopGetProductsDone) {
                       // Check if the schedule data is empty
@@ -371,10 +372,28 @@ class _ProductReviewState extends State<ProductReview> {
                       );
                     } else {
                       return Center(
-                          child: Text(
-                        'No records found',
-                        style: AppStyle.cardfooter,
-                      ));
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment:
+                            CrossAxisAlignment.center,
+                            children: [
+                              Text(
+                                'No records found',
+                                style: AppStyle.cardfooter,
+                              ),
+                              const SizedBox(
+                                height: 10.0,
+                              ),
+                              CustomSecondaryButton(
+                                  label: 'Refresh',
+                                  onPressed: () {
+                                    BlocProvider.of<EshopGetAllProductBloc>(
+                                        context)
+                                        .add(EshopGetProductsEvent(
+                                        EshopTokenReqEntity(token: widget.token ?? "")));
+                                  })
+                            ],
+                          ));
                     }
                   },
                   listener: (context, state) {
@@ -459,13 +478,19 @@ class _CategoryItemState extends State<CategoryItem> {
                               return child;
                             }
                             return Center(
-                              child: CircularProgressIndicator(
-                                value: loadingProgress.expectedTotalBytes !=
-                                        null
-                                    ? loadingProgress.cumulativeBytesLoaded /
-                                        (loadingProgress.expectedTotalBytes ??
-                                            1)
-                                    : null,
+                              child: SizedBox(
+                                height: 15,
+                                width: 15,
+                                child: CircularProgressIndicator(
+                                  color: Colors.green,
+                                  strokeWidth: 2.0,
+                                  value: loadingProgress.expectedTotalBytes !=
+                                          null
+                                      ? loadingProgress.cumulativeBytesLoaded /
+                                          (loadingProgress.expectedTotalBytes ??
+                                              1)
+                                      : null,
+                                ),
                               ),
                             );
                           },

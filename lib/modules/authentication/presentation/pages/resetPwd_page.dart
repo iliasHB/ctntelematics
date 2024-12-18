@@ -158,7 +158,7 @@ class ResetPasswordPage extends StatelessWidget {
                         SnackBar(content: Text(state.resp.message)));
                   } else if (state is AuthFailure) {
                     if(state.message.toString().contains("Unauthenticated")){
-                      Navigator.pushNamed(context, '/login');
+                      Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
                     }
                     ScaffoldMessenger.of(context)
                         .showSnackBar(SnackBar(content: Text(state.message)));
@@ -166,13 +166,14 @@ class ResetPasswordPage extends StatelessWidget {
                 },
                 builder: (context, state) {
                   if (state is AuthLoading) {
-                    return const Center(
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2.0, // Adjust the thickness
-                        color: Colors
-                            .green, // Optional: Change the color to match your theme
-                      ),
-                    );
+                    return const CustomLoadingButton();
+                    //   const Center(
+                    //   child: CircularProgressIndicator(
+                    //     strokeWidth: 2.0, // Adjust the thickness
+                    //     color: Colors
+                    //         .green, // Optional: Change the color to match your theme
+                    //   ),
+                    // );
                   }
                   return CustomPrimaryButton(
                       label:  'Continue',

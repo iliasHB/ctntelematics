@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:ctntelematics/config/theme/app_style.dart';
 import 'package:ctntelematics/core/utils/app_export_util.dart';
+import 'package:ctntelematics/core/widgets/custom_button.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -190,27 +191,14 @@ class _AnimatedAppBarState extends State<AnimatedAppBar>
                   children: [
                     isLoading
                         ? const Center(
-                            child: SizedBox(
-                                height: 20,
-                                width: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2.0,
-                                  color: Colors.green,
-                                )))
+                            child: CustomLoadingButton())
                         : FutureBuilder<String?>(
                             future: fetchUserProfilePicture(
                                 int.parse(userId ?? '0')),
                             builder: (context, snapshot) {
                               if (snapshot.connectionState ==
                                   ConnectionState.waiting) {
-                                return const SizedBox(
-                                  height: 15,
-                                  width: 15,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2.0,
-                                    color: Colors.green,
-                                  ),
-                                ); // Loading indicator
+                                return const CustomContainerLoadingButton(); // Loading indicator
                               } else if (snapshot.hasError) {
                                 return const Icon(Icons.error,
                                     color: Colors.red); // Error state

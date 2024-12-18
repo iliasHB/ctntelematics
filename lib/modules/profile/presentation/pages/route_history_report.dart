@@ -20,6 +20,16 @@ class RouteHistoryReportPage extends StatelessWidget {
       ),
       body: Column(
         children: [
+          Container(
+            margin: EdgeInsets.symmetric(horizontal: 10),
+            padding: const EdgeInsets.all(8.0),
+            decoration: BoxDecoration(
+              color: Colors.green.shade200,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: DashboardComponentTitle(
+                title: 'Route History', subTitle: 'List of all route history'),
+          ),
           Expanded(
             child: ListView.builder(
               // shrinkWrap: true,
@@ -28,21 +38,14 @@ class RouteHistoryReportPage extends StatelessWidget {
                   return Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 10.0),
                     child: Container(
+                      padding: EdgeInsets.symmetric(horizontal: 10),
                       decoration: BoxDecoration(
-                        color: Colors.grey.shade200,
-                        borderRadius: BorderRadius.circular(12),
+                        color: Colors.grey[200],
+                        // borderRadius: BorderRadius.circular(12),
                       ),
                       child: Column(
                         children: [
-                          Container(
-                            padding: const EdgeInsets.all(8.0),
-                            decoration: BoxDecoration(
-                              color: Colors.green.shade200,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: DashboardComponentTitle(
-                                title: 'Route History', subTitle: 'List of all route history'),
-                          ),
+
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -66,7 +69,8 @@ class RouteHistoryReportPage extends StatelessWidget {
                                       report.data[index].created_at)),
                               // _DetailItem(title: "Number of Event", value: ),
                             ],
-                          )
+                          ),
+                          Divider()
                         ],
                       ),
                     ),
@@ -103,7 +107,7 @@ class RouteHistoryReportPage extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: AppStyle.cardSubtitle,
+                  style: AppStyle.cardSubtitle.copyWith(fontSize: 14),
                 ),
                 Text(
                   subTitle,

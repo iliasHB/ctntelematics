@@ -9,6 +9,7 @@ import 'package:flutter_datetime_picker_plus/flutter_datetime_picker_plus.dart';
 
 import '../../../../config/theme/app_style.dart';
 import '../../../../core/utils/math_util.dart';
+import '../../../../core/utils/pref_util.dart';
 import '../../../../core/widgets/alert_message.dart';
 import '../../../../core/widgets/custom_button.dart';
 import '../../../../service_locator.dart';
@@ -27,6 +28,7 @@ class Report extends StatefulWidget {
 
 class _ReportState extends State<Report> {
   final _formKey = GlobalKey<FormState>();
+  PrefUtils prefUtils = PrefUtils();
   String? _selectedVendor;
   final TextEditingController _reportTypeController = TextEditingController();
   final TextEditingController timeController = TextEditingController();
@@ -72,10 +74,7 @@ class _ReportState extends State<Report> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Title input
-                Text(
-                  'Report Type',
-                  style: AppStyle.cardSubtitle.copyWith(fontSize: 14),
-                ),
+                Text('Report Type', style: AppStyle.cardSubtitle.copyWith(fontSize: 14),),
                 const SizedBox(height: 8),
                 DropdownButtonFormField<String>(
                   value: _selectedReportType,
@@ -89,8 +88,7 @@ class _ReportState extends State<Report> {
                   }).toList(),
                   onChanged: (value) {
                     setState(() {
-                      _selectedReportType =
-                          value; // Update the selected vehicle
+                      _selectedReportType = value; // Update the selected vehicle
                     });
                     // Add any additional logic like fetching data for selected vehicle
                   },
@@ -99,14 +97,13 @@ class _ReportState extends State<Report> {
                     labelStyle: AppStyle.cardfooter,
                     filled: true,
                     fillColor: Colors.grey[200],
-                    border:
-                        const OutlineInputBorder(borderSide: BorderSide.none),
+                    border: const OutlineInputBorder(borderSide: BorderSide.none),
+                      prefixIcon: const Icon(CupertinoIcons.selection_pin_in_out, color: Colors.green,)
                   ),
                 ),
                 const SizedBox(height: 16),
                 // Choose Vehicle dropdown
-                Text(
-                  'Choose Vehicle',
+                Text('Choose Vehicle',
                   style: AppStyle.cardSubtitle.copyWith(fontSize: 14),
                 ),
                 const SizedBox(height: 8),
@@ -118,15 +115,7 @@ class _ReportState extends State<Report> {
                   child: BlocConsumer<ProfileVehiclesBloc, ProfileState>(
                     builder: (context, state) {
                       if (state is ProfileLoading) {
-                        return Center(
-                          child: Padding(
-                            padding: EdgeInsets.only(top: 10.0),
-                            child: Container(
-                              height: 20,
-                                width: 20,
-                                child: const CircularProgressIndicator(strokeWidth: 2.0)),
-                          ),
-                        );
+                        return const CustomContainerLoadingButton();
                       } else if (state is GetVehicleDone) {
                         // Check if vehicle data is null or empty
                         if (state.resp.data == null ||
@@ -166,20 +155,49 @@ class _ReportState extends State<Report> {
                             fillColor: Colors.grey[200],
                             border: const OutlineInputBorder(
                                 borderSide: BorderSide.none),
+                            prefixIcon: const Icon(CupertinoIcons.car_detailed, color: Colors.green,)
                           ),
                         );
                       } else {
                         return Center(
-                          child: Text(
-                            'No records found',
-                            style: AppStyle.cardfooter,
-                          ),
-                        );
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Text(
+                                  'Unable to load vehicles',
+                                  style: AppStyle.cardfooter.copyWith(fontSize: 12),
+                                ),
+                                const SizedBox(
+                                  width: 10.0,
+                                ),
+                                IconButton(
+                                    onPressed: () {
+                                      BlocProvider.of<ProfileVehiclesBloc>(context)
+                                          .add(ProfileVehicleEvent(TokenReqEntity(
+                                          token: widget.token ?? "",
+                                          contentType: 'application/json')));
+                                    },
+                                    icon: const Icon(Icons.refresh, color: Colors.green,))
+                                // CustomSecondaryButton(
+                                //     label: 'Refresh',
+                                //     onPressed: () {
+                                //       BlocProvider.of<ProfileVehiclesBloc>(context)
+                                //           .add(ProfileVehicleEvent(TokenReqEntity(
+                                //           token: widget.token ?? "",
+                                //           contentType: 'application/json')));
+                                //     })
+                              ],
+                            ));
                       }
                     },
-                    listener: (context, state) {
+                    listener: (context, state) async {
                       if (state is ProfileFailure) {
-                        Navigator.pushNamed(context, "/login");
+                        await prefUtils.clearPreferencesData();
+                        if(state.message.contains('Unauthenticated')){
+                          Navigator.pushNamedAndRemoveUntil(context, "/login", (route) => false);
+                        }
+
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(content: Text(state.message)),
                         );
@@ -212,11 +230,11 @@ class _ReportState extends State<Report> {
                             // Check if filteredReports is empty
                             if (filteredReports.isEmpty) {
                               AlertMessage.showAlertMessageModal(
-                                  context, 'No service found for this vehicle');
+                                  context, 'No trip found for this vehicle');
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
                                     content: Text(
-                                        "No service found for this vehicle")),
+                                        "No trip found for this vehicle")),
                               );
                             } else {
                               Navigator.push(
@@ -235,17 +253,7 @@ class _ReportState extends State<Report> {
                         },
                         builder: (context, state) {
                           if (state is DashboardLoading) {
-                            return const Center(
-                              child: SizedBox(
-                                height: 30, // Adjust the height
-                                width: 30, // Adjust the width
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2.0, // Adjust the thickness
-                                  color: Colors
-                                      .green, // Optional: Change the color to match your theme
-                                ),
-                              ),
-                            );
+                            return Center(child: const CustomLoadingButton());
                           }
                           return Align(
                             alignment: Alignment.center,
@@ -265,27 +273,6 @@ class _ReportState extends State<Report> {
                                   }
                                 }
                             )
-
-                            // ElevatedButton(
-                            //   onPressed: () {
-                            //     if (_formKey.currentState?.validate() ??
-                            //         false) {
-                            //       final dashVehicleReqEntity =
-                            //           DashVehicleReqEntity(
-                            //         token: widget.token ?? "",
-                            //         contentType:
-                            //             'application/json', // Include the selected VIN
-                            //       );
-                            //       context.read<VehicleTripBloc>().add(
-                            //           DashVehicleEvent(dashVehicleReqEntity));
-                            //     }
-                            //   },
-                            //   child: Text(
-                            //     'View Report',
-                            //     style:
-                            //         AppStyle.cardfooter.copyWith(fontSize: 14),
-                            //   ),
-                            // ),
                           );
                         },
                       )
@@ -325,17 +312,7 @@ class _ReportState extends State<Report> {
                             },
                             builder: (context, state) {
                               if (state is ProfileLoading) {
-                                return const Center(
-                                  child: SizedBox(
-                                    height: 30, // Adjust the height
-                                    width: 30, // Adjust the width
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2.0, // Adjust the thickness
-                                      color: Colors
-                                          .green, // Optional: Change the color to match your theme
-                                    ),
-                                  ),
-                                );
+                                return Center(child: const CustomLoadingButton());
                               }
                               return Align(
                                 alignment: Alignment.center,
@@ -346,37 +323,11 @@ class _ReportState extends State<Report> {
                                               false) {
                                             final getSchedule = TokenReqEntity(
                                                 token: widget.token ?? "");
-                                            // final dashVehicleReqEntity = DashVehicleReqEntity(
-                                            //   token: widget.token ?? "",
-                                            //   contentType: 'application/json',// Include the selected VIN
-                                            // );
                                             context
                                                 .read<GetScheduleBloc>()
                                                 .add(GetScheduleEvent(getSchedule));
                                           }
                                     })
-
-                                // ElevatedButton(
-                                //   onPressed: () {
-                                //     if (_formKey.currentState?.validate() ??
-                                //         false) {
-                                //       final getSchedule = TokenReqEntity(
-                                //           token: widget.token ?? "");
-                                //       // final dashVehicleReqEntity = DashVehicleReqEntity(
-                                //       //   token: widget.token ?? "",
-                                //       //   contentType: 'application/json',// Include the selected VIN
-                                //       // );
-                                //       context
-                                //           .read<GetScheduleBloc>()
-                                //           .add(GetScheduleEvent(getSchedule));
-                                //     }
-                                //   },
-                                //   child: Text(
-                                //     'View Report',
-                                //     style: AppStyle.cardfooter
-                                //         .copyWith(fontSize: 14),
-                                //   ),
-                                // ),
                               );
                             },
                           )
@@ -413,7 +364,7 @@ class _DateTimeRangePickerState extends State<DateTimeRangePicker> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(10.0),
+      padding: const EdgeInsets.all(0.0),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -438,23 +389,21 @@ class _DateTimeRangePickerState extends State<DateTimeRangePicker> {
                         height: 45,
                         child: TextFormField(
                           decoration: InputDecoration(
-                            enabled: false,
+                            // enabled: false,
+                            prefixIcon: Icon(CupertinoIcons.calendar, color: Colors.green,),
                             filled: true,
                             fillColor: Colors.grey[200],
-                            labelStyle: AppStyle.cardfooter,
-                            label: Text(
+                            hintStyle: AppStyle.cardfooter,
+                            hintText:
                               fromDate == null
                                   ? 'Select Start Date and Time'
                                   : fromDate.toString(),
-                            ),
+
+
                             border: OutlineInputBorder(
                                 borderSide: BorderSide.none,
                                 borderRadius: BorderRadius.circular(5)),
                           ),
-                        ),
-                      )),
-                      const SizedBox(width: 5),
-                      InkWell(
                           onTap: () {
                             DatePicker.showDateTimePicker(
                               context,
@@ -467,10 +416,26 @@ class _DateTimeRangePickerState extends State<DateTimeRangePicker> {
                               currentTime: DateTime.now(),
                             );
                           },
-                          child: const Icon(
-                            Icons.calendar_month,
-                            color: Colors.green,
-                          ))
+                        ),
+                      )),
+                      const SizedBox(width: 5),
+                      // InkWell(
+                      //     onTap: () {
+                      //       DatePicker.showDateTimePicker(
+                      //         context,
+                      //         showTitleActions: true,
+                      //         onConfirm: (date) {
+                      //           setState(() {
+                      //             fromDate = date;
+                      //           });
+                      //         },
+                      //         currentTime: DateTime.now(),
+                      //       );
+                      //     },
+                      //     child: const Icon(
+                      //       Icons.calendar_month,
+                      //       color: Colors.green,
+                      //     ))
                     ],
                   ),
                 ],
@@ -485,9 +450,47 @@ class _DateTimeRangePickerState extends State<DateTimeRangePicker> {
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'To: ',
-                    style: AppStyle.cardTitle.copyWith(fontSize: 14),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'To: ',
+                        style: AppStyle.cardTitle.copyWith(fontSize: 14),
+                      ),
+
+                      Padding(
+                        padding: const EdgeInsets.only(right: 0.0),
+                        child: Align(
+                          alignment: Alignment.topLeft,
+                          child: PopupMenuButton(
+                              icon: const Icon(Icons.filter_alt, color: Colors.green,),
+                              itemBuilder: (context) => [
+                                PopupMenuItem(
+                                  value: 1,
+                                  onTap: () {
+                                    _setDateRange(1); // Yesterday
+                                  },
+                                  child: const Text("Yesterday"),
+                                ),
+                                PopupMenuItem(
+                                  value: 2,
+                                  onTap: () {
+                                    _setDateRange(2); // 2 days ago
+                                  },
+                                  child: const Text("2 days ago"),
+                                ),
+                                PopupMenuItem(
+                                  value: 3,
+                                  onTap: () {
+                                    _setDateRange(3); // 3 days ago
+                                  },
+                                  child: const Text("3 days ago"),
+                                ),
+                              ]),
+                        ),
+                      ),
+                      //const SizedBox(width: 10),
+                    ],
                   ),
                   Row(
                     children: [
@@ -496,24 +499,22 @@ class _DateTimeRangePickerState extends State<DateTimeRangePicker> {
                         height: 45,
                         child: TextFormField(
                           decoration: InputDecoration(
-                            enabled: false,
+                            // enabled: false,
+                            prefixIcon: Icon(CupertinoIcons.calendar, color: Colors.green,),
                             filled: true,
                             fillColor: Colors.grey[200],
-                            labelStyle: AppStyle.cardfooter,
-                            label: Text(
+                            hintStyle: AppStyle.cardfooter,
+                            hintText:
+                            // Text(
                               toDate == null
                                   ? 'Select End Date and Time'
                                   : toDate.toString(),
-                            ),
+                            // ),
                             border: OutlineInputBorder(
                                 borderSide: BorderSide.none,
                                 borderRadius: BorderRadius.circular(5)),
                           ),
-                        ),
-                      )),
-                      const SizedBox(width: 5),
-                      InkWell(
-                          onTap: () {
+                          onTap: (){
                             DatePicker.showDateTimePicker(
                               context,
                               showTitleActions: true,
@@ -525,10 +526,26 @@ class _DateTimeRangePickerState extends State<DateTimeRangePicker> {
                               currentTime: DateTime.now(),
                             );
                           },
-                          child: const Icon(
-                            Icons.calendar_month,
-                            color: Colors.green,
-                          ))
+                        ),
+                      )),
+                      // const SizedBox(width: 5),
+                      // InkWell(
+                      //     onTap: () {
+                      //       DatePicker.showDateTimePicker(
+                      //         context,
+                      //         showTitleActions: true,
+                      //         onConfirm: (date) {
+                      //           setState(() {
+                      //             toDate = date;
+                      //           });
+                      //         },
+                      //         currentTime: DateTime.now(),
+                      //       );
+                      //     },
+                      //     child: const Icon(
+                      //       Icons.calendar_month,
+                      //       color: Colors.green,
+                      //     ))
                     ],
                   ),
                 ],
@@ -557,24 +574,13 @@ class _DateTimeRangePickerState extends State<DateTimeRangePicker> {
             },
             builder: (context, state) {
               if (state is VehicleLoading) {
-                return const Center(
-                  child: SizedBox(
-                    height: 30, // Adjust the height
-                    width: 30, // Adjust the width
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2.0, // Adjust the thickness
-                      color: Colors
-                          .green, // Optional: Change the color to match your theme
-                    ),
-                  ),
-                );
+                return const Center(child: CustomLoadingButton());
               }
               return Align(
                 alignment: Alignment.center,
                 child: CustomPrimaryButton(
                     label:  'View Report',
                     onPressed: (){
-                      // if (_formKey.currentState?.validate() ?? false) {
                       final vehicleRouteHistory = VehicleRouteHistoryReqEntity(
                           vehicle_vin: widget.vin!,
                           time_from:
@@ -584,28 +590,7 @@ class _DateTimeRangePickerState extends State<DateTimeRangePicker> {
                       context
                           .read<VehicleRouteHistoryBloc>()
                           .add(VehicleRouteHistoryEvent(vehicleRouteHistory));
-                      // }
                     })
-
-                // ElevatedButton(
-                //   onPressed: () {
-                //     // if (_formKey.currentState?.validate() ?? false) {
-                //     final vehicleRouteHistory = VehicleRouteHistoryReqEntity(
-                //         vehicle_vin: widget.vin!,
-                //         time_from:
-                //             fromDate.toString().split('.').first ?? "N/A",
-                //         time_to: toDate.toString().split('.').first ?? "N/A",
-                //         token: widget.token!);
-                //     context
-                //         .read<VehicleRouteHistoryBloc>()
-                //         .add(VehicleRouteHistoryEvent(vehicleRouteHistory));
-                //     // }
-                //   },
-                //   child: Text(
-                //     'View Report',
-                //     style: AppStyle.cardfooter.copyWith(fontSize: 14),
-                //   ),
-                // ),
               );
             },
           )

@@ -53,6 +53,7 @@ class PusherService {
   Future<String> _getAuthToken(String channelName, String socketId) async {
     const int maxRetries = 5; // Maximum number of retries
     int attempt = 0;
+    print("token::::::${token}");
 
     while (attempt < maxRetries) {
       try {
@@ -111,10 +112,14 @@ class PusherService {
       if (data is String) {
         final dataMap = jsonDecode(data); // Decode the string to a Map
         String socketId = dataMap['socket_id']; // Access the socket_id
-        print('Socket ID: $socketId');
+        // print('Socket ID: $socketId');
+        //
+        // print("user_type-websocket::: ${user_type}");
+        //
+        // print("user_id-websocket::: ${userId}");
 
         // After establishing a connection, subscribe to channels
-        if(user_type == "admin") {
+        if(user_type == "admin" || user_type == "system_admin") {
           await _subscribeToChannel('private-admin.vehicle-location', socketId);
         } else {
           await _subscribeToChannel('private-vehicle-owner.$userId', socketId);

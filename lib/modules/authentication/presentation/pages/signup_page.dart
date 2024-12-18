@@ -162,32 +162,6 @@ class SignupPage extends StatelessWidget {
               ),
               const SizedBox(height: 16),
 
-              // Remember me and Forgotten Password
-              // Row(
-              //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              //   children: [
-              //     Row(
-              //       children: [
-              //         Checkbox(
-              //           value: true,
-              //           onChanged: (bool? value) {},
-              //           activeColor: Colors.green,
-              //         ),
-              //         const Text('Remember me'),
-              //       ],
-              //     ),
-              //     TextButton(
-              //       onPressed: () => Navigator.pushNamed(context, "/forgetPassword"),
-              //       child: const Text(
-              //         'Forgotten Password?',
-              //         style: TextStyle(color: Colors.red),
-              //       ),
-              //     ),
-              //   ],
-              // ),
-              // const SizedBox(height: 20),
-
-              // Login Button
               CustomPrimaryButton(label: 'Signup',
                 onPressed: () {
                 // Navigator.pushNamed(context, "/login");

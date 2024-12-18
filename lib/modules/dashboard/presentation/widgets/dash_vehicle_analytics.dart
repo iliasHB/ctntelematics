@@ -299,24 +299,28 @@ class TodayDashboardPage extends StatelessWidget {
           print('today_token- : $token');
           if (state is VehicleLoading) {
             return const Center(
-              child: Padding(
-                padding: EdgeInsets.only(top: 10.0),
-                child: CircularProgressIndicator(strokeWidth: 2.0, color: Colors.green,),
-              ),
-            );
+              child: CustomContainerLoadingButton());
           } else if (state is GetVehicleRouteHistoryDone) {
             return VehicleRouteDataAnalytics(vehicles: state.resp.data, vin: vin);
           } else {
-            return CustomSecondaryButton(
-                label: 'Refresh',
-                onPressed: () {
-                  BlocProvider.of<VehicleRouteHistoryBloc>(context)
-                      .add(VehicleRouteHistoryEvent(VehicleRouteHistoryReqEntity(
-                      vehicle_vin: vin,//'1HGBH41JXMN109186',//vin,
-                      time_from: timeFrom,//'2024-10-29 11:41:00',//timeFrom,
-                      time_to: timeTo,//'2024-10-30 11:42:00',//timeTo,
-                      token: token)));
-                });
+            return Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text("Unable to fetch data, Please try again", style: AppStyle.cardfooter.copyWith(fontSize: 12),),
+                SizedBox(height: 10,),
+                CustomSecondaryButton(
+                    label: 'Refresh',
+                    onPressed: () {
+                      BlocProvider.of<VehicleRouteHistoryBloc>(context)
+                          .add(VehicleRouteHistoryEvent(VehicleRouteHistoryReqEntity(
+                          vehicle_vin: vin,//'1HGBH41JXMN109186',//vin,
+                          time_from: timeFrom,//'2024-10-29 11:41:00',//timeFrom,
+                          time_to: timeTo,//'2024-10-30 11:42:00',//timeTo,
+                          token: token)));
+                    }),
+              ],
+            );
           }
         },
         listener: (context, state) {
@@ -364,24 +368,29 @@ class ThreeDaysDashboardPage extends StatelessWidget {
           print('token- : $token');
           if (state is VehicleLoading) {
             return const Center(
-              child: Padding(
-                padding: EdgeInsets.only(top: 10.0),
-                child: CircularProgressIndicator(strokeWidth: 2.0, color: Colors.green,),
-              ),
+              child: CustomContainerLoadingButton()
             );
           } else if (state is GetVehicleRouteHistoryDone) {
             return VehicleRouteDataAnalytics(vehicles: state.resp.data, vin: vin,);
           } else {
-            return CustomSecondaryButton(
-                label: 'Refresh',
-                onPressed: () {
-                  BlocProvider.of<VehicleRouteHistoryBloc>(context)
-                      .add(VehicleRouteHistoryEvent(VehicleRouteHistoryReqEntity(
-                      vehicle_vin: vin,//'1HGBH41JXMN109186',//vin,
-                      time_from: timeFrom,//'2024-10-29 11:41:00',//timeFrom,
-                      time_to: timeTo,//'2024-10-30 11:42:00',//timeTo,
-                      token: token)));
-                });
+            return Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text("Unable to fetch data, Please try again", style: AppStyle.cardfooter.copyWith(fontSize: 12),),
+                SizedBox(height: 10,),
+                CustomSecondaryButton(
+                    label: 'Refresh',
+                    onPressed: () {
+                      BlocProvider.of<VehicleRouteHistoryBloc>(context)
+                          .add(VehicleRouteHistoryEvent(VehicleRouteHistoryReqEntity(
+                          vehicle_vin: vin,//'1HGBH41JXMN109186',//vin,
+                          time_from: timeFrom,//'2024-10-29 11:41:00',//timeFrom,
+                          time_to: timeTo,//'2024-10-30 11:42:00',//timeTo,
+                          token: token)));
+                    }),
+              ],
+            );
           }
         },
         listener: (context, state) {
@@ -431,24 +440,29 @@ class OneWeekDashboardPage extends StatelessWidget {
           print('token- : $token');
           if (state is VehicleLoading) {
             return const Center(
-              child: Padding(
-                padding: EdgeInsets.only(top: 10.0),
-                child: CircularProgressIndicator(strokeWidth: 2.0, color: Colors.green,),
-              ),
+              child: CustomContainerLoadingButton()
             );
           } else if (state is GetVehicleRouteHistoryDone) {
             return VehicleRouteDataAnalytics(vehicles: state.resp.data, vin: vin,);
           } else {
-            return CustomSecondaryButton(
-                label: 'Refresh',
-                onPressed: () {
-                  BlocProvider.of<VehicleRouteHistoryBloc>(context)
-                      .add(VehicleRouteHistoryEvent(VehicleRouteHistoryReqEntity(
-                      vehicle_vin: vin,//'1HGBH41JXMN109186',//vin,
-                      time_from: timeFrom,//'2024-10-29 11:41:00',//timeFrom,
-                      time_to: timeTo,//'2024-10-30 11:42:00',//timeTo,
-                      token: token)));
-                });
+            return Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text("Unable to fetch data, Please try again", style: AppStyle.cardfooter.copyWith(fontSize: 12),),
+                SizedBox(height: 10,),
+                CustomSecondaryButton(
+                    label: 'Refresh',
+                    onPressed: () {
+                      BlocProvider.of<VehicleRouteHistoryBloc>(context)
+                          .add(VehicleRouteHistoryEvent(VehicleRouteHistoryReqEntity(
+                          vehicle_vin: vin,//'1HGBH41JXMN109186',//vin,
+                          time_from: timeFrom,//'2024-10-29 11:41:00',//timeFrom,
+                          time_to: timeTo,//'2024-10-30 11:42:00',//timeTo,
+                          token: token)));
+                    }),
+              ],
+            );
           }
         },
         listener: (context, state) {
@@ -496,24 +510,29 @@ class YesterdayDashboardPage extends StatelessWidget {
           print('token- : $token');
           if (state is VehicleLoading) {
             return const Center(
-              child: Padding(
-                padding: EdgeInsets.only(top: 10.0),
-                child: CircularProgressIndicator(strokeWidth: 2.0, color: Colors.green,),
-              ),
+              child: CustomContainerLoadingButton()
             );
           } else if (state is GetVehicleRouteHistoryDone) {
             return VehicleRouteDataAnalytics(vehicles: state.resp.data, vin: vin,);
           } else {
-            return CustomSecondaryButton(
-                label: 'Refresh',
-                onPressed: () {
-                  BlocProvider.of<VehicleRouteHistoryBloc>(context)
-                      .add(VehicleRouteHistoryEvent(VehicleRouteHistoryReqEntity(
-                      vehicle_vin: vin,//'1HGBH41JXMN109186',//vin,
-                      time_from: timeFrom,//'2024-10-29 11:41:00',//timeFrom,
-                      time_to: timeTo,//'2024-10-30 11:42:00',//timeTo,
-                      token: token)));
-                });
+            return Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text("Unable to fetch data, Please try again", style: AppStyle.cardfooter.copyWith(fontSize: 12),),
+                SizedBox(height: 10,),
+                CustomSecondaryButton(
+                    label: 'Refresh',
+                    onPressed: () {
+                      BlocProvider.of<VehicleRouteHistoryBloc>(context)
+                          .add(VehicleRouteHistoryEvent(VehicleRouteHistoryReqEntity(
+                          vehicle_vin: vin,//'1HGBH41JXMN109186',//vin,
+                          time_from: timeFrom,//'2024-10-29 11:41:00',//timeFrom,
+                          time_to: timeTo,//'2024-10-30 11:42:00',//timeTo,
+                          token: token)));
+                    }),
+              ],
+            );
           }
         },
         listener: (context, state) {
@@ -631,7 +650,6 @@ class _VehicleRouteDataAnalyticsState extends State<VehicleRouteDataAnalytics> {
                       style: AppStyle.cardfooter.copyWith(fontSize: 14))
                 ],
               ),
-
               const SizedBox(height: 20),
               // Pie chart visualization
               Center(

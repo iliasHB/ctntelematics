@@ -1,6 +1,7 @@
 import 'dart:math';
 
 // import 'package:ctntelematics/modules/map/presentation/widgets/vehicle_route_history.dart';
+import 'package:ctntelematics/core/widgets/custom_button.dart';
 import 'package:ctntelematics/modules/vehincle/domain/entities/req_entities/route_history_req_entity.dart';
 import 'package:ctntelematics/modules/vehincle/domain/entities/resp_entities/route_history_resp_entity.dart';
 import 'package:ctntelematics/modules/vehincle/presentation/widgets/vehicle_route_history.dart';
@@ -15,6 +16,7 @@ import 'package:sliding_up_panel/sliding_up_panel.dart';
 
 import '../../../../config/theme/app_style.dart';
 import '../../../../core/widgets/format_data.dart';
+import '../../../../core/widgets/gps_processor.dart';
 import '../../../vehincle/presentation/bloc/vehicle_bloc.dart';
 import '../bloc/map_bloc.dart';
 
@@ -115,52 +117,12 @@ class _VehicleRouteHistory1State extends State<VehicleRouteHistory1> {
                   ],
                 ),
               ),
-              // Row(
-              //   children: [
-              //     Expanded(
-              //       child: SizedBox(
-              //           height: 50,
-              //           child: ListView(
-              //             scrollDirection: Axis.horizontal,
-              //             children: [
-              //               const SizedBox(
-              //                 width: 10,
-              //               ),
-              //               RouteWidget(
-              //                   title: "Route Length",
-              //                   subTitle: FormatData.handle2DecimalPointFormat(0.0),
-              //                   color: Colors.green),
-              //               const SizedBox(
-              //                 width: 10,
-              //               ),
-              //               const RouteWidget(
-              //                   title: "Move Duration",
-              //                   subTitle: "33min 0s",
-              //                   color: Colors.brown),
-              //               const SizedBox(
-              //                 width: 10,
-              //               ),
-              //               const RouteWidget(
-              //                   title: "Stop Duration",
-              //                   subTitle: "16h 32min 22s",
-              //                   color: Colors.blue),
-              //               const SizedBox(
-              //                 width: 10,
-              //               ),
-              //               const RouteWidget(
-              //                   title: "Max Speed",
-              //                   subTitle: "6kph",
-              //                   color: Colors.purpleAccent)
-              //             ],
-              //           )),
-              //     )
-              //   ],
-              // ),
 
               BlocConsumer<VehicleRouteHistoryBloc, VehicleState>(
                   builder: (BuildContext context, state) {
                 if (state is VehicleLoading) {
-                  return const Center(child: CircularProgressIndicator());
+                  return const Center(
+                      child: CustomContainerLoadingButton());
                 } else if (state is GetVehicleRouteHistoryDone) {
                   return Flexible(
                     child: RouteHistoryMap(resp: state.resp, speed: speed),
@@ -171,7 +133,7 @@ class _VehicleRouteHistory1State extends State<VehicleRouteHistory1> {
               }, listener: (context, state) {
                 if (state is VehicleFailure) {
                   if (state.message.contains("Unauthenticated")) {
-                    Navigator.pushNamed(context, "/login");
+                    Navigator.pushNamedAndRemoveUntil(context, "/login", (route) => false);
                   }
                   ScaffoldMessenger.of(context)
                       .showSnackBar(SnackBar(content: Text(state.message)));
@@ -287,6 +249,7 @@ class _RouteHistoryMapState extends State<RouteHistoryMap> {
   double maxSpeed = 0.0;
   final PanelController _panelController = PanelController();
   List<String> addresses = [];
+  Map<String, dynamic> metrics = {};
 
   // Durations
   Duration moveDuration = Duration.zero;
@@ -315,8 +278,15 @@ class _RouteHistoryMapState extends State<RouteHistoryMap> {
         _isContainerVisible = true;
       });
     });
+    loadGpsData();
     // Initialize Pusher after starting to load initial data
     // Load the custom vehicle icon
+  }
+
+  void loadGpsData() {
+    setState(() {
+      metrics = GpsProcessor.calculateMetrics(widget.resp.data);
+    });
   }
 
   void _updateMoveAndStopDurations(double speed) {
@@ -474,7 +444,7 @@ class _RouteHistoryMapState extends State<RouteHistoryMap> {
       if (currentSpeed > maxSpeed) {
         maxSpeed = currentSpeed;
       }
-      _updateMoveAndStopDurations(double.tryParse(vehicleSpeed) ?? 0);
+      // _updateMoveAndStopDurations(double.tryParse(vehicleSpeed) ?? 0);
     });
     // Call the method to update the vehicle's position
     _updateVehiclePosition(currentLocation);
@@ -623,8 +593,7 @@ class _RouteHistoryMapState extends State<RouteHistoryMap> {
                               ),
                               RouteWidget(
                                   title: "Route Length",
-                                  subTitle:
-                                      FormatData.handle2DecimalPointFormat(
+                                  subTitle: FormatData.handle2DecimalPointFormat(
                                           widget.resp.routeLength ?? 0.00),
                                   color: Colors.green),
                               const SizedBox(
@@ -633,15 +602,15 @@ class _RouteHistoryMapState extends State<RouteHistoryMap> {
                               const SizedBox(width: 10),
                               RouteWidget(
                                 title: "Move Duration",
-                                subTitle:
-                                    "${moveDuration.inHours}h ${moveDuration.inMinutes.remainder(60)}min ${moveDuration.inSeconds.remainder(60)}s",
+                                subTitle:FormatData.formatTime(metrics['moveDuration']),
+                                    // "${moveDuration.inHours}h ${moveDuration.inMinutes.remainder(60)}min ${moveDuration.inSeconds.remainder(60)}s",
                                 color: Colors.brown,
                               ),
                               const SizedBox(width: 10),
                               RouteWidget(
                                 title: "Stop Duration",
-                                subTitle:
-                                    "${stopDuration.inHours}h ${stopDuration.inMinutes.remainder(60)}min ${stopDuration.inSeconds.remainder(60)}s",
+                                subTitle: FormatData.formatTime(metrics['stopDuration']),
+                                    // "${stopDuration.inHours}h ${stopDuration.inMinutes.remainder(60)}min ${stopDuration.inSeconds.remainder(60)}s",
                                 color: Colors.blue,
                               ),
                               const SizedBox(
@@ -811,8 +780,6 @@ class _RouteHistoryMapState extends State<RouteHistoryMap> {
               padding: EdgeInsets.zero,
               itemCount: widget.resp.data.length,
               itemBuilder: (BuildContext context, index) {
-                print('length of route ${widget.resp.data.length}');
-                // _fetchAddresses();
                 return Card(
                   color: Colors.white,
                   child: Padding(
@@ -1031,23 +998,24 @@ class _DateTimeRangePickerState extends State<DateTimeRangePicker> {
                         height: 40,
                         child: TextFormField(
                           decoration: InputDecoration(
-                            enabled: false,
+                            // enabled: false,
+                            prefixIcon: const Icon(
+                              Icons.calendar_month,
+                              color: Colors.green,
+                            ),
                             filled: true,
                             fillColor: Colors.grey[200],
                             labelStyle: AppStyle.cardfooter,
-                            label: Text(
+                            hintText:
+                            // Text(
                               fromDate == null
                                   ? 'Select Start Date and Time'
                                   : fromDate.toString(),
-                            ),
+                            // ),
                             border: OutlineInputBorder(
                                 borderSide: BorderSide.none,
                                 borderRadius: BorderRadius.circular(5)),
                           ),
-                        ),
-                      )),
-                      const SizedBox(width: 5),
-                      InkWell(
                           onTap: () {
                             DatePicker.showDateTimePicker(
                               context,
@@ -1060,10 +1028,26 @@ class _DateTimeRangePickerState extends State<DateTimeRangePicker> {
                               currentTime: DateTime.now(),
                             );
                           },
-                          child: const Icon(
-                            Icons.calendar_month,
-                            color: Colors.green,
-                          ))
+                        ),
+                      )),
+                      // const SizedBox(width: 5),
+                      // InkWell(
+                      //     onTap: () {
+                      //       DatePicker.showDateTimePicker(
+                      //         context,
+                      //         showTitleActions: true,
+                      //         onConfirm: (date) {
+                      //           setState(() {
+                      //             fromDate = date;
+                      //           });
+                      //         },
+                      //         currentTime: DateTime.now(),
+                      //       );
+                      //     },
+                      //     child: const Icon(
+                      //       Icons.calendar_month,
+                      //       color: Colors.green,
+                      //     ))
                     ],
                   ),
                 ],
@@ -1089,7 +1073,11 @@ class _DateTimeRangePickerState extends State<DateTimeRangePicker> {
                         height: 40,
                         child: TextFormField(
                           decoration: InputDecoration(
-                            enabled: false,
+                            // enabled: false,
+                            prefixIcon: const Icon(
+                              Icons.calendar_month,
+                              color: Colors.green,
+                            ),
                             filled: true,
                             fillColor: Colors.grey[200],
                             labelStyle: AppStyle.cardfooter,
@@ -1102,10 +1090,6 @@ class _DateTimeRangePickerState extends State<DateTimeRangePicker> {
                                 borderSide: BorderSide.none,
                                 borderRadius: BorderRadius.circular(5)),
                           ),
-                        ),
-                      )),
-                      const SizedBox(width: 5),
-                      InkWell(
                           onTap: () {
                             DatePicker.showDateTimePicker(
                               context,
@@ -1118,10 +1102,26 @@ class _DateTimeRangePickerState extends State<DateTimeRangePicker> {
                               currentTime: DateTime.now(),
                             );
                           },
-                          child: const Icon(
-                            Icons.calendar_month,
-                            color: Colors.green,
-                          ))
+                        ),
+                      )),
+                      // const SizedBox(width: 5),
+                      // InkWell(
+                      //     onTap: () {
+                      //       DatePicker.showDateTimePicker(
+                      //         context,
+                      //         showTitleActions: true,
+                      //         onConfirm: (date) {
+                      //           setState(() {
+                      //             toDate = date;
+                      //           });
+                      //         },
+                      //         currentTime: DateTime.now(),
+                      //       );
+                      //     },
+                      //     child: const Icon(
+                      //       Icons.calendar_month,
+                      //       color: Colors.green,
+                      //     ))
                     ],
                   ),
                 ],
@@ -1160,6 +1160,13 @@ class _DateTimeRangePickerState extends State<DateTimeRangePicker> {
                 child: PopupMenuButton(
                     icon: const Icon(Icons.filter_alt),
                     itemBuilder: (context) => [
+                      // PopupMenuItem(
+                      //   value: 0,
+                      //   onTap: () {
+                      //     _setDateRange(0); // Yesterday
+                      //   },
+                      //   child: Text("Today", style: AppStyle.cardfooter,),
+                      // ),
                           PopupMenuItem(
                             value: 1,
                             onTap: () {
@@ -1202,7 +1209,7 @@ class _DateTimeRangePickerState extends State<DateTimeRangePicker> {
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  icon: const Icon(Icons.send),
+                  icon: const Icon(Icons.send, color: Colors.white,),
                 ),
               ),
             ],

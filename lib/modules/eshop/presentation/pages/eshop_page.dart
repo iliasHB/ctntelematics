@@ -1,5 +1,6 @@
 import 'package:ctntelematics/core/utils/app_export_util.dart';
 import 'package:ctntelematics/core/widgets/advert.dart';
+import 'package:ctntelematics/core/widgets/custom_button.dart';
 import 'package:ctntelematics/modules/eshop/presentation/widgets/product_review.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -234,10 +235,7 @@ class _EshopPageState extends State<EshopPage> {
             builder: (context, state) {
               if (state is EshopLoading) {
                 return const Center(
-                  child: Padding(
-                    padding: EdgeInsets.only(top: 10.0),
-                    child: CircularProgressIndicator(strokeWidth: 2.0),
-                  ),
+                  child: CustomContainerLoadingButton()
                 );
               } else if (state is EshopGetProductsDone) {
                 // Check if the schedule data is empty
@@ -284,16 +282,34 @@ class _EshopPageState extends State<EshopPage> {
                 );
               } else {
                 return Center(
-                    child: Text(
-                  'No records found',
-                  style: AppStyle.cardfooter,
-                ));
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment:
+                      CrossAxisAlignment.center,
+                      children: [
+                        Text(
+                          'No records found',
+                          style: AppStyle.cardfooter,
+                        ),
+                        const SizedBox(
+                          height: 10.0,
+                        ),
+                        CustomSecondaryButton(
+                            label: 'Refresh',
+                            onPressed: () {
+                              BlocProvider.of<EshopGetAllProductBloc>(
+                                  context)
+                                  .add(EshopGetProductsEvent(
+                                  EshopTokenReqEntity(token: token ?? "")));
+                            })
+                      ],
+                    ));
               }
             },
             listener: (context, state) {
               if (state is EshopFailure) {
-                if (state.message.contains("401")) {
-                  Navigator.pushNamed(context, "/login");
+                if (state.message.contains("Unauthenticated")) {
+                  Navigator.pushNamedAndRemoveUntil(context, "/login", (route) => false);
                 }
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text(state.message)),
@@ -314,10 +330,7 @@ class _EshopPageState extends State<EshopPage> {
         builder: (context, state) {
           if (state is EshopLoading) {
             return const Center(
-              child: Padding(
-                padding: EdgeInsets.only(top: 10.0),
-                child: CircularProgressIndicator(strokeWidth: 2.0),
-              ),
+              child: CustomContainerLoadingButton()
             );
           } else if (state is EshopGetProductsDone) {
             // Check if the schedule data is empty
@@ -387,7 +400,8 @@ class _EshopPageState extends State<EshopPage> {
       future: _fetchCartItems(), // Fetch cart items from the database
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
+          return const Center(
+              child: CustomContainerLoadingButton());
         } else if (snapshot.hasError) {
           return Center(child: Text('Error: ${snapshot.error}'));
         } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
@@ -507,14 +521,19 @@ class _AllCategoryState extends State<AllCategory> {
                                 return child;
                               }
                               return Center(
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2.0,
-                                  value: loadingProgress.expectedTotalBytes !=
-                                          null
-                                      ? loadingProgress.cumulativeBytesLoaded /
-                                          (loadingProgress.expectedTotalBytes ??
-                                              1)
-                                      : null,
+                                child: Container(
+                                  height: 15,
+                                  width: 15,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2.0,
+                                    color: Colors.green,
+                                    value: loadingProgress.expectedTotalBytes !=
+                                            null
+                                        ? loadingProgress.cumulativeBytesLoaded /
+                                            (loadingProgress.expectedTotalBytes ??
+                                                1)
+                                        : null,
+                                  ),
                                 ),
                               );
                             },
@@ -570,7 +589,6 @@ class _AllCategoryState extends State<AllCategory> {
                     children: [
                       InkWell(
                         onTap: () {
-                          print("I am saving here");
                           saveProductToCart(
                             widget.productName,
                             widget.productImage,
@@ -733,14 +751,19 @@ class _AllProductState extends State<AllProduct> {
                                 return child;
                               }
                               return Center(
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2.0,
-                                  value: loadingProgress.expectedTotalBytes !=
-                                          null
-                                      ? loadingProgress.cumulativeBytesLoaded /
-                                          (loadingProgress.expectedTotalBytes ??
-                                              1)
-                                      : null,
+                                child: SizedBox(
+                                  height: 15,
+                                  width: 15,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2.0,
+                                    color: Colors.green,
+                                    value: loadingProgress.expectedTotalBytes !=
+                                            null
+                                        ? loadingProgress.cumulativeBytesLoaded /
+                                            (loadingProgress.expectedTotalBytes ??
+                                                1)
+                                        : null,
+                                  ),
                                 ),
                               );
                             },
@@ -933,14 +956,19 @@ class _AllCartProductState extends State<AllCartProduct> {
                                 return child;
                               }
                               return Center(
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2.0,
-                                  value: loadingProgress.expectedTotalBytes !=
-                                      null
-                                      ? loadingProgress.cumulativeBytesLoaded /
-                                      (loadingProgress.expectedTotalBytes ??
-                                          1)
-                                      : null,
+                                child: SizedBox(
+                                  height: 15,
+                                  width: 15,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2.0,
+                                    color: Colors.green,
+                                    value: loadingProgress.expectedTotalBytes !=
+                                        null
+                                        ? loadingProgress.cumulativeBytesLoaded /
+                                        (loadingProgress.expectedTotalBytes ??
+                                            1)
+                                        : null,
+                                  ),
                                 ),
                               );
                             },
@@ -1011,7 +1039,7 @@ class _AllCartProductState extends State<AllCartProduct> {
                             radius: 15,
                             backgroundColor: Colors.red[500],
                             child: const Icon(
-                              Icons.delete,
+                             CupertinoIcons.delete,
                               color: Colors.white,
                               size: 15,
                             ),

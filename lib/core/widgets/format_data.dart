@@ -6,6 +6,17 @@ class FormatData {
     return formattedValue;
   }
 
+  static String formatTime(int totalMinutes) {
+    // int totalMinutes = int.parse(value.toString());
+    // int totalMinutes = value.toInt();
+    print("totalMinutes::: $totalMinutes");
+    int hours = totalMinutes ~/ 60; // Calculate hours
+    int minutes = totalMinutes % 60; // Remaining minutes
+    int seconds = 0; // Optional for seconds if required
+
+    return '${hours}h ${minutes}m ${seconds}s';
+  }
+
   static String formatTimestamp(String timestamp) {
     try {
       // Parse the string timestamp into a DateTime object

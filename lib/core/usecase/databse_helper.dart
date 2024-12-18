@@ -315,7 +315,7 @@ class DB_notification {
         'brand': v.locationInfo.brand,
         'model': v.locationInfo.model,
         'numberPlate': v.locationInfo.numberPlate,
-        'createdAt': v.locationInfo.createdAt,
+        'createdAt': v.locationInfo.tracker?.lastUpdate,
       });
     }
 
@@ -327,7 +327,7 @@ class DB_notification {
         'model': v.locationInfo.model,
         'numberPlate': v.locationInfo.numberPlate,
         'speedLimit': v.locationInfo.speedLimit,
-        'createdAt': v.locationInfo.createdAt,
+        'createdAt':v.locationInfo.tracker?.lastUpdate,
       });
     }
   }

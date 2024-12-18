@@ -85,7 +85,7 @@ class _DashboardPageState extends State<DashboardPage> {
         middle_name = authUser[2].isEmpty ? null : authUser[2];
         email = authUser[3].isEmpty ? null : authUser[3];
         token = authUser[4].isEmpty ? null : authUser[4];
-        userId = authUser[5].isEmpty ? null : authUser[5];
+        userId = authUser[8].isEmpty ? null : authUser[8];
         user_type = authUser[7].isEmpty ? null : authUser[7];
       }
       if (token != null && userId != null) {
@@ -325,20 +325,30 @@ class _DashboardPageState extends State<DashboardPage> {
                               child: BlocConsumer<LastLocationBloc, MapState>(
                                   builder: (context, state) {
                                 if (state is MapLoading) {
-                                  return const SizedBox(
-                                    height: 25,
-                                    width: 25,
-                                    child: Center(
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2.0,
-                                        color: Colors.green,
-                                      ),
-                                    ),
-                                  );
+                                  return const CustomContainerLoadingButton();
+                                  //   const SizedBox(
+                                  //   height: 25,
+                                  //   width: 25,
+                                  //   child: Center(
+                                  //     child: CircularProgressIndicator(
+                                  //       strokeWidth: 2.0,
+                                  //       color: Colors.green,
+                                  //     ),
+                                  //   ),
+                                  // );
                                 } else if (state is GetLastLocationDone) {
-                                  final vehiclesData = state.resp ?? [];
-                                  final vehicleCounts =
-                                      _computeVehicleCounts(vehiclesData);
+
+                                  if(state.resp.isEmpty || state.resp == null){
+                                    return Center(
+                                      child: Text(
+                                        'No vehicles available',
+                                        style: AppStyle.cardfooter,
+                                      ),
+                                    );
+                                  }
+
+                                  final vehiclesData = state.resp;
+                                  final vehicleCounts = _computeVehicleCounts(vehiclesData);
 
                                   return Column(
                                     children: [
@@ -1082,23 +1092,12 @@ class _DashboardPageState extends State<DashboardPage> {
                                 BlocProvider(
                                   create: (_) => sl<EshopGetAllProductBloc>()
                                     ..add(EshopGetProductsEvent(
-                                        EshopTokenReqEntity(
-                                            token: token ?? ""))),
-                                  child: BlocConsumer<EshopGetAllProductBloc,
-                                      EshopState>(
+                                        EshopTokenReqEntity(token: token ?? ""))),
+                                  child: BlocConsumer<EshopGetAllProductBloc, EshopState>(
                                     builder: (context, state) {
                                       if (state is EshopLoading) {
-                                        return const Center(
-                                          child: Padding(
-                                            padding: EdgeInsets.only(top: 10.0),
-                                            child: CircularProgressIndicator(
-                                              strokeWidth: 2.0,
-                                              color: Colors.green,
-                                            ),
-                                          ),
-                                        );
-                                      } else if (state
-                                          is EshopGetProductsDone) {
+                                        return CustomContainerLoadingButton();
+                                      } else if (state is EshopGetProductsDone) {
                                         // Check if the schedule data is empty
                                         if (state.resp.products.data == null ||
                                             state.resp.products.data.isEmpty) {
@@ -1325,10 +1324,27 @@ class _DashboardPageState extends State<DashboardPage> {
                                         );
                                       } else {
                                         return Center(
-                                            child: Text(
-                                          'No records found',
-                                          style: AppStyle.cardfooter,
-                                        ));
+                                            child: Column(
+                                              mainAxisAlignment: MainAxisAlignment.center,
+                                              crossAxisAlignment: CrossAxisAlignment.center,
+                                              children: [
+                                                Text(
+                                                  'Unable to load Product',
+                                                  style: AppStyle.cardfooter,
+                                                ),
+                                                const SizedBox(
+                                                  height: 10.0,
+                                                ),
+                                                CustomSecondaryButton(
+                                                    label: 'Refresh',
+                                                    onPressed: () {
+                                                      BlocProvider.of<EshopGetAllProductBloc>(
+                                                          context)
+                                                          .add(EshopGetProductsEvent(
+                                                          EshopTokenReqEntity(token: token ?? "")));
+                                                    })
+                                              ],
+                                            ));
                                       }
                                     },
                                     listener: (context, state) {
@@ -1824,16 +1840,17 @@ class MotorShieldCard extends StatelessWidget {
       child: BlocConsumer<VehicleTripBloc, DashboardState>(
         builder: (context, state) {
           if (state is DashboardLoading) {
-            return const Center(
-              child: Padding(
-                padding: EdgeInsets.only(top: 10.0),
-                child: CircularProgressIndicator(
-                  strokeWidth: 2.0,
-                  color: Colors.green,
-                ),
-              ),
-            );
+            return const CustomContainerLoadingButton();
           } else if (state is VehicleTripDone) {
+            // Check if the schedule data is empty
+            if (state.resp.isEmpty || state.resp == null) {
+              return Center(
+                child: Text(
+                  'No available trip',
+                  style: AppStyle.cardfooter,
+                ),
+              );
+            }
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -1864,10 +1881,27 @@ class MotorShieldCard extends StatelessWidget {
             );
           } else {
             return Center(
-                child: Text(
-              'No records found',
-              style: AppStyle.cardfooter,
-            ));
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Unable to load trip',
+                      style: AppStyle.cardfooter,
+                    ),
+                    const SizedBox(
+                      height: 10.0,
+                    ),
+                    CustomSecondaryButton(
+                        label: 'Refresh',
+                        onPressed: () {
+                          BlocProvider.of<EshopGetAllProductBloc>(
+                              context)
+                              .add(EshopGetProductsEvent(
+                              EshopTokenReqEntity(token: token ?? "")));
+                        })
+                  ],
+                ));
           }
         },
         listener: (context, state) {

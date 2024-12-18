@@ -71,8 +71,7 @@ class _CheckoutState extends State<Checkout> {
         // user_type = authUser[7].isEmpty ? null : authUser[7];
       }
     });
-    _quantityController =
-        TextEditingController(text: widget.quantity.toString());
+    _quantityController = TextEditingController(text: widget.quantity.toString());
     _emailController = TextEditingController(text: email);
     _amountController = TextEditingController(text: widget.price);
   }
@@ -123,6 +122,12 @@ class _CheckoutState extends State<Checkout> {
                           "Delivery",
                           style: AppStyle.cardSubtitle.copyWith(fontSize: 14),
                         ),
+                        fillColor:MaterialStateProperty.resolveWith((states) {
+                          if (states.contains(MaterialState.selected)) {
+                            return Colors.green; // Color when selected
+                          }
+                          return Colors.grey; // Default color
+                        }),
                         value: "Delivery",
                         groupValue: _selectedOption,
                         onChanged: (value) {
@@ -162,11 +167,12 @@ class _CheckoutState extends State<Checkout> {
                       ),
                       Text(
                         'Contact',
-                        style: AppStyle.cardSubtitle,
+                        style: AppStyle.cardSubtitle.copyWith(fontSize: 14),
                       ),
                       TextFormField(
                         controller: _contactController,
                         cursorColor: Colors.green,
+                        keyboardType: TextInputType.phone,
                         decoration: customInputDecoration(
                           labelText: '',
                           hintText: 'Enter your phone contact',
@@ -197,15 +203,12 @@ class _CheckoutState extends State<Checkout> {
                       ),
                       BlocProvider(
                         create: (_) => sl<DeliveryLocationBloc>()
-                          ..add(DeliveryLocationEvent(EshopTokenReqEntity())),
+                          ..add(const DeliveryLocationEvent(EshopTokenReqEntity())),
                         child: BlocConsumer<DeliveryLocationBloc, EshopState>(
                           builder: (context, state) {
                             if (state is EshopLoading) {
                               return const Center(
-                                child: Padding(
-                                  padding: EdgeInsets.only(top: 10.0),
-                                  child: CircularProgressIndicator(strokeWidth: 2.0),
-                                ),
+                                child: CustomContainerLoadingButton()
                               );
                             } else if (state is DeliveryLocationDone) {
                               // Check if vehicle data is null or empty
@@ -245,20 +248,46 @@ class _CheckoutState extends State<Checkout> {
                                   fillColor: Colors.grey[200],
                                   border: const OutlineInputBorder(
                                       borderSide: BorderSide.none),
+                                  prefixIcon: Icon(CupertinoIcons.map_pin_ellipse, color: Colors.green,)
                                 ),
                               );
                             } else {
                               return Center(
-                                child: Text(
-                                  'No records found',
-                                  style: AppStyle.cardfooter,
-                                ),
-                              );
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        'Unable to load vehicles',
+                                        style: AppStyle.cardfooter.copyWith(fontSize: 12),
+                                      ),
+                                      const SizedBox(
+                                        width: 10.0,
+                                      ),
+                                      IconButton(
+                                          onPressed: () {
+                                            BlocProvider.of<DeliveryLocationBloc>(context)
+                                                .add(const DeliveryLocationEvent(EshopTokenReqEntity()));
+                                          },
+                                          icon: const Icon(Icons.refresh, color: Colors.green,))
+                                      // CustomSecondaryButton(
+                                      //     label: 'Refresh',
+                                      //     onPressed: () {
+                                      //       BlocProvider.of<ProfileVehiclesBloc>(context)
+                                      //           .add(ProfileVehicleEvent(TokenReqEntity(
+                                      //           token: widget.token ?? "",
+                                      //           contentType: 'application/json')));
+                                      //     })
+                                    ],
+                                  ));
                             }
                           },
                           listener: (context, state) {
                             if (state is EshopFailure) {
-                              Navigator.pushNamed(context, "/login");
+                              if(state.message.contains("Unauthenticated")){
+                                Navigator.pushNamedAndRemoveUntil(context, "/login", (route) => false);
+                              }
+
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(content: Text(state.message)),
                               );
@@ -280,7 +309,7 @@ class _CheckoutState extends State<Checkout> {
                           labelText: "",
                           hintText: 'Enter your address',
                           prefixIcon:
-                              const Icon(Icons.house, color: Colors.green),
+                              const Icon(CupertinoIcons.house, color: Colors.green),
                         ),
                         onChanged: (value) {
                           setState(() {
@@ -399,17 +428,28 @@ class _CheckoutState extends State<Checkout> {
                   onPressed: () {
                     String locationId = "1";
                     if (_formKey.currentState?.validate() ?? false) {
-                      PaymentGateway.showPaymentTypeModal(
-                          context,
-                          _emailController.text.trim(),
-                          widget.quantity.toString(),
-                          _contactController.text.trim(),
-                          _addressController.text.trim(),
-                          locationId,
-                          widget.productId.toString(),
-                          widget.token,
-                          widget.price
-                      );
+                      Navigator.push(context, MaterialPageRoute(builder: (_)
+                      => PaymentGateway(
+                          email: _emailController.text.trim(),
+                          quantity: widget.quantity.toString(),
+                          contact: _contactController.text.trim(),
+                          address: _addressController.text.trim(),
+                          locationId: locationId,
+                          productId: widget.productId.toString(),
+                          token: widget.token,
+                          price: widget.price
+                      )));
+                      // PaymentGateway.showPaymentTypeModal(
+                      //     context,
+                      //     _emailController.text.trim(),
+                      //     widget.quantity.toString(),
+                      //     _contactController.text.trim(),
+                      //     _addressController.text.trim(),
+                      //     locationId,
+                      //     widget.productId.toString(),
+                      //     widget.token,
+                      //     widget.price
+                      // );
                     }
                   }) //Navigator.push(context, MaterialPageRoute(builder: (_) => PaymentMethod())))
             ],

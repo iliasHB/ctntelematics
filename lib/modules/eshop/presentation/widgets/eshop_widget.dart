@@ -1,3 +1,4 @@
+import 'package:ctntelematics/core/widgets/custom_button.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -93,10 +94,7 @@ class _EshopWidgetState extends State<EshopWidget> {
                 builder: (context, state) {
                   if (state is EshopLoading) {
                     return const Center(
-                      child: Padding(
-                        padding: EdgeInsets.only(top: 10.0),
-                        child: CircularProgressIndicator(strokeWidth: 2.0),
-                      ),
+                      child: CustomContainerLoadingButton()
                     );
                   } else if (state is EshopGetProductsDone) {
                     // Check if the schedule data is empty
@@ -147,16 +145,34 @@ class _EshopWidgetState extends State<EshopWidget> {
                     );
                   } else {
                     return Center(
-                        child: Text(
-                      'No records found',
-                      style: AppStyle.cardfooter,
-                    ));
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment:
+                          CrossAxisAlignment.center,
+                          children: [
+                            Text(
+                              'No records found',
+                              style: AppStyle.cardfooter,
+                            ),
+                            const SizedBox(
+                              height: 10.0,
+                            ),
+                            CustomSecondaryButton(
+                                label: 'Refresh',
+                                onPressed: () {
+                                  BlocProvider.of<EshopGetAllProductBloc>(
+                                      context)
+                                      .add(EshopGetProductsEvent(
+                                      EshopTokenReqEntity(token: widget.token ?? "")));
+                                })
+                          ],
+                        ));
                   }
                 },
                 listener: (context, state) {
                   if (state is EshopFailure) {
-                    if (state.message.contains("401")) {
-                      Navigator.pushNamed(context, "/login");
+                    if (state.message.contains("Unauthenticated")) {
+                      Navigator.pushNamedAndRemoveUntil(context, "/login", (route) => false);
                     }
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text(state.message)),

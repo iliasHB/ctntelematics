@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/utils/app_export_util.dart';
 import '../../../../core/widgets/custom_button.dart';
+import '../../../map/presentation/bloc/map_bloc.dart';
 import '../../domain/entities/auth_req_entites/login_req_entity.dart';
 import '../bloc/auth_bloc.dart';
 
@@ -22,6 +23,8 @@ class _LoginPageState extends State<LoginPage> {
   PrefUtils prefUtils = PrefUtils();
 
   bool isPasswordVisible = true;
+
+  // late final LastLocationBloc lastLocationBloc;
 
   @override
   void dispose() {
@@ -56,6 +59,8 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    // // Trigger refreshing data after login
+    // lastLocationBloc.refreshStateAfterLogin();
     return Scaffold(
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -185,7 +190,10 @@ class _LoginPageState extends State<LoginPage> {
             BlocConsumer<LoginBloc, AuthState>(
               listener: (context, state) {
                 if (state is LoginDone) {
-                  print("token::::::${state.resp.token}");
+                  // print("token::::::${state.resp.token}");
+                  // print("token::::::${state.resp.user.first_name}");
+                  // print("userId::::::${state.resp.user.id}");
+                  // print("user_type::::::${state.resp.user.user_type}");
                   _saveAuthUser(
                     state.resp.user.first_name,
                     state.resp.user.last_name,
@@ -197,6 +205,7 @@ class _LoginPageState extends State<LoginPage> {
                     state.resp.user.user_type,
                     state.resp.user.id,
                   );
+                  //lastLocationBloc.refreshStateAfterLogin();
                   Navigator.pushNamedAndRemoveUntil(
                     context,
                     '/bottomNav',
@@ -214,20 +223,22 @@ class _LoginPageState extends State<LoginPage> {
               },
               builder: (context, state) {
                 if (state is AuthLoading) {
-                  return const Center(
-                    child: SizedBox(
-                      height: 30, // Adjust the height
-                      width: 30, // Adjust the width
-                      child: CircularProgressIndicator(
-                        strokeWidth: 3, // Adjust the thickness
-                        color: Colors
-                            .green, // Optional: Change the color to match your theme
-                      ),
-                    ),
-                  );
+                  return const CustomLoadingButton();
+
+                  //   const Center(
+                  //   child: SizedBox(
+                  //     height: 30, // Adjust the height
+                  //     width: 30, // Adjust the width
+                  //     child: CircularProgressIndicator(
+                  //       strokeWidth: 3, // Adjust the thickness
+                  //       color: Colors
+                  //           .green, // Optional: Change the color to match your theme
+                  //     ),
+                  //   ),
+                  // );
                 }
                 return CustomPrimaryButton(
-                  label: 'Log in',
+                  label: 'Login',
                   onPressed: () {
                     if (_formKey.currentState?.validate() ?? false) {
                       final loginReqEntity = LoginReqEntity(

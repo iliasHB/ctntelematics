@@ -50,6 +50,7 @@ class CustomSecondaryButton extends StatelessWidget {
   final EdgeInsetsGeometry padding;
   final TextStyle? textStyle;
   final double borderRadius;
+  final signup;
 
   const CustomSecondaryButton({
     Key? key,
@@ -58,7 +59,7 @@ class CustomSecondaryButton extends StatelessWidget {
     // this.backgroundColor,
     this.padding = const EdgeInsets.symmetric(vertical: 16.0, horizontal: 50.0),
     this.textStyle,
-    this.borderRadius = 10.0,
+    this.borderRadius = 10.0, this.signup,
   }) : super(key: key);
 
   @override
@@ -76,9 +77,70 @@ class CustomSecondaryButton extends StatelessWidget {
           padding: padding,
           child: Text(
             label,
-              style: textStyle ?? AppStyle.cardSubtitle.copyWith(color: Colors.green[800], fontSize: 14)
+              style: textStyle
+                  ?? AppStyle.cardSubtitle.copyWith(color: signup != 1 ? Colors.green[800] : Colors.white, fontSize: 14)
           ),
         ),
     );
   }
 }
+
+
+class CustomLoadingButton extends StatelessWidget {
+
+  const CustomLoadingButton({
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return ElevatedButton(
+      onPressed: (){},
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.green[500], // Default here
+        padding: const EdgeInsets.symmetric(vertical: 0.0),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10.0),
+        ),
+      ),
+      child: const SizedBox(
+        height: 12,
+        width: 12,
+        child: CircularProgressIndicator(
+          strokeWidth: 2.0, // Adjust the thickness
+          color: Colors.white, // Optional: Change the color to match your theme
+        ),
+      ),
+    );
+  }
+}
+
+
+class CustomContainerLoadingButton extends StatelessWidget {
+  const CustomContainerLoadingButton({
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Container(
+        padding: const EdgeInsets.all(5.0),
+        height: 25,
+        width: 25,
+        decoration: BoxDecoration(
+          color: Colors.green,
+          borderRadius: BorderRadius.circular(50)
+        ),
+        
+        child: const CircularProgressIndicator(
+          strokeWidth: 2.0, // Adjust the thickness
+          color: Colors.white, // Optional: Change the color to match your theme
+        ),
+      ),
+    );
+  }
+}
+
+
+
