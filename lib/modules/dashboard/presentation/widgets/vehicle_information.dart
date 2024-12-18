@@ -1,4 +1,5 @@
 import 'package:ctntelematics/config/theme/app_style.dart';
+import 'package:ctntelematics/core/widgets/custom_button.dart';
 import 'package:ctntelematics/core/widgets/format_data.dart';
 import 'package:ctntelematics/modules/dashboard/domain/entitties/resp_entities/dash_vehicle_resp_entity.dart';
 import 'package:flutter/cupertino.dart';
@@ -89,19 +90,18 @@ class _VehicleInformationState extends State<VehicleInformation> {
               child: BlocConsumer<VehicleTripBloc, DashboardState>(
                 builder: (context, state) {
                   if (state is DashboardLoading) {
-                    return const Center(
-                      child: Padding(
-                        padding: EdgeInsets.only(top: 0.0),
-                        child: CircularProgressIndicator(strokeWidth: 2.0, color: Colors.green,),
-                      ),
-                    );
+                    return const CustomContainerLoadingButton();
                   } else if (state is VehicleTripDone) {
                     if (state.resp == null || state.resp.isEmpty) {
-                      return Center(
-                        child: Text(
-                          'No available Schedule',
-                          style: AppStyle.cardfooter,
+                      return Container(
+                        height: 100, // Set a width to ensure consistent card size
+                        margin: const EdgeInsets.symmetric(horizontal: 10.0),
+                        padding: const EdgeInsets.all(10.0),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(5),
+                          color: Colors.grey.shade200,
                         ),
+                        child: Center(child: Text("No available schedule")),
                       );
                     }
                     final filteredReports = state.resp
@@ -109,8 +109,15 @@ class _VehicleInformationState extends State<VehicleInformation> {
                             (report) => report.vehicleVin == widget.vehicle.vin)
                         .toList();
                     if (filteredReports.isEmpty) {
-                      return const Center(
-                        child: Text("No vehicle trip"),
+                      return Container(
+                        height: 100, // Set a width to ensure consistent card size
+                        margin: const EdgeInsets.symmetric(horizontal: 10.0),
+                        padding: const EdgeInsets.all(10.0),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(5),
+                          color: Colors.grey.shade200,
+                        ),
+                        child: Center(child: Text("No vehicle trip")),
                       );
                     } else {
                       return SizedBox(

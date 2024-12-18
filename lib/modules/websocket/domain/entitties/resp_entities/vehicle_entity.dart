@@ -15,6 +15,16 @@ class VehicleEntity {
       locationInfo: LocationInfo.fromJson(json['location_info']),
     );
   }
+
+  VehicleEntity copyWith({
+    int? id,
+    LocationInfo? locationInfo,
+  }) {
+    return VehicleEntity(
+      id: id ?? this.id,
+      locationInfo: locationInfo ?? this.locationInfo,
+    );
+  }
 }
 
 class LocationInfo {
@@ -81,6 +91,44 @@ class LocationInfo {
       vehicleStatus: json['vehicle_status'],
     );
   }
+
+  LocationInfo copyWith({
+    int? id,
+    String? brand,
+    String? model,
+    String? year,
+    String? type,
+    String? vin,
+    String? numberPlate,
+    int? userId,
+    int? vehicleOwnerId,
+    String? createdAt,
+    String? updatedAt,
+    Owner? owner,
+    String? speedLimit,
+    Tracker? tracker,
+    Geofence? withinGeofence,
+    String? vehicleStatus,
+  }) {
+    return LocationInfo(
+      id: id ?? this.id,
+      brand: brand ?? this.brand,
+      model: model ?? this.model,
+      year: year ?? this.year,
+      type: type ?? this.type,
+      vin: vin ?? this.vin,
+      numberPlate: numberPlate ?? this.numberPlate,
+      userId: userId ?? this.userId,
+      vehicleOwnerId: vehicleOwnerId ?? this.vehicleOwnerId,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      owner: owner ?? this.owner,
+      speedLimit: speedLimit ?? this.speedLimit,
+      tracker: tracker ?? this.tracker,
+      withinGeofence: withinGeofence ?? this.withinGeofence,
+      vehicleStatus: vehicleStatus ?? this.vehicleStatus,
+    );
+  }
 }
 
 class Owner {
@@ -116,6 +164,27 @@ class Owner {
       updatedAt: json['updated_at'],
     );
   }
+  Owner copyWith({
+    int? id,
+    String? firstName,
+    String? lastName,
+    String? email,
+    String? phone,
+    int? userId,
+    String? createdAt,
+    String? updatedAt,
+  }) {
+    return Owner(
+      id: id ?? this.id,
+      firstName: firstName ?? this.firstName,
+      lastName: lastName ?? this.lastName,
+      email: email ?? this.email,
+      phone: phone ?? this.phone,
+      userId: userId ?? this.userId,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
 }
 
 class Tracker {
@@ -143,6 +212,22 @@ class Tracker {
           ? Position.fromJson(json['position'])
           : null,
 
+    );
+  }
+
+  Tracker copyWith({
+    String? uniqueId,
+    String? status,
+    String? lastUpdate,
+    int? positionId,
+    Position? position,
+  }) {
+    return Tracker(
+      uniqueId: uniqueId ?? this.uniqueId,
+      status: status ?? this.status,
+      lastUpdate: lastUpdate ?? this.lastUpdate,
+      positionId: positionId ?? this.positionId,
+      position: position ?? this.position,
     );
   }
 }
@@ -207,6 +292,43 @@ class Position {
       ignition: json['ignition'],
     );
   }
+  Position copyWith({
+    double? latitude,
+    double? longitude,
+    double? speed,
+    int? course,
+    double? altitude,
+    dynamic motion,
+    int? sat,
+    double? distance,
+    double? totalDistance,
+    String? address,
+    String? fixTime,
+    int? batteryLevel,
+    TerminalInfo? terminalInfo,
+    int? gsmRssi,
+    String? parseTime,
+    dynamic ignition,
+  }) {
+    return Position(
+      latitude: latitude ?? this.latitude,
+      longitude: longitude ?? this.longitude,
+      speed: speed ?? this.speed,
+      course: course ?? this.course,
+      altitude: altitude ?? this.altitude,
+      motion: motion ?? this.motion,
+      sat: sat ?? this.sat,
+      distance: distance ?? this.distance,
+      totalDistance: totalDistance ?? this.totalDistance,
+      address: address ?? this.address,
+      fixTime: fixTime ?? this.fixTime,
+      batteryLevel: batteryLevel ?? this.batteryLevel,
+      terminalInfo: terminalInfo ?? this.terminalInfo,
+      gsmRssi: gsmRssi ?? this.gsmRssi,
+      parseTime: parseTime ?? this.parseTime,
+      ignition: ignition ?? this.ignition,
+    );
+  }
 }
 
 class TerminalInfo {
@@ -227,6 +349,17 @@ class TerminalInfo {
       cellTowers: (json['cellTowers'] as List)
           .map((tower) => CellTower.fromJson(tower))
           .toList(),
+    );
+  }
+  TerminalInfo copyWith({
+    String? radioType,
+    bool? considerIp,
+    List<CellTower>? cellTowers,
+  }) {
+    return TerminalInfo(
+      radioType: radioType ?? this.radioType,
+      considerIp: considerIp ?? this.considerIp,
+      cellTowers: cellTowers ?? this.cellTowers,
     );
   }
 }
@@ -250,6 +383,19 @@ class CellTower {
       locationAreaCode: json['locationAreaCode'],
       mobileCountryCode: json['mobileCountryCode'],
       mobileNetworkCode: json['mobileNetworkCode'],
+    );
+  }
+  CellTower copyWith({
+    int? cellId,
+    int? locationAreaCode,
+    int? mobileCountryCode,
+    int? mobileNetworkCode,
+  }) {
+    return CellTower(
+      cellId: cellId ?? this.cellId,
+      locationAreaCode: locationAreaCode ?? this.locationAreaCode,
+      mobileCountryCode: mobileCountryCode ?? this.mobileCountryCode,
+      mobileNetworkCode: mobileNetworkCode ?? this.mobileNetworkCode,
     );
   }
 }
@@ -277,6 +423,19 @@ class Geofence {
       circleData: CircleData.fromJson(json['circle_data']),
     );
   }
+  Geofence copyWith({
+    List<Coordinate>? coordinates,
+    String? zone,
+    bool? isInGeofence,
+    CircleData? circleData,
+  }) {
+    return Geofence(
+      coordinates: coordinates ?? this.coordinates,
+      zone: zone ?? this.zone,
+      isInGeofence: isInGeofence ?? this.isInGeofence,
+      circleData: circleData ?? this.circleData,
+    );
+  }
 }
 
 class Coordinate {
@@ -292,6 +451,16 @@ class Coordinate {
     return Coordinate(
       lng: json['lng'],
       lat: json['lat'],
+    );
+  }
+
+  Coordinate copyWith({
+    double? lng,
+    double? lat,
+  }) {
+    return Coordinate(
+      lng: lng ?? this.lng,
+      lat: lat ?? this.lat,
     );
   }
 }
@@ -311,6 +480,16 @@ class CircleData {
       radius: json['radius'],
     );
   }
+
+  CircleData copyWith({
+    CenterPoint? center,
+    double? radius,
+  }) {
+    return CircleData(
+      center: center ?? this.center,
+      radius: radius ?? this.radius,
+    );
+  }
 }
 
 class CenterPoint {
@@ -326,6 +505,15 @@ class CenterPoint {
     return CenterPoint(
       lat: json['lat'],
       lng: json['lng'],
+    );
+  }
+  CenterPoint copyWith({
+    double? lat,
+    double? lng,
+  }) {
+    return CenterPoint(
+      lat: lat ?? this.lat,
+      lng: lng ?? this.lng,
     );
   }
 }

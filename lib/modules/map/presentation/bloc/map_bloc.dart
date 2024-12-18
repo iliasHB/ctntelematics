@@ -60,6 +60,10 @@ class LastLocationBloc extends BaseBloc<MapEvent, MapState>{
       }
     }
   }
+  // Ensure fresh data after user login
+  void refreshLastLocationAPI() {
+    add(const LastLocationEvent(TokenReqEntity(token: '', contentType: ''))); // Trigger fetching fresh data after login
+  }
 }
 
 

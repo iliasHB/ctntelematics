@@ -1,3 +1,4 @@
+import 'package:ctntelematics/core/widgets/custom_button.dart';
 import 'package:ctntelematics/modules/profile/domain/entitties/resp_entities/get_schedule_resp_entity.dart';
 import 'package:ctntelematics/modules/profile/presentation/bloc/profile_bloc.dart';
 import 'package:flutter/cupertino.dart';
@@ -67,7 +68,7 @@ class ViewSchedule extends StatelessWidget {
                       borderRadius: BorderRadius.circular(50),
                       color: Colors.green.shade50),
                   child: Text(
-                    state.maintenance!.isNotEmpty ? state.maintenance![0].description ?? "" : "",
+                    state.maintenance!.isNotEmpty ? state.maintenance[0].description ?? "" : "",
                     style: AppStyle.cardfooter.copyWith(color: Colors.green[900]),
                   ),
                 ),
@@ -152,7 +153,7 @@ class ViewSchedule extends StatelessWidget {
                           child: Container(
                               padding: const EdgeInsets.all(10.0),
                               child: Text(
-                                state.maintenance!.isNotEmpty ? state.maintenance![0].start_date ?? "" : "",
+                                state.maintenance.isNotEmpty ? state.maintenance[0].start_date ?? "" : "",
                                 style: AppStyle.cardfooter,
                               ))),
 
@@ -191,12 +192,21 @@ class ViewSchedule extends StatelessWidget {
             Row(
               children: [
                 Expanded(
-                  child: OutlinedButton(
-                      onPressed: (){},
-                      child: Text('Done', style: AppStyle.cardSubtitle.copyWith(fontSize: 14),)),
+                  child: CustomSecondaryButton(
+                      label: 'Done',
+                      onPressed: ()=>Navigator.pop(context)),
                 ),
               ],
             ),
+            // Row(
+            //   children: [
+            //     Expanded(
+            //       child: OutlinedButton(
+            //           onPressed: (){},
+            //           child: Text('Done', style: AppStyle.cardSubtitle.copyWith(fontSize: 14),)),
+            //     ),
+            //   ],
+            // ),
             const SizedBox(
               height: 50,
             ),

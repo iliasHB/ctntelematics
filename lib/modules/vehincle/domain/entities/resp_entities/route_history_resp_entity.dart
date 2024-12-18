@@ -47,6 +47,7 @@ class DatumEntity extends Equatable{
   dynamic created_at;
   dynamic updated_at;
   dynamic connected;
+  // dynamic stop_duration_minutes;
 
   DatumEntity({
     required this.id,
@@ -79,7 +80,8 @@ class DatumEntity extends Equatable{
     required this.status,
     required this.created_at,
     required this.updated_at,
-    required this.connected
+    required this.connected,
+    // this.stop_duration_minutes
   });
 
   @override
@@ -114,7 +116,8 @@ class DatumEntity extends Equatable{
     status,
     created_at,
     updated_at,
-    connected
+    connected,
+    // stop_duration_minutes
   ];
 }
 

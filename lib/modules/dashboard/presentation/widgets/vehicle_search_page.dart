@@ -1,5 +1,6 @@
 import 'package:ctntelematics/config/theme/app_style.dart';
 import 'package:ctntelematics/core/utils/app_export_util.dart';
+import 'package:ctntelematics/core/widgets/custom_button.dart';
 import 'package:ctntelematics/modules/dashboard/presentation/widgets/vehicle_information.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -35,7 +36,7 @@ class VehicleSearchDialog {
               ),
               constraints: BoxConstraints(
                   maxHeight: MediaQuery.of(context).size.height * 0.6),
-              width: 360,
+              width: size.width - 30,
               child: Padding(
                 padding: const EdgeInsets.all(10.0),
                 child: SingleChildScrollView(
@@ -84,15 +85,17 @@ class VehicleSearchDialog {
                         child: BlocConsumer<DashVehiclesBloc, DashboardState>(
                             builder: (context, state) {
                               if (state is DashboardLoading) {
-                                return const Center(
-                                    child: Padding(
-                                      padding: EdgeInsets.only(top: 20.0),
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2.0,
-                                        color: Colors.green,
-                                      ),
-                                    ));
+                                return const Center(child: CustomContainerLoadingButton());
                               } else if (state is DashboardDone) {
+                                if (state.resp.data == null ||
+                                    state.resp.data!.isEmpty) {
+                                  return Center(
+                                    child: Text(
+                                      'No vehicles available',
+                                      style: AppStyle.cardfooter,
+                                    ),
+                                  );
+                                }
                                 return ValueListenableBuilder<String>(
                                   valueListenable: searchQuery,
                                   builder: (_, query, __) {
@@ -108,7 +111,34 @@ class VehicleSearchDialog {
                                   },
                                 );
                               } else {
-                                return Center(child: Text('No records found', style: AppStyle.cardfooter,));
+                                return Center(
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      crossAxisAlignment: CrossAxisAlignment.center,
+                                      children: [
+                                        Text(
+                                          'Unable to load vehicles',
+                                          style: AppStyle.cardfooter.copyWith(fontSize: 12),
+                                        ),
+                                        const SizedBox(
+                                          width: 10.0,
+                                        ),
+                                        IconButton(
+                                            onPressed: () {
+                                              BlocProvider.of<DashVehiclesBloc>(context)
+                                                  .add(DashVehicleEvent(dashVehicleReqEntity));
+                                            },
+                                            icon: const Icon(Icons.refresh, color: Colors.green,))
+                                        // CustomSecondaryButton(
+                                        //     label: 'Refresh',
+                                        //     onPressed: () {
+                                        //       BlocProvider.of<ProfileVehiclesBloc>(context)
+                                        //           .add(ProfileVehicleEvent(TokenReqEntity(
+                                        //           token: widget.token ?? "",
+                                        //           contentType: 'application/json')));
+                                        //     })
+                                      ],
+                                    ));
                               }
                             },
                             listener: (context, state) {
@@ -123,6 +153,7 @@ class VehicleSearchDialog {
                               }
                             }),
                       ),
+
                     ],
                   ),
                 ),
@@ -143,9 +174,11 @@ class VehicleList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
+    return Container(
+      constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.4),
       child: ListView.builder(
-          shrinkWrap: true,
+          // shrinkWrap: true,
           padding: EdgeInsets.zero,
           itemCount: state.resp.data == null ? 0 : state.resp.data!.length,
           itemBuilder: (BuildContext context, index) {

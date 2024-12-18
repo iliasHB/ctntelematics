@@ -3,11 +3,6 @@ import 'dart:convert';
 
 import '../../../domain/entities/resp_entities/route_history_resp_entity.dart';
 
-
-// RouteHistoryRespModel routeHistoryRespModelFromMap(String str) => RouteHistoryRespModel.fromMap(json.decode(str));
-//
-// String routeHistoryRespModelToMap(RouteHistoryRespModel data) => json.encode(data.toMap());
-
 class VehicleRouteHistoryRespModel extends VehicleRouteHistoryRespEntity{
 
   const VehicleRouteHistoryRespModel({
@@ -60,7 +55,8 @@ class Datum extends DatumEntity{
     required super.status,
     required super.created_at,
     required super.updated_at,
-    required super.connected
+    required super.connected,
+    // required super.stop_duration_minutes
   });
 
   factory Datum.fromJson(Map<String, dynamic> json) => Datum(
@@ -98,6 +94,7 @@ class Datum extends DatumEntity{
     created_at: json["created_at"],
     updated_at: json["updated_at"],
     connected: json["connected"],
+      // stop_duration_minutes: json['stop_duration_minutes']
   );
 
   Map<String, dynamic> toJson() => {
@@ -130,7 +127,8 @@ class Datum extends DatumEntity{
     "status": status,
     "created_at": created_at,
     "updated_at": updated_at,
-    'connected': connected
+    'connected': connected,
+    // 'stop_duration_minutes': stop_duration_minutes
   };
 
 }

@@ -45,7 +45,7 @@ class _AdvertState extends State<Advert> {
     return Column(
       children: [
         SizedBox(
-          height: 200, // Adjust the height as needed
+          height: 150, // Adjust the height as needed
           child: PageView(
             controller: _pageController,
             onPageChanged: (int page) {

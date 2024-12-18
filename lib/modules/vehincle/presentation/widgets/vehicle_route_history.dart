@@ -13,6 +13,7 @@ import 'package:sliding_up_panel/sliding_up_panel.dart';
 
 import '../../../../config/theme/app_style.dart';
 import '../../../../core/widgets/format_data.dart';
+import '../../../../core/widgets/gps_processor.dart';
 import '../bloc/vehicle_bloc.dart';
 
 class VehicleRouteHistory extends StatefulWidget {
@@ -157,7 +158,9 @@ class _VehicleRouteHistoryState extends State<VehicleRouteHistory> {
               BlocConsumer<VehicleRouteHistoryBloc, VehicleState>(
                   builder: (BuildContext context, state) {
                 if (state is VehicleLoading) {
-                  return const Center(child: CircularProgressIndicator());
+                  return const Center(child: CircularProgressIndicator(
+                    color: Colors.green, strokeWidth: 2.0,
+                  ));
                 } else if (state is GetVehicleRouteHistoryDone) {
                   return Flexible(
                     child: RouteHistoryMap(resp: state.resp, speed: speed),
@@ -285,7 +288,7 @@ class _RouteHistoryMapState extends State<RouteHistoryMap> {
   double maxSpeed = 0.0;
   final PanelController _panelController = PanelController();
   List<String> addresses = [];
-
+  Map<String, dynamic> metrics = {};
   // Durations
   Duration moveDuration = Duration.zero;
   Duration stopDuration = Duration.zero;
@@ -313,8 +316,15 @@ class _RouteHistoryMapState extends State<RouteHistoryMap> {
         _isContainerVisible = true;
       });
     });
+    loadGpsData();
     // Initialize Pusher after starting to load initial data
     // Load the custom vehicle icon
+  }
+
+  void loadGpsData() {
+    setState(() {
+      metrics = GpsProcessor.calculateMetrics(widget.resp.data);
+    });
   }
 
   void _updateMoveAndStopDurations(double speed) {
@@ -470,7 +480,7 @@ class _RouteHistoryMapState extends State<RouteHistoryMap> {
       if (currentSpeed > maxSpeed) {
         maxSpeed = currentSpeed;
       }
-      _updateMoveAndStopDurations(double.tryParse(vehicleSpeed) ?? 0);
+      // _updateMoveAndStopDurations(double.tryParse(vehicleSpeed) ?? 0);
     });
 
     // Calculate bearing and distance to the next point
@@ -765,15 +775,21 @@ class _RouteHistoryMapState extends State<RouteHistoryMap> {
                               const SizedBox(width: 10),
                               RouteWidget(
                                 title: "Move Duration",
-                                subTitle:
-                                    "${moveDuration.inHours}h ${moveDuration.inMinutes.remainder(60)}min ${moveDuration.inSeconds.remainder(60)}s",
+                                subTitle:FormatData.formatTime(metrics['moveDuration']),
+                                // metrics['moveDuration'] != null
+                                //     ? "${metrics['moveDuration']} mins"
+                                //     : "N/A",
+                                    //"${moveDuration.inHours}h ${moveDuration.inMinutes.remainder(60)}min ${moveDuration.inSeconds.remainder(60)}s",
                                 color: Colors.brown,
                               ),
                               const SizedBox(width: 10),
                               RouteWidget(
                                 title: "Stop Duration",
-                                subTitle:
-                                    "${stopDuration.inHours}h ${stopDuration.inMinutes.remainder(60)}min ${stopDuration.inSeconds.remainder(60)}s",
+                                subTitle: FormatData.formatTime(metrics['stopDuration']),
+                                // metrics['stopDuration'] != null
+                                //     ? "${metrics['stopDuration']} mins"
+                                //     : "N/A",
+                                //     //"${stopDuration.inHours}h ${stopDuration.inMinutes.remainder(60)}min ${stopDuration.inSeconds.remainder(60)}s",
                                 color: Colors.blue,
                               ),
                               const SizedBox(
@@ -1011,6 +1027,111 @@ extension MarkerSetExtension on Set<Marker> {
   }
 }
 
+// class GpsProcessor {
+//
+//   static Map<String, dynamic> calculateMetrics(List<DatumEntity> gpsData) {
+//     if (gpsData.isEmpty) {
+//       return {
+//         'routeStart': 0,
+//         'routeEnd': 0,
+//         'moveDuration': 0,
+//         'stopDuration': 0,
+//         'maxSpeed': 0.0,
+//         'averageSpeed': 0.0,
+//         'stopCount': 0,
+//       };
+//     }
+//
+//     // Filter out stationary data (speed == 0)
+//     List<DatumEntity> movingData = gpsData.where((data) {
+//       final speed = double.tryParse(data.speed) ?? 0.0;
+//       return speed > 0.0;
+//     }).toList();
+//
+//     if (movingData.isEmpty) {
+//       return {
+//         'routeStart': gpsData.first.created_at,
+//         'routeEnd': gpsData.last.created_at,
+//         'moveDuration': 0.0,
+//         'stopDuration': 0.0,
+//         'maxSpeed': 0.0,
+//         'averageSpeed': 0.0,
+//         'stopCount': gpsData.length,
+//       };
+//     }
+//
+//     // Calculate route start and end
+//     DateTime routeStart =  DateTime.parse(movingData.first.fix_time);//movingData.first.created_at;
+//     DateTime routeEnd =  DateTime.parse(movingData.last.fix_time);//movingData.last.created_at;
+//     Duration moveDuration = routeEnd.difference(routeStart);
+//
+//     // Maximum speed and average speed
+//     double maxSpeed = movingData
+//         .map((data) => double.tryParse(data.speed) ?? 0.0)
+//         .reduce((a, b) => a > b ? a : b);
+//
+//     double averageSpeed = movingData
+//         .map((data) => double.tryParse(data.speed) ?? 0.0)
+//         .reduce((a, b) => a + b) /
+//         movingData.length;
+//
+//     // Count stops and total stop duration
+//     int stopCount = gpsData.length - movingData.length;
+//     Duration totalStopDuration = _calculateStopDuration(gpsData);
+//
+//     return {
+//       'routeStart': routeStart.toString(),
+//       'routeEnd': routeEnd.toString(),
+//       'moveDuration': moveDuration.inMinutes,
+//       'stopDuration': totalStopDuration.inMinutes,
+//       'maxSpeed': maxSpeed,
+//       'averageSpeed': averageSpeed,
+//       'stopCount': stopCount,
+//     };
+//   }
+//
+//   static Duration _calculateStopDuration(List<DatumEntity> gpsData) {
+//     Duration totalStopDuration = Duration.zero;
+//     DateTime? stopStartTime;
+//
+//     for (int i = 0; i < gpsData.length; i++) {
+//       final speed = double.tryParse(gpsData[i].speed) ?? 0.0;
+//
+//       // Parse created_at as DateTime
+//       final createdAt = DateTime.tryParse(gpsData[i].fix_time);
+//       if (createdAt == null) {
+//         throw FormatException('Invalid date format in created_at: ${gpsData[i].fix_time}');
+//       }
+//
+//       if (speed == 0.0) {
+//         // Start tracking stop time if not already tracking
+//         if (stopStartTime == null) {
+//           stopStartTime = createdAt;
+//         }
+//       } else {
+//         // If a stop period ends, calculate the duration
+//         if (stopStartTime != null) {
+//           totalStopDuration += createdAt.difference(stopStartTime);
+//           stopStartTime = null; // Reset stop start time
+//         }
+//       }
+//     }
+//
+//     // If the last entry is a stop, add its duration
+//     if (stopStartTime != null) {
+//       final lastCreatedAt = DateTime.tryParse(gpsData.last.fix_time);
+//       if (lastCreatedAt == null) {
+//         throw FormatException('Invalid date format in last created_at: ${gpsData.last.fix_time}');
+//       }
+//       totalStopDuration += lastCreatedAt.difference(stopStartTime);
+//     }
+//
+//     return totalStopDuration;
+//   }
+//
+// }
+
+
 ///--------------------------------------------------------------------
 
 class RouteLastLocation extends StatefulWidget {
@@ -1160,7 +1281,9 @@ class _DateTimeRangePickerState extends State<DateTimeRangePicker> {
                         height: 40,
                         child: TextFormField(
                           decoration: InputDecoration(
-                            enabled: false,
+                            // enabled: false,
+                            prefixIcon: Icon(Icons.calendar_month,
+                              color: Colors.green,),
                             filled: true,
                             fillColor: Colors.grey[200],
                             label: Text(
@@ -1172,10 +1295,6 @@ class _DateTimeRangePickerState extends State<DateTimeRangePicker> {
                                 borderSide: BorderSide.none,
                                 borderRadius: BorderRadius.circular(5)),
                           ),
-                        ),
-                      )),
-                      const SizedBox(width: 5),
-                      InkWell(
                           onTap: () {
                             DatePicker.showDateTimePicker(
                               context,
@@ -1188,10 +1307,26 @@ class _DateTimeRangePickerState extends State<DateTimeRangePicker> {
                               currentTime: DateTime.now(),
                             );
                           },
-                          child: const Icon(
-                            Icons.calendar_month,
-                            color: Colors.green,
-                          ))
+                        ),
+                      )),
+                      // const SizedBox(width: 5),
+                      // InkWell(
+                      //     onTap: () {
+                      //       DatePicker.showDateTimePicker(
+                      //         context,
+                      //         showTitleActions: true,
+                      //         onConfirm: (date) {
+                      //           setState(() {
+                      //             fromDate = date;
+                      //           });
+                      //         },
+                      //         currentTime: DateTime.now(),
+                      //       );
+                      //     },
+                      //     child: const Icon(
+                      //       Icons.calendar_month,
+                      //       color: Colors.green,
+                      //     ))
                     ],
                   ),
                 ],
@@ -1217,7 +1352,11 @@ class _DateTimeRangePickerState extends State<DateTimeRangePicker> {
                         height: 40,
                         child: TextFormField(
                           decoration: InputDecoration(
-                            enabled: false,
+                            // enabled: false,
+                            prefixIcon: const Icon(
+                              Icons.calendar_month,
+                              color: Colors.green,
+                            ),
                             filled: true,
                             fillColor: Colors.grey[200],
                             label: Text(
@@ -1229,10 +1368,6 @@ class _DateTimeRangePickerState extends State<DateTimeRangePicker> {
                                 borderSide: BorderSide.none,
                                 borderRadius: BorderRadius.circular(5)),
                           ),
-                        ),
-                      )),
-                      const SizedBox(width: 5),
-                      InkWell(
                           onTap: () {
                             DatePicker.showDateTimePicker(
                               context,
@@ -1245,10 +1380,26 @@ class _DateTimeRangePickerState extends State<DateTimeRangePicker> {
                               currentTime: DateTime.now(),
                             );
                           },
-                          child: const Icon(
-                            Icons.calendar_month,
-                            color: Colors.green,
-                          ))
+                        ),
+                      )),
+                      const SizedBox(width: 5),
+                      // InkWell(
+                      //     onTap: () {
+                      //       DatePicker.showDateTimePicker(
+                      //         context,
+                      //         showTitleActions: true,
+                      //         onConfirm: (date) {
+                      //           setState(() {
+                      //             toDate = date;
+                      //           });
+                      //         },
+                      //         currentTime: DateTime.now(),
+                      //       );
+                      //     },
+                      //     child: const Icon(
+                      //       Icons.calendar_month,
+                      //       color: Colors.green,
+                      //     ))
                     ],
                   ),
                 ],
@@ -1285,7 +1436,7 @@ class _DateTimeRangePickerState extends State<DateTimeRangePicker> {
               Align(
                 alignment: Alignment.topLeft,
                 child: PopupMenuButton(
-                    icon: const Icon(Icons.filter_alt),
+                    icon: const Icon(Icons.filter_alt, color: Colors.green,),
                     itemBuilder: (context) => [
                           PopupMenuItem(
                             value: 1,
@@ -1329,7 +1480,7 @@ class _DateTimeRangePickerState extends State<DateTimeRangePicker> {
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  icon: const Icon(Icons.send),
+                  icon: const Icon(Icons.send, color: Colors.white,),
                 ),
               ),
             ],
@@ -1339,3 +1490,6 @@ class _DateTimeRangePickerState extends State<DateTimeRangePicker> {
     );
   }
 }
+
+
+

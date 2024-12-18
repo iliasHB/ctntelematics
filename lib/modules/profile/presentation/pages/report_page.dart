@@ -16,72 +16,82 @@ class ReportPage extends StatelessWidget {
       appBar: AppBar(
         title: Text("Report - Trip", style: AppStyle.cardSubtitle),
       ),
-      body: ListView.builder(
-        itemCount: report.length,
-        itemBuilder: (BuildContext context, index) {
-          final tripLocations = report[index].tripLocations;
-
-          return Container(
-            margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 10),
-            padding: const EdgeInsets.all(10.0),
+      body: Column(
+        children: [
+          Container(
+            margin: EdgeInsets.symmetric(horizontal: 10.0),
+            padding: const EdgeInsets.all(8.0),
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(5),
-              color: Colors.grey.shade200,
+              color: Colors.green.shade200,
+              borderRadius: BorderRadius.circular(12),
             ),
-              child: Column(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8.0),
-                    decoration: BoxDecoration(
-                      color: Colors.green.shade200,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: DashboardComponentTitle(
-                        title: 'Route History', subTitle: report[index].name),
+            child: DashboardComponentTitle(
+                title: 'Vehicle Trip', subTitle: "List of all vehicle trips"),
+          ),
+          Expanded(
+            child: ListView.builder(
+              itemCount: report.length,
+              padding:  const EdgeInsets.all(0.0),
+              itemBuilder: (BuildContext context, index) {
+                final tripLocations = report[index].tripLocations;
+            
+                return Container(
+                  margin: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 10),
+                  padding: const EdgeInsets.all(10.0),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(0),
+                    color:Colors.grey[200],
                   ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Details Section
-                      _DetailItem(title: "Vehicle", value: report[index].vehicleVin),
-                      _DetailItem(title: "Driver", value: report[index].name),
-                      if (tripLocations != null && tripLocations.isNotEmpty) ...[
-                        _DetailItem(
-                            title: "Start Time", value: FormatData.formatTimestamp(tripLocations[0].createdAt)),
-                        _DetailItem(
-                            title: "Start Location",
-                            value: tripLocations[0].startLocation),
-                        _DetailItem(
-                            title: "End Time", value: tripLocations[0].arrivalTime),
-                        _DetailItem(
-                            title: "End Location",
-                            value: tripLocations[0].endLocation),
-                        _DetailItem(
-                            title: "Start Latitude",
-                            value: tripLocations[0].startLat.toString()),
-                        _DetailItem(
-                            title: "End Latitude",
-                            value: tripLocations[0].endLat.toString()),
-                      ] else ...[
-                        // Fallback when tripLocations is empty or null
-                        const _DetailItem(
-                            title: "Start Time", value: "Not Available"),
-                        const _DetailItem(
-                            title: "Start Location", value: "Not Available"),
-                        const _DetailItem(title: "End Time", value: "Not Available"),
-                        const _DetailItem(
-                            title: "End Location", value: "Not Available"),
-                        const _DetailItem(
-                            title: "Start Latitude", value: "Not Available"),
-                        const _DetailItem(
-                            title: "End Latitude", value: "Not Available"),
+                    child: Column(
+                      children: [
+            
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Details Section
+                            _DetailItem(title: "Vehicle", value: report[index].vehicleVin),
+                            _DetailItem(title: "Driver", value: report[index].name),
+                            if (tripLocations != null && tripLocations.isNotEmpty) ...[
+                              _DetailItem(
+                                  title: "Start Time", value: FormatData.formatTimestamp(tripLocations[0].createdAt)),
+                              _DetailItem(
+                                  title: "Start Location",
+                                  value: tripLocations[0].startLocation),
+                              _DetailItem(
+                                  title: "End Time", value: tripLocations[0].arrivalTime),
+                              _DetailItem(
+                                  title: "End Location",
+                                  value: tripLocations[0].endLocation),
+                              _DetailItem(
+                                  title: "Start Latitude",
+                                  value: tripLocations[0].startLat.toString()),
+                              _DetailItem(
+                                  title: "End Latitude",
+                                  value: tripLocations[0].endLat.toString()),
+                            ] else ...[
+                              // Fallback when tripLocations is empty or null
+                              const _DetailItem(
+                                  title: "Start Time", value: "Not Available"),
+                              const _DetailItem(
+                                  title: "Start Location", value: "Not Available"),
+                              const _DetailItem(title: "End Time", value: "Not Available"),
+                              const _DetailItem(
+                                  title: "End Location", value: "Not Available"),
+                              const _DetailItem(
+                                  title: "Start Latitude", value: "Not Available"),
+                              const _DetailItem(
+                                  title: "End Latitude", value: "Not Available"),
+                            ],
+                          ],
+                        ),
+                        Divider()
                       ],
-                    ],
-                  ),
-                ],
-              ),
-          );
-        },
+                    ),
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -113,7 +123,7 @@ Widget DashboardComponentTitle(
             children: [
               Text(
                 title,
-                style: AppStyle.cardSubtitle,
+                style: AppStyle.cardSubtitle.copyWith(fontSize: 14),
               ),
               Text(
                 subTitle,

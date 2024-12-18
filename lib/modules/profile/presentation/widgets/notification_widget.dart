@@ -16,7 +16,7 @@ class NotificationWidget extends StatefulWidget {
 
 class _NotificationWidgetState extends State<NotificationWidget> {
   late List<NotificationItem> _notifications;
-  DB_notification db_notification =DB_notification();
+  DB_notification db_notification = DB_notification();
 
   @override
   void initState() {
@@ -24,16 +24,19 @@ class _NotificationWidgetState extends State<NotificationWidget> {
     _notifications = widget.notifications;
   }
 
-
-  Future<void> _deleteNotification(int index, String notificationId, NotificationItem notification) async {
+  Future<void> _deleteNotification(int index, String notificationId,
+      NotificationItem notification) async {
     // Call the DatabaseHelper to delete the notification from the database
     DatabaseHelper dbHelper = DatabaseHelper();
     bool isDeleted = false;
 
     if (notification is SpeedLimitNotificationItem) {
-      isDeleted = await dbHelper.deleteSpeedLimitNotification(int.parse(notificationId)) > 0;
+      isDeleted = await dbHelper
+          .deleteSpeedLimitNotification(int.parse(notificationId)) >
+          0;
     } else if (notification is GeofenceNotificationItem) {
-      isDeleted = await dbHelper.deleteNotification(int.parse(notificationId)) > 0;
+      isDeleted =
+          await dbHelper.deleteNotification(int.parse(notificationId)) > 0;
     }
 
     if (isDeleted) {
@@ -41,10 +44,18 @@ class _NotificationWidgetState extends State<NotificationWidget> {
       setState(() {
         _notifications.removeAt(index);
       });
+      ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'Notification deleted successfully!', style: AppStyle.cardfooter,),
+        backgroundColor: Colors.black,
+      ));
     } else {
       // Handle deletion failure (show a message, etc.)
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to delete notification')),
+      SnackBar(
+        content: Text(
+          'Notification failed delete!', style: AppStyle.cardfooter,),
+        backgroundColor: Colors.red,
       );
     }
   }
@@ -69,32 +80,40 @@ class _NotificationWidgetState extends State<NotificationWidget> {
               itemBuilder: (context, index) {
                 final notification = _notifications[index];
                 if (notification is SpeedLimitNotificationItem) {
-                  return NotificationContainer(
-                    icon: const Icon(
-                      CupertinoIcons.speedometer,
-                      color: Colors.white,
+                  return Padding(
+                    padding: const EdgeInsets.all(10.0),
+                    child: NotificationContainer(
+                      icon: const Icon(
+                        CupertinoIcons.speedometer,
+                        color: Colors.white,
+                      ),
+                      title: "Speed Alert",
+                      subTitle:
+                          "Vehicle ${notification.brand} ${notification.model} (${notification.numberPlate}) exceeded the speed limit. "
+                          "Please review driving behavior.",
+                      footer: FormatData.formatTimeAgo(notification.createdAt!),
+                      onDelete: () => _deleteNotification(
+                          index, notification.id.toString(), notification),
                     ),
-                    title: "Speed Alert",
-                    subTitle:
-                        "Vehicle ${notification.brand} ${notification.model} (${notification.numberPlate}) exceeded the speed limit of ${notification.speedLimit}. "
-                        "Please review driving behavior.",
-                    footer: FormatData.formatTimeAgo(notification.createdAt!),
-                    onDelete: () => _deleteNotification(index, notification.id.toString(), notification),
                   );
 
-                    // _buildGeofenceNotification(notification);
+                  // _buildGeofenceNotification(notification);
                 } else if (notification is GeofenceNotificationItem) {
-                  return NotificationContainer(
-                    icon: const Icon(
-                      CupertinoIcons.speedometer,
-                      color: Colors.white,
+                  return Padding(
+                    padding: const EdgeInsets.all(10.0),
+                    child: NotificationContainer(
+                      icon: const Icon(
+                        CupertinoIcons.placemark,
+                        color: Colors.white,
+                      ),
+                      title: "Geofence Alert",
+                      subTitle:
+                          "Vehicle ${notification.brand} ${notification.model} (${notification.numberPlate}) exceeded the boundary set with the geofence. "
+                          "Please review driving behavior.",
+                      footer: FormatData.formatTimeAgo(notification.createdAt!),
+                      onDelete: () => _deleteNotification(
+                          index, notification.id.toString(), notification),
                     ),
-                    title: "Geofence Alert",
-                    subTitle:
-                    "Vehicle ${notification.brand} ${notification.model} (${notification.numberPlate}) exceeded the boundary set with the geofence. "
-                        "Please review driving behavior.",
-                    footer: FormatData.formatTimeAgo(notification.createdAt!),
-                    onDelete: () => _deleteNotification(index, notification.id.toString(), notification),
                   );
                 } else {
                   return const ListTile(
@@ -120,7 +139,8 @@ class NotificationContainer extends StatefulWidget {
     required this.icon,
     required this.title,
     required this.subTitle,
-    required this.footer, required this.onDelete,
+    required this.footer,
+    required this.onDelete,
   });
 
   @override
@@ -128,7 +148,6 @@ class NotificationContainer extends StatefulWidget {
 }
 
 class _NotificationContainerState extends State<NotificationContainer> {
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -149,7 +168,7 @@ class _NotificationContainerState extends State<NotificationContainer> {
               ),
               Text(
                 widget.title,
-                style: AppStyle.cardTitle,
+                style: AppStyle.cardTitle.copyWith(fontSize: 14),
               ),
             ],
           ),
@@ -158,20 +177,25 @@ class _NotificationContainerState extends State<NotificationContainer> {
           ),
           Text(
             widget.subTitle,
-            style: AppStyle.cardfooter,
+            style: AppStyle.cardfooter.copyWith(fontSize: 12),
           ),
-          const SizedBox(
-            height: 10,
-          ),
+          // const SizedBox(
+          //   height: 10,
+          // ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
                 widget.footer,
-                style: AppStyle.cardfooter.copyWith(color: Colors.green),
+                style:
+                    AppStyle.cardfooter.copyWith(color: Colors.green.shade800),
               ),
               IconButton(
-                icon: const Icon(Icons.delete, color: Colors.red),
+                icon: const Icon(
+                  CupertinoIcons.delete,
+                  color: Colors.red,
+                  size: 15,
+                ),
                 onPressed: widget.onDelete,
               ),
             ],
@@ -181,11 +205,6 @@ class _NotificationContainerState extends State<NotificationContainer> {
     );
   }
 }
-
-
-
-
-
 
 // const SingleChildScrollView(
 //   child: Padding(

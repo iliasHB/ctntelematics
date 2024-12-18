@@ -436,6 +436,8 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
       print("vehicle status: ${vehicles[0].locationInfo.vehicleStatus}");
       print("tracker status: ${vehicles[0].locationInfo.tracker?.status}");
       print("tracker speed: ${vehicles[0].locationInfo.tracker?.position?.speed}");
+      print("tracker lat: ${vehicle.locationInfo.tracker!.position!.latitude}");
+      print("tracker long: ${vehicle.locationInfo.tracker!.position!.longitude}");
       var vehicleDetails = allVehicles.firstWhere(
             (v) => v.vehicle?.details?.number_plate == vehicle.locationInfo.numberPlate,
       );
@@ -480,13 +482,13 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
 
         // Add or update the marker only if the vehicle has moved significantly
         if (previousPosition == null || _calculateDistance(previousPosition, currentPosition) >= 1) {
-          _routes[numberPlate]!.add(currentPosition);
+
           if (_onlineCustomIcon == null) {
             await _setOnlineCustomMarkerIcon();
           }
 
           // Interpolate marker movement for smooth animation
-          const int steps = 30; // Number of steps for interpolation
+          const int steps = 100; // Number of steps for interpolation
           _isAnimating[numberPlate] = true; // Set animation flag to true
           for (int i = 1; i <= steps; i++) {
             final t = i / steps;
@@ -509,6 +511,9 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
                 mapController.animateCamera(
                   CameraUpdate.newLatLngZoom(currentPosition, 15.0),
                 );
+                // // Optionally animate the camera to follow the vehicle
+                // mapController.animateCamera(CameraUpdate.newLatLng(interpolatedPosition));
+
                 _showVehicleOnlineToolTip(
                   // Pass relevant data
                   numberPlate: vehicle.locationInfo.numberPlate,
@@ -542,6 +547,7 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
             WidgetsBinding.instance.addPostFrameCallback((_) {
               _markers.value = updatedMarkers.values.toSet();
             });
+            _routes[numberPlate]!.add(currentPosition);
 
             // Delay for smooth animation
             await Future.delayed(const Duration(milliseconds: 50));

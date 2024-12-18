@@ -18,6 +18,8 @@ import '../../../../core/usecase/provider_usecase.dart';
 import '../../../../core/utils/app_export_util.dart';
 import '../../../../core/utils/pref_util.dart';
 import '../../../../service_locator.dart';
+import '../../../authentication/presentation/bloc/auth_bloc.dart';
+import '../../../map/presentation/bloc/map_bloc.dart';
 import '../../../websocket/domain/entitties/resp_entities/vehicle_entity.dart';
 import '../../../websocket/presentation/bloc/vehicle_location_bloc.dart';
 import '../widgets/change_dialog.dart';
@@ -167,7 +169,7 @@ class _SettingState extends State<Setting> {
                         builder: (context, snapshot) {
                           if (snapshot.connectionState ==
                               ConnectionState.waiting) {
-                            return Container(
+                            return SizedBox(
                               height: 20.0,
                               width: 20.0,
                               child: const CircularProgressIndicator(
@@ -246,9 +248,7 @@ class _SettingState extends State<Setting> {
 
                           final speedLimitNotifications = vehicles.where((v) {
                             final speedLimit = double.tryParse(
-                                    v.locationInfo.speedLimit?.toString() ??
-                                        '0') ??
-                                0;
+                                    v.locationInfo.speedLimit?.toString() ?? '0') ?? 0;
                             final vehicleSpeed = double.tryParse(v
                                         .locationInfo.tracker?.position?.speed
                                         ?.toString() ??
@@ -511,35 +511,45 @@ class _SettingState extends State<Setting> {
                               ],
                             );
                           }
-                          return Container(
-                            padding: const EdgeInsets.symmetric(vertical: 10),
-                            child: Row(
-                              children: [
-                                const Icon(
-                                  Icons.lock_outline,
-                                  color: Colors.green,
-                                  size: 20,
-                                ),
-                                const SizedBox(
-                                  width: 10,
-                                ),
-                                Text("Change Password",
-                                    style: AppStyle.cardfooter),
-                                const Spacer(),
-                                InkWell(
-                                  onTap: () {
-                                    final genOtpReqEntity = GenOtpReqEntity(
-                                        email: email.toString());
-                                    context.read<ProfileGenerateOtpBloc>().add(
-                                        ProfileGenOtpEvent(genOtpReqEntity));
-                                    // ChangePwdDialog.showChangePwdDialog(context, email);
-                                  },
-                                  child: const Icon(
-                                    Icons.arrow_forward_ios_sharp,
-                                    size: 15,
+                          return InkWell(
+                            onTap: () {
+                              final genOtpReqEntity = GenOtpReqEntity(
+                                  email: email.toString());
+                              context.read<ProfileGenerateOtpBloc>().add(
+                                  ProfileGenOtpEvent(genOtpReqEntity));
+                              // ChangePwdDialog.showChangePwdDialog(context, email);
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 10),
+                              child: Row(
+                                children: [
+                                  const Icon(
+                                    Icons.lock_outline,
+                                    color: Colors.green,
+                                    size: 20,
                                   ),
-                                )
-                              ],
+                                  const SizedBox(
+                                    width: 10,
+                                  ),
+                                  Text("Change Password",
+                                      style: AppStyle.cardfooter),
+                                  const Spacer(),
+                                  // InkWell(
+                                  //   onTap: () {
+                                  //     final genOtpReqEntity = GenOtpReqEntity(
+                                  //         email: email.toString());
+                                  //     context.read<ProfileGenerateOtpBloc>().add(
+                                  //         ProfileGenOtpEvent(genOtpReqEntity));
+                                  //     // ChangePwdDialog.showChangePwdDialog(context, email);
+                                  //   },
+                                  //   child:
+                                    const Icon(
+                                      Icons.arrow_forward_ios_sharp,
+                                      size: 15,
+                                    ),
+                                  // )
+                                ],
+                              ),
                             ),
                           );
                         },
@@ -767,8 +777,7 @@ class _SettingState extends State<Setting> {
                         },
                         builder: (context, state) {
                           if (state is ProfileLoading) {
-                            print(' loading >>>>>>>>>>>>');
-                            Row(
+                            return Row(
                               children: [
                                 Container(
                                   padding:
@@ -790,40 +799,54 @@ class _SettingState extends State<Setting> {
                                   ),
                                 ),
                                 const Spacer(),
-                                const CircularProgressIndicator(
-                                  strokeWidth: 2,
+                                const SizedBox(
+                                  height: 15,
+                                  width: 15,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2.0, color: Colors.green,
+                                  ),
                                 ),
                               ],
                             );
                           }
-                          return Container(
-                            padding: const EdgeInsets.symmetric(vertical: 10),
-                            child: Row(
-                              children: [
-                                const Icon(
-                                  Icons.logout,
-                                  color: Colors.green,
-                                  size: 20,
-                                ),
-                                const SizedBox(
-                                  width: 10,
-                                ),
-                                Text("Logout", style: AppStyle.cardfooter),
-                                const Spacer(),
-                                InkWell(
-                                  onTap: () {
-                                    final tokenReqEntity =
-                                        TokenReqEntity(token: token.toString());
-                                    context
-                                        .read<LogoutBloc>()
-                                        .add(LogoutEvent(tokenReqEntity));
-                                  },
-                                  child: const Icon(
-                                    Icons.arrow_forward_ios_sharp,
-                                    size: 15,
+                          return InkWell(
+                            onTap: () {
+                              final tokenReqEntity =
+                              TokenReqEntity(token: token.toString());
+                              context
+                                  .read<LogoutBloc>()
+                                  .add(LogoutEvent(tokenReqEntity));
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 10),
+                              child: Row(
+                                children: [
+                                  const Icon(
+                                    Icons.logout,
+                                    color: Colors.green,
+                                    size: 20,
                                   ),
-                                )
-                              ],
+                                  const SizedBox(
+                                    width: 10,
+                                  ),
+                                  Text("Logout", style: AppStyle.cardfooter),
+                                  const Spacer(),
+                                  // InkWell(
+                                  //   onTap: () {
+                                  //     final tokenReqEntity =
+                                  //         TokenReqEntity(token: token.toString());
+                                  //     context
+                                  //         .read<LogoutBloc>()
+                                  //         .add(LogoutEvent(tokenReqEntity));
+                                  //   },
+                                  //   child:
+                                    const Icon(
+                                      Icons.arrow_forward_ios_sharp,
+                                      size: 15,
+                                    // ),
+                                  )
+                                ],
+                              ),
                             ),
                           );
                         },
