@@ -318,30 +318,23 @@ class _DashboardPageState extends State<DashboardPage> {
                           ),
 
                           SizedBox(
-                            height: getVerticalSize(280),
+                            //height: getVerticalSize(280),
                             child: BlocProvider(
                               create: (_) => sl<LastLocationBloc>()
                                 ..add(LastLocationEvent(dashVehicleReqEntity)),
                               child: BlocConsumer<LastLocationBloc, MapState>(
                                   builder: (context, state) {
                                 if (state is MapLoading) {
-                                  return const CustomContainerLoadingButton();
-                                  //   const SizedBox(
-                                  //   height: 25,
-                                  //   width: 25,
-                                  //   child: Center(
-                                  //     child: CircularProgressIndicator(
-                                  //       strokeWidth: 2.0,
-                                  //       color: Colors.green,
-                                  //     ),
-                                  //   ),
-                                  // );
+                                  return const Padding(
+                                    padding: EdgeInsets.all(20.0),
+                                    child: CustomContainerLoadingButton(),
+                                  );
                                 } else if (state is GetLastLocationDone) {
 
                                   if(state.resp.isEmpty || state.resp == null){
                                     return Center(
                                       child: Text(
-                                        'No vehicles available',
+                                        'No data available',
                                         style: AppStyle.cardfooter,
                                       ),
                                     );
@@ -369,17 +362,13 @@ class _DashboardPageState extends State<DashboardPage> {
                                             if (vehicles.isEmpty) {
                                               return VehicleStatusPieChart(
                                                 onlineCount:
-                                                    vehicleCounts['online'] ??
-                                                        0,
+                                                    vehicleCounts['online'] ?? 0,
                                                 offlineCount:
-                                                    vehicleCounts['offline'] ??
-                                                        0,
+                                                    vehicleCounts['offline'] ?? 0,
                                                 idlingCount:
-                                                    vehicleCounts['idling'] ??
-                                                        0,
+                                                    vehicleCounts['idling'] ?? 0,
                                                 parkedCount:
-                                                    vehicleCounts['parked'] ??
-                                                        0,
+                                                    vehicleCounts['parked'] ?? 0,
                                               );
                                             }
 
@@ -434,7 +423,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                             scrollDirection: Axis.horizontal,
                                             children: [
                                               _BuildVehicleStatus(
-                                                  title: "Online",
+                                                  title: "Moving",
                                                   count: BlocListener<
                                                       VehicleLocationBloc,
                                                       List<VehicleEntity>>(

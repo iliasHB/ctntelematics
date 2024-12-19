@@ -138,8 +138,7 @@ class _ReportState extends State<Report> {
                               value: vehicle.vin, // Pass the VIN to the API
                               child: Text(
                                 "${vehicle.brand} ${vehicle.model ?? "Unknown Brand"}", // Display the brand
-                                style:
-                                    AppStyle.cardfooter.copyWith(fontSize: 12),
+                                style: AppStyle.cardfooter.copyWith(fontSize: 12),
                               ),
                             );
                           }).toList(),

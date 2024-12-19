@@ -148,9 +148,16 @@ class NotificationContainer extends StatefulWidget {
 }
 
 class _NotificationContainerState extends State<NotificationContainer> {
+  bool _isDeleting = false;
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return _isDeleting
+        ? AnimatedOpacity(
+      opacity: 0.0,
+      duration: Duration(milliseconds: 300),
+      child: Container(), // Empty container to smooth fade-out
+    )
+        :Container(
       padding: const EdgeInsets.all(10.0),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(5.0),
@@ -179,9 +186,6 @@ class _NotificationContainerState extends State<NotificationContainer> {
             widget.subTitle,
             style: AppStyle.cardfooter.copyWith(fontSize: 12),
           ),
-          // const SizedBox(
-          //   height: 10,
-          // ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [

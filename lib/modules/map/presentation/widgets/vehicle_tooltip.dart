@@ -207,7 +207,7 @@ class VehicleToolTipDialog {
                                                         });
                                                   },
                                                   child: const Icon(CupertinoIcons
-                                                      .rectangle_on_rectangle)),
+                                                      .circle_grid_3x3,)),
                                               const SizedBox(
                                                 width: 20,
                                               ),

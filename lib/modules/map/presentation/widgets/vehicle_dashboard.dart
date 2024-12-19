@@ -239,19 +239,17 @@ class TodayDashboardPage extends StatelessWidget {
           print('token- : $token');
           if (state is VehicleLoading) {
             return const Center(
-              child: Padding(
-                padding: EdgeInsets.only(top: 10.0),
-                child: CircularProgressIndicator(strokeWidth: 2.0, color: Colors.green,),
-              ),
+              child: CustomContainerLoadingButton()
             );
           } else if (state is GetVehicleRouteHistoryDone) {
             return DashboardVehicleRouteData(vehicle: state.resp);
           } else {
             return Column(
               mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Text("Unable to fetch data, Please try again", style: AppStyle.cardfooter.copyWith(fontSize: 12),),
-                SizedBox(height: 10,),
+                const SizedBox(height: 10,),
                 CustomSecondaryButton(
                     label: 'Refresh',
                     onPressed: () {
@@ -310,16 +308,14 @@ class ThreeDaysDashboardPage extends StatelessWidget {
           print('token- : $token');
           if (state is VehicleLoading) {
             return const Center(
-              child: Padding(
-                padding: EdgeInsets.only(top: 10.0),
-                child: CircularProgressIndicator(strokeWidth: 2.0, color: Colors.green,),
-              ),
+                child: CustomContainerLoadingButton()
             );
           } else if (state is GetVehicleRouteHistoryDone) {
             return DashboardVehicleRouteData(vehicle: state.resp);
           } else {
             return Column(
               mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Text("Unable to fetch data, Please try again", style: AppStyle.cardfooter.copyWith(fontSize: 12),),
                 SizedBox(height: 10,),
@@ -384,16 +380,14 @@ class OneWeekDashboardPage extends StatelessWidget {
           print('token- : $token');
           if (state is VehicleLoading) {
             return const Center(
-              child: Padding(
-                padding: EdgeInsets.only(top: 10.0),
-                child: CircularProgressIndicator(strokeWidth: 2.0, color: Colors.green,),
-              ),
+                child: CustomContainerLoadingButton()
             );
           } else if (state is GetVehicleRouteHistoryDone) {
             return DashboardVehicleRouteData(vehicle: state.resp);
           } else {
             return Column(
               mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Text("Unable to fetch data, Please try again", style: AppStyle.cardfooter.copyWith(fontSize: 12),),
                 SizedBox(height: 10,),
@@ -455,10 +449,7 @@ class YesterdayDashboardPage extends StatelessWidget {
           print('token- : $token');
           if (state is VehicleLoading) {
             return const Center(
-              child: Padding(
-                padding: EdgeInsets.only(top: 10.0),
-                child: CircularProgressIndicator(strokeWidth: 2.0, color: Colors.green,),
-              ),
+                child: CustomContainerLoadingButton()
             );
           } else if (state is GetVehicleRouteHistoryDone) {
             return DashboardVehicleRouteData(vehicle: state.resp);
@@ -714,7 +705,6 @@ class _DashboardVehicleRouteDataState extends State<DashboardVehicleRouteData> {
 
   @override
   Widget build(BuildContext context) {
-    print('move duration: ${metrics['moveDuration']}');
     return Scaffold(
       body: Padding(
         padding: const EdgeInsets.all(8.0),
@@ -722,8 +712,7 @@ class _DashboardVehicleRouteDataState extends State<DashboardVehicleRouteData> {
           crossAxisCount: 2, // Number of columns
           mainAxisSpacing: 10, // Adjust spacing between grid items
           crossAxisSpacing: 5, // Adjust spacing between grid items
-          childAspectRatio:
-              1.5, // Adjust the aspect ratio if necessary to avoid overflow
+          childAspectRatio: 1.5, // Adjust the aspect ratio if necessary to avoid overflow
           children: [
             // Route Start
             _buildMetricCard(

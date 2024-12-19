@@ -636,7 +636,7 @@ class _VehicleRouteLastLocationState extends State<VehicleRouteLastLocation> {
                 });
               }),
           buildIcon(
-              icon: CupertinoIcons.rectangle_on_rectangle,
+              icon: CupertinoIcons.circle_grid_3x3,
               onTap: () {
                 setState(() {
                   _showVehicleOperation = !_showVehicleOperation;

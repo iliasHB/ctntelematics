@@ -44,9 +44,9 @@ class MapRepositoryImpl extends MapRepository {
       time_to: routeHistoryReqEntity.time_to,
       token: routeHistoryReqEntity.token,
     );
-    print("vehicle_vin: ${routeHistoryReqModel.vehicle_vin}");
-    print("time_from: ${routeHistoryReqModel.time_from}");
-    print("time_to: ${routeHistoryReqModel.time_to}");
+    print("map_vehicle_vin: ${routeHistoryReqModel.vehicle_vin}");
+    print("map_time_from: ${routeHistoryReqModel.time_from}");
+    print("map_time_to: ${routeHistoryReqModel.time_to}");
     print("token: ${routeHistoryReqModel.token}");
     String contentType = 'application/json';
 

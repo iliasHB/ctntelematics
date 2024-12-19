@@ -533,10 +533,7 @@ class FilterByDateTime extends StatelessWidget {
           print('token- : $token');
           if (state is VehicleLoading) {
             return const Center(
-              child: Padding(
-                padding: EdgeInsets.only(top: 10.0),
-                child: CircularProgressIndicator(strokeWidth: 2.0, color: Colors.green,),
-              ),
+                child: CustomContainerLoadingButton()
             );
           } else if (state is GetVehicleRouteHistoryDone) {
             return  VehicleRouteDataAnalytics(vehicles: state.resp.data, vin: vin,);

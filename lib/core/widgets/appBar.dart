@@ -191,7 +191,7 @@ class _AnimatedAppBarState extends State<AnimatedAppBar>
                   children: [
                     isLoading
                         ? const Center(
-                            child: CustomLoadingButton())
+                            child: CustomContainerLoadingButton())
                         : FutureBuilder<String?>(
                             future: fetchUserProfilePicture(
                                 int.parse(userId ?? '0')),
@@ -211,7 +211,7 @@ class _AnimatedAppBarState extends State<AnimatedAppBar>
                                     //pickAndUpdateProfilePicture(int.parse(userId!));
                                   },
                                   child: CircleAvatar(
-                                    radius: 30,
+                                    radius: 20,
                                     // backgroundImage: AssetImage("assets/images/avatar.jpeg"),
                                     child: ClipOval(
                                       child: Image.asset(
@@ -237,11 +237,11 @@ class _AnimatedAppBarState extends State<AnimatedAppBar>
                               }
                             },
                           ),
-                    const SizedBox(width: 10),
-                    Text(
-                      "Welcome, ${widget.firstname}",
-                      style: AppStyle.cardfooter,
-                    )
+                    // const SizedBox(width: 10),
+                    // Text(
+                    //   "Welcome, ${widget.firstname}",
+                    //   style: AppStyle.cardfooter,
+                    // )
                   ],
                 ),
               ),
