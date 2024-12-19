@@ -85,7 +85,10 @@ class VehicleSearchDialog {
                         child: BlocConsumer<DashVehiclesBloc, DashboardState>(
                             builder: (context, state) {
                               if (state is DashboardLoading) {
-                                return const Center(child: CustomContainerLoadingButton());
+                                return const Center(child: Padding(
+                                  padding: EdgeInsets.all(20.0),
+                                  child: CustomContainerLoadingButton(),
+                                ));
                               } else if (state is DashboardDone) {
                                 if (state.resp.data == null ||
                                     state.resp.data!.isEmpty) {

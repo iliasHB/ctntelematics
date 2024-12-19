@@ -36,6 +36,12 @@ class FormatData {
     return formatter.format(dateTime);
   }
 
+  static String formatDateTimestamp(String timestamp) {
+    final DateTime dateTime = DateTime.parse(timestamp);
+    final DateFormat formatter = DateFormat('dd-MMM-yyyy');
+    return formatter.format(dateTime);
+  }
+
   static String convertDurationToDate(String duration) {
     final now = DateTime.now(); // Current date
     final today = DateTime(now.year, now.month, now.day); // Strip time

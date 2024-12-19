@@ -55,7 +55,6 @@ class VehicleLocationBloc extends Cubit<List<VehicleEntity>> {
     print('>>>>>>>>>> _startInactivityTimer <<<<<<<<<<');
     _inactivityTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
       final currentTime = DateTime.now();
-
       // Check for inactive vehicles
       _vehicleLastUpdateTime.forEach((vin, lastUpdate) {
         print(":::::vin:::: $vin & lastUpdateTime:::::: $lastUpdate");

@@ -777,7 +777,11 @@ class Analytics {
 }
 
 
-Widget DashboardComponentTitle({required String title, required String subTitle}) {
+
+
+
+Widget DashboardComponentTitle({required String title, required String subTitle, int? vp,}) {
+
   return Row(
     children: [
       const CircleAvatar(
@@ -814,28 +818,7 @@ Widget DashboardComponentTitle({required String title, required String subTitle}
           ),
         ),
       ),
+      // Icon(Icons.filter_alt, color: Colors.green,)
     ],
   );
 }
-
-// class Analytics {
-//   final int onlineCount;
-//   final int offlineCount;
-//
-//   Analytics({required this.onlineCount, required this.offlineCount});
-//
-//   static Analytics fromVehicleData(List<DatumEntity> vehicles) {
-//     int onlineCount = 0;
-//     int offlineCount = 0;
-//
-//     for (var vehicle in vehicles) {
-//       if (vehicle.connected.toString().toLowerCase() == 'online') {
-//         onlineCount++;
-//       } else if (vehicle.connected.toString().toLowerCase() == 'offline') {
-//         offlineCount++;
-//       }
-//     }
-//
-//     return Analytics(onlineCount: onlineCount, offlineCount: offlineCount);
-//   }
-// }

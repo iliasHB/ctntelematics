@@ -1438,26 +1438,33 @@ class _DateTimeRangePickerState extends State<DateTimeRangePicker> {
                 child: PopupMenuButton(
                     icon: const Icon(Icons.filter_alt, color: Colors.green,),
                     itemBuilder: (context) => [
+                      PopupMenuItem(
+                        value: 1,
+                        onTap: () {
+                          _setDateRange(0); // Yesterday
+                        },
+                        child: Text("Today", style: AppStyle.cardfooter.copyWith(fontSize: 12)),
+                      ),
                           PopupMenuItem(
                             value: 1,
                             onTap: () {
                               _setDateRange(1); // Yesterday
                             },
-                            child: const Text("Yesterday"),
+                            child: Text("Yesterday", style: AppStyle.cardfooter.copyWith(fontSize: 12)),
                           ),
                           PopupMenuItem(
                             value: 2,
                             onTap: () {
                               _setDateRange(2); // 2 days ago
                             },
-                            child: const Text("2 days ago"),
+                            child: Text("2 days ago", style: AppStyle.cardfooter.copyWith(fontSize: 12)),
                           ),
                           PopupMenuItem(
                             value: 3,
                             onTap: () {
                               _setDateRange(3); // 3 days ago
                             },
-                            child: const Text("3 days ago"),
+                            child: Text("3 days ago", style: AppStyle.cardfooter.copyWith(fontSize: 12)),
                           ),
                         ]),
               ),

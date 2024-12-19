@@ -272,7 +272,7 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
   }
 
   Set<Polyline> _buildPolylines() {
-    return _routes.entries.map((entry) {
+    return _routes.entries.where((entry) => entry.value.isNotEmpty).map((entry) {
       final numberPlate = entry.key;
       final route = entry.value;
 
@@ -284,78 +284,6 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
       );
     }).toSet();
   }
-  //
-  // void _updateMarkers(List<LastLocationRespEntity> allVehicles, {required List<VehicleEntity> vehicles}) {
-  //   Set<Marker> updatedMarkers = Set.from(_markers.value);
-  //   // Add markers for last known locations (Default markers)
-  //   for (var location in allVehicles) {
-  //     final currentPosition = LatLng(
-  //       double.parse(
-  //           location.vehicle!.details!.last_location!.latitude.toString()),
-  //       double.parse(
-  //           location.vehicle!.details!.last_location!.longitude.toString()),
-  //     );
-  //     _addMarker(
-  //       vehicleId: location.vehicle!.details!.number_plate!,
-  //       position: currentPosition,
-  //       status: location.vehicle!.details!.last_location!.status.toString(),
-  //       isWebSocket: false, // Default to last known data
-  //     );
-  //   }
-  //
-  //   // Update markers for WebSocket vehicles (real-time updates)
-  //
-  //     for (var vehicle in vehicles) {
-  //       if ((vehicle.locationInfo.vehicleStatus == "Moving" &&
-  //           vehicle.locationInfo.tracker!.status == "online" &&
-  //           vehicle.locationInfo.tracker!.position!.latitude != null &&
-  //           vehicle.locationInfo.tracker!.position!.longitude != null)) {
-  //
-  //         final newPosition = LatLng(
-  //           double.parse(vehicle.locationInfo.tracker!.position!.latitude.toString()),
-  //           double.parse(vehicle.locationInfo.tracker!.position!.longitude.toString()),
-  //         );
-  //
-  //         _addMarker(
-  //           vehicleId: vehicle.locationInfo.numberPlate,
-  //           position: newPosition,
-  //           status: vehicle.locationInfo.vehicleStatus.toLowerCase(),
-  //           isWebSocket: true, // Indicate WebSocket data
-  //         );
-  //       }
-  //     }
-  //
-  //   // Update the markers
-  //   // _markers.value = updatedMarkers;
-  // }
-  //
-  //
-  // void _addMarker({
-  //   required String vehicleId,
-  //   required LatLng position,
-  //   required String status,
-  //   required bool isWebSocket,
-  // }) {
-  //   final markerId = MarkerId(vehicleId);
-  //   final markerIcon = isWebSocket
-  //       ? BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen) // WebSocket data
-  //       : BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue); // Last known data
-  //
-  //   final newMarker = Marker(
-  //     markerId: markerId,
-  //     position: position,
-  //     icon: markerIcon,
-  //     infoWindow: InfoWindow(
-  //       title: vehicleId,
-  //       snippet: "Status: $status (${isWebSocket ? 'Live' : 'Last Known'})",
-  //     ),
-  //   );
-  //
-  //   // Update the markers in the ValueNotifier
-  //   final currentMarkers = _markers.value;
-  //   final updatedMarkers = Set<Marker>.from(currentMarkers)..add(newMarker);
-  //   _markers.value = updatedMarkers;
-  // }
 
 
 
@@ -464,13 +392,14 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
           // Skip this marker if it's already animating
           continue;
         }
+        _routes[numberPlate] = _routes[numberPlate] ?? [];
 
-        if (!_routes.containsKey(numberPlate)) {
-          _routes[numberPlate] = [];
-        }
+        // if (!_routes.containsKey(numberPlate)) {
+        //   _routes[numberPlate] = [];
+        // }
 
-        final previousPosition = _previousPositions[numberPlate];
 
+        final previousPosition = _previousPositions[numberPlate] ?? currentPosition;
         // Cache the current position as the new previous position
         _previousPositions[numberPlate] = currentPosition;
 
@@ -480,15 +409,30 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
           bearing = _calculateBearing(previousPosition, currentPosition);
         }
 
+        // final distance = _calculateDistance(previousPosition, currentPosition);
+        // if (distance < 1) continue;
+
         // Add or update the marker only if the vehicle has moved significantly
         if (previousPosition == null || _calculateDistance(previousPosition, currentPosition) >= 1) {
+
+          final distance = _calculateDistance(previousPosition, currentPosition);
 
           if (_onlineCustomIcon == null) {
             await _setOnlineCustomMarkerIcon();
           }
+          // Ensure significant movement has occurred
+          if (!_routes.containsKey(numberPlate)) {
+            _routes[numberPlate] = [];
+          }
 
+          const int minSteps = 20; // Minimum steps for short distances
+          const int maxSteps = 150; // Maximum steps for long distances
+          const double maxDistance = 1000; // Maximum distance threshold for scaling
+          final steps = (distance * (maxSteps - minSteps) / maxDistance + minSteps)
+              .clamp(minSteps, maxSteps)
+              .toInt();
           // Interpolate marker movement for smooth animation
-          const int steps = 100; // Number of steps for interpolation
+          //const int steps = 100; // Number of steps for interpolation
           _isAnimating[numberPlate] = true; // Set animation flag to true
           for (int i = 1; i <= steps; i++) {
             final t = i / steps;
@@ -560,47 +504,66 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
       }
     }
 
-    // Schedule offline marker for inactive vehicles
-    for (var numberPlate in _routes.keys) {
+
+
+    for (var numberPlate in _previousPositions.keys) {
       if (!activeVehicles.contains(numberPlate)) {
-        // Only schedule if there's no existing timer
         if (!_inactiveTimers.containsKey(numberPlate)) {
-          _inactiveTimers[numberPlate] = Timer(const Duration(seconds: 25), () async {
-            // Change the marker to offline
-            if (_offlineCustomIcon == null) {
-              await _setOfflineCustomMarkerIcon();
-            }
+          _inactiveTimers[numberPlate] =
+              Timer(const Duration(seconds: 120), () async {
+                final lastPosition = _previousPositions[numberPlate];
+                if (lastPosition != null && _offlineCustomIcon != null) {
+                  updatedMarkers[numberPlate] = Marker(
+                    icon: _offlineCustomIcon!,
+                    markerId: MarkerId(numberPlate),
+                    position: lastPosition,
+                    infoWindow: InfoWindow(title: numberPlate),
+                  );
 
-            final currentPosition = _previousPositions[numberPlate] ?? _routes[numberPlate]?.last;
-            if (currentPosition != null) {
-              updatedMarkers[numberPlate] = Marker(
-                icon: _offlineCustomIcon!,
-                markerId: MarkerId(numberPlate),
-                position: currentPosition,
-                onTap: () {
-                  mapController.animateCamera(CameraUpdate.newLatLngZoom(currentPosition, 15.0));
-                },
-                infoWindow: InfoWindow(title: numberPlate),
-              );
-
-              // Update the map markers
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                _markers.value = updatedMarkers.values.toSet();
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    _markers.value = updatedMarkers.values.toSet();
+                  });
+                }
+                _inactiveTimers.remove(numberPlate);
               });
-            }
+        }}}
 
-            // Remove the timer reference after updating the marker
-            _inactiveTimers.remove(numberPlate);
-          });
-        }
-      }
-    }
-
-    // // Cleanup logic: Remove routes for inactive vehicles
-    // final inactiveVehicles = _routes.keys.where((key) => !activeVehicles.contains(key)).toList();
-    // for (var numberPlate in inactiveVehicles) {
-    //   _routes.remove(numberPlate); // Remove the route from _routes
+    // // Schedule offline marker for inactive vehicles
+    // for (var numberPlate in _routes.keys) {
+    //   if (!activeVehicles.contains(numberPlate)) {
+    //     // Only schedule if there's no existing timer
+    //     if (!_inactiveTimers.containsKey(numberPlate)) {
+    //       _inactiveTimers[numberPlate] = Timer(const Duration(seconds: 120), () async {
+    //         // Change the marker to offline
+    //         if (_offlineCustomIcon == null) {
+    //           await _setOfflineCustomMarkerIcon();
+    //         }
+    //
+    //         final currentPosition = _previousPositions[numberPlate] ?? _routes[numberPlate]?.last;
+    //         if (currentPosition != null) {
+    //           updatedMarkers[numberPlate] = Marker(
+    //             icon: _offlineCustomIcon!,
+    //             markerId: MarkerId(numberPlate),
+    //             position: currentPosition,
+    //             onTap: () {
+    //               mapController.animateCamera(CameraUpdate.newLatLngZoom(currentPosition, 15.0));
+    //             },
+    //             infoWindow: InfoWindow(title: numberPlate),
+    //           );
+    //
+    //           // Update the map markers
+    //           WidgetsBinding.instance.addPostFrameCallback((_) {
+    //             _markers.value = updatedMarkers.values.toSet();
+    //           });
+    //         }
+    //
+    //         // Remove the timer reference after updating the marker
+    //         _inactiveTimers.remove(numberPlate);
+    //       });
+    //     }
+    //   }
     // }
+
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _markers.value = updatedMarkers.values.toSet();

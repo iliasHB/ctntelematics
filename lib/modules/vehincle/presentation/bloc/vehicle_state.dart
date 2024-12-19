@@ -8,6 +8,15 @@ abstract class VehicleState extends Equatable {
   List<Object?> get props => [];
 }
 
+class GetVehicleRouteHistoryDone extends VehicleState{
+  final VehicleRouteHistoryRespEntity resp;
+
+  const GetVehicleRouteHistoryDone(this.resp);
+
+  @override
+  List<Object?> get props => [resp];
+}
+
 class VehicleInitial extends VehicleState {}
 
 class VehicleLoading extends VehicleState {}
@@ -31,11 +40,3 @@ class VehicleDone extends VehicleState {
 }
 
 
-class GetVehicleRouteHistoryDone extends VehicleState{
-  final VehicleRouteHistoryRespEntity resp;
-
-  const GetVehicleRouteHistoryDone(this.resp);
-
-  @override
-  List<Object?> get props => [resp];
-}

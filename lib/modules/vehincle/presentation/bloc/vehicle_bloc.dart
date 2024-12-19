@@ -84,3 +84,30 @@ class VehicleRouteHistoryBloc extends Bloc<VehicleEvent, VehicleState>{
     }
   }
 }
+
+// class VehicleRouteHistoryBloc extends Bloc<VehicleEvent, VehicleState> {
+//   final GetVehicleRouteHistoryUseCase getRouteHistoryUseCase;
+//
+//   VehicleRouteHistoryBloc(this.getRouteHistoryUseCase) : super(VehicleInitial()) {
+//     on<VehicleRouteHistoryEvent>(_onVehicleRouteHistoryEvent);
+//   }
+//
+//   Future<void> _onVehicleRouteHistoryEvent(
+//       VehicleRouteHistoryEvent event, Emitter<VehicleState> emit) async {
+//     emit(VehicleLoading()); // Emit loading state
+//     try {
+//       final resp = await getRouteHistoryUseCase(event.routeHistoryReqEntity);
+//       emit(GetVehicleRouteHistoryDone(resp)); // Emit success state
+//     } catch (error) {
+//       if (error is ApiErrorException) {
+//         emit(VehicleFailure(error.message)); // Emit API error state
+//       } else if (error is NetworkException) {
+//         emit(VehicleFailure(error.message)); // Emit network failure state
+//       } else {
+//         emit(VehicleFailure(error.toString())); // Emit generic error state
+//       }
+//     }
+//   }
+// }
+
+
