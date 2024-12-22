@@ -375,63 +375,66 @@ class _VehiclePerformanceState extends State<VehiclePerformance> {
                       ),
                     ),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.only(right: 0.0),
-                    child: Align(
-                      alignment: Alignment.topLeft,
-                      child: PopupMenuButton(
-                          icon: const Icon(
-                            Icons.filter_alt,
-                            color: Colors.green,
-                          ),
-                          onSelected: (value) {
-                            // setState(() {
-                              _setDateRange(value as int); // Adjust date range based on selection
-
-                              final vehicleRouteHistory = VehicleRouteHistoryReqEntity(
-                                vehicle_vin: widget.vin,
-                                time_from: fromDate.toString().split('.').first ?? "N/A",
-                                time_to: toDate.toString().split('.').first ?? "N/A",
-                                token: widget.token,
-                              );
-
-                              BlocProvider.of<VehicleRouteHistoryBloc>(context)
-                                  .add(VehicleRouteHistoryEvent(vehicleRouteHistory));
-                            // });
-
-                          },
-                          itemBuilder: (context) => [
-                                PopupMenuItem(
-                                  value: 0,
-                                  // onTap: () {
-                                  //   _setDateRange(0); // Yesterday
-                                  // },
-                                  child: Text("Today", style: AppStyle.cardfooter.copyWith(fontSize: 12)),
-                                ),
-                                PopupMenuItem(
-                                  value: 1,
-                                  // onTap: () {
-                                  //   _setDateRange(1); // Yesterday
-                                  // },
-                                  child: Text("Yesterday", style: AppStyle.cardfooter.copyWith(fontSize: 12)),
-                                ),
-                                PopupMenuItem(
-                                  value: 2,
-                                  // onTap: () {
-                                  //   _setDateRange(2); // 2 days ago
-                                  // },
-                                  child: Text("2 days ago", style: AppStyle.cardfooter.copyWith(fontSize: 12)),
-                                ),
-                                PopupMenuItem(
-                                  value: 3,
-                                  // onTap: () {
-                                  //   _setDateRange(3); // 3 days ago
-                                  // },
-                                  child: Text("3 days ago", style: AppStyle.cardfooter.copyWith(fontSize: 12)),
-                                ),
-                              ]),
-                    ),
-                  ),
+                  // Padding(
+                  //   padding: const EdgeInsets.only(right: 0.0),
+                  //   child: Align(
+                  //     alignment: Alignment.topLeft,
+                  //     child: PopupMenuButton(
+                  //         icon: const Icon(
+                  //           Icons.filter_alt,
+                  //           color: Colors.green,
+                  //         ),
+                  //         onSelected: (value) {
+                  //           // setState(() {
+                  //             _setDateRange(value as int); // Adjust date range based on selection
+                  //
+                  //             final vehicleRouteHistory = VehicleRouteHistoryReqEntity(
+                  //               vehicle_vin: widget.vin,
+                  //               time_from: fromDate.toString().split('.').first ?? "N/A",
+                  //               time_to: toDate.toString().split('.').first ?? "N/A",
+                  //               token: widget.token,
+                  //             );
+                  //
+                  //             context.read<VehicleRouteHistoryBloc>().add(
+                  //                 VehicleRouteHistoryEvent(vehicleRouteHistory));
+                  //
+                  //             // BlocProvider.of<VehicleRouteHistoryBloc>(context)
+                  //             //     .add(VehicleRouteHistoryEvent(vehicleRouteHistory));
+                  //           // });
+                  //
+                  //         },
+                  //         itemBuilder: (context) => [
+                  //               PopupMenuItem(
+                  //                 value: 0,
+                  //                 // onTap: () {
+                  //                 //   _setDateRange(0); // Yesterday
+                  //                 // },
+                  //                 child: Text("Today", style: AppStyle.cardfooter.copyWith(fontSize: 12)),
+                  //               ),
+                  //               PopupMenuItem(
+                  //                 value: 1,
+                  //                 // onTap: () {
+                  //                 //   _setDateRange(1); // Yesterday
+                  //                 // },
+                  //                 child: Text("Yesterday", style: AppStyle.cardfooter.copyWith(fontSize: 12)),
+                  //               ),
+                  //               PopupMenuItem(
+                  //                 value: 2,
+                  //                 // onTap: () {
+                  //                 //   _setDateRange(2); // 2 days ago
+                  //                 // },
+                  //                 child: Text("2 days ago", style: AppStyle.cardfooter.copyWith(fontSize: 12)),
+                  //               ),
+                  //               PopupMenuItem(
+                  //                 value: 3,
+                  //                 // onTap: () {
+                  //                 //   _setDateRange(3); // 3 days ago
+                  //                 // },
+                  //                 child: Text("3 days ago", style: AppStyle.cardfooter.copyWith(fontSize: 12)),
+                  //               ),
+                  //             ]),
+                  //   ),
+                  // ),
 
                 ],
               )),
@@ -465,7 +468,7 @@ class _VehiclePerformanceState extends State<VehiclePerformance> {
                     );
                   }
                   debugPrint('State updated with data: ${state.resp.data}');
-                  print(">>>>>> vehicle: ${state.resp.data[1].longitude}");
+                  // print(">>>>>> vehicle: ${state.resp.data[1].longitude}");
                   // final vehicleData = state.resp.data;
                   // Update the markers on the map incrementally
 

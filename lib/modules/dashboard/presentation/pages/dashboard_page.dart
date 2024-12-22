@@ -18,6 +18,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/usecase/databse_helper.dart';
 import '../../../../core/usecase/provider_usecase.dart';
 import '../../../../core/widgets/advert.dart';
 import '../../../../core/widgets/vehicel_realTime_status.dart';
@@ -1085,7 +1086,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                   child: BlocConsumer<EshopGetAllProductBloc, EshopState>(
                                     builder: (context, state) {
                                       if (state is EshopLoading) {
-                                        return CustomContainerLoadingButton();
+                                        return const CustomContainerLoadingButton();
                                       } else if (state is EshopGetProductsDone) {
                                         // Check if the schedule data is empty
                                         if (state.resp.products.data == null ||
@@ -1405,10 +1406,6 @@ class _DashboardPageState extends State<DashboardPage> {
                                                       )));
                                         },
                                         child: _buildReminderCard()),
-                                    // const SizedBox(height: 0),
-                                    // _buildMaintenanceCard(),
-                                    // const SizedBox(height: 0),
-                                    // _buildMaintenanceCard(),
                                   ],
                                 ),
                               ],
@@ -1663,42 +1660,132 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
+
   Widget _buildReminderCard() {
-    return Container(
-      padding: const EdgeInsets.all(10.0),
-      decoration: BoxDecoration(
-        // color: Colors.green.shade200,
-        borderRadius: BorderRadius.circular(12.0),
-      ),
-      child: const Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: VehicleStatusCard1(
-                status: 'Due',
-                count: '0',
-                color: Colors.white,
-                icon: Icon(
-                  Icons.warning,
-                  color: Colors.yellow,
-                  size: 30,
-                )),
-          ),
-          Expanded(
-            child: VehicleStatusCard1(
-                status: 'Overdue',
-                count: '0',
-                color: Colors.white,
-                icon: Icon(
-                  Icons.warning,
-                  color: Colors.red,
-                  size: 30,
-                )),
-          ),
-        ],
-      ),
+    return FutureBuilder<List<VehicleSchedule>>(
+      future: _fetchSchedule(), // Fetch cart items from the database
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CustomContainerLoadingButton());
+        } else if (snapshot.hasError) {
+          return Center(child: Text('Error: ${snapshot.error}'));
+        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          print(">>>>>>>>>>:::::: maintenance1: ${snapshot.hasData}");
+          return Container(
+            padding: const EdgeInsets.all(10.0),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12.0),
+            ),
+            child: const Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: VehicleStatusCard1(
+                      status: 'Due',
+                      count: '0',
+                      color: Colors.white,
+                      icon: Icon(
+                        Icons.warning,
+                        color: Colors.yellow,
+                        size: 30,
+                      )),
+                ),
+                Expanded(
+                  child: VehicleStatusCard1(
+                      status: 'Overdue',
+                      count: '0',
+                      color: Colors.white,
+                      icon: Icon(
+                        Icons.warning,
+                        color: Colors.red,
+                        size: 30,
+                      )),
+                ),
+              ],
+            ),
+          );
+        } else {
+          final maintenance = snapshot.data!;
+          print(">>>>>>>>>>:::::: maintenance: $maintenance");
+          // var maintenanceV = maintenance.where((m) => DateTime.parse(m.byTime!).difference(DateTime.now())).toList();
+          return Container(
+            padding: const EdgeInsets.all(10.0),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12.0),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: VehicleStatusCard1(
+                      status: 'Due',
+                      count: maintenance.length,
+                      color: Colors.white,
+                      icon: const Icon(
+                        Icons.warning,
+                        color: Colors.yellow,
+                        size: 30,
+                      )),
+                ),
+                Expanded(
+                  child: VehicleStatusCard1(
+                      status: 'Overdue',
+                      count: maintenance.length,
+                      color: Colors.white,
+                      icon: const Icon(
+                        Icons.warning,
+                        color: Colors.red,
+                        size: 30,
+                      )),
+                ),
+              ],
+            ),
+          );
+        }
+      },
     );
   }
+
+  Future<List<VehicleSchedule>> _fetchSchedule() async {
+    final dbCart = DB_schedule();
+    return await dbCart.fetchSchedule();
+  }
+
+  // Widget _buildReminderCard() {
+  //   return Container(
+  //     padding: const EdgeInsets.all(10.0),
+  //     decoration: BoxDecoration(
+  //       borderRadius: BorderRadius.circular(12.0),
+  //     ),
+  //     child: const Row(
+  //       crossAxisAlignment: CrossAxisAlignment.start,
+  //       children: [
+  //         Expanded(
+  //           child: VehicleStatusCard1(
+  //               status: 'Due',
+  //               count: '0',
+  //               color: Colors.white,
+  //               icon: Icon(
+  //                 Icons.warning,
+  //                 color: Colors.yellow,
+  //                 size: 30,
+  //               )),
+  //         ),
+  //         Expanded(
+  //           child: VehicleStatusCard1(
+  //               status: 'Overdue',
+  //               count: '0',
+  //               color: Colors.white,
+  //               icon: Icon(
+  //                 Icons.warning,
+  //                 color: Colors.red,
+  //                 size: 30,
+  //               )),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 }
 
 class VehicleStatusCard extends StatelessWidget {

@@ -60,13 +60,13 @@ class _MaintenanceState extends State<Maintenance> {
                   ),
                   const CircleAvatar(
                     radius: 8,
-                    backgroundColor: Colors.redAccent,
+                    backgroundColor: Colors.yellow,
                   ),
                   const SizedBox(
                     width: 5,
                   ),
                   Text(
-                    'Overdue',
+                    'Due',
                     style: AppStyle.cardSubtitle.copyWith(fontSize: 12),
                   ),
                   const SizedBox(
@@ -74,7 +74,7 @@ class _MaintenanceState extends State<Maintenance> {
                   ),
                   const CircleAvatar(
                     radius: 8,
-                    backgroundColor: Colors.yellow,
+                    backgroundColor: Colors.redAccent,
                   ),
                   const SizedBox(
                     width: 5,
@@ -118,27 +118,6 @@ class _MaintenanceState extends State<Maintenance> {
                                 MaterialPageRoute(
                                     builder: (_) => CreateScheduleWidget(
                                         token: widget.token)));
-
-                            // OutlinedButton(
-                            //                         onPressed: () {
-                            //                           Navigator.push(
-                            //                               context,
-                            //                               MaterialPageRoute(
-                            //                                   builder: (_) => CreateScheduleWidget(token: widget.token)));
-                            ///----
-                            // showModalBottomSheet(
-                            //     context: context,
-                            //     isDismissible: false,
-                            //     isScrollControlled: true,
-                            //     //useSafeArea: true,
-                            //     shape: const RoundedRectangleBorder(
-                            //       borderRadius: BorderRadius.only(
-                            //           topLeft: Radius.circular(20),
-                            //           topRight: Radius.circular(20)),
-                            //     ),
-                            //     builder: (BuildContext context) {
-                            //       return CreateScheduleWidget();
-                            //     });
                           },
                           // child: Text(
                           //   "Create Schedule",
@@ -148,24 +127,6 @@ class _MaintenanceState extends State<Maintenance> {
                         const SizedBox(
                           width: 10,
                         ),
-                        // OutlinedButton(
-                        //     onPressed: () => Navigator.push(
-                        //         context,
-                        //         MaterialPageRoute(
-                        //             builder: (_) => CreateService())),
-                        //     child: Text(
-                        //       "Add Service",
-                        //       style: AppStyle.cardfooter,
-                        //     )),
-                        // const SizedBox(
-                        //   width: 10,
-                        // ),
-                        // OutlinedButton(
-                        //     onPressed: () {},
-                        //     child: Text(
-                        //       "View Schedule",
-                        //       style: AppStyle.cardfooter,
-                        //     )),
                       ],
                     );
                   },
@@ -266,18 +227,13 @@ class _MaintenanceState extends State<Maintenance> {
                 child: BlocConsumer<GetScheduleBloc, ProfileState>(
                   builder: (context, state) {
                     if (state is ProfileLoading) {
-                      return const Center(
-                        child: Padding(
-                          padding: EdgeInsets.only(top: 10.0),
-                          child: CircularProgressIndicator(strokeWidth: 2.0),
-                        ),
-                      );
+                      return const CustomContainerLoadingButton();
                     } else if (state is GetScheduleDone) {
                       // Check if the schedule data is empty
                       if (state.resp.data == null || state.resp.data.isEmpty) {
                         return Center(
                           child: Text(
-                            'No available Schedule',
+                            'No available schedule',
                             style: AppStyle.cardfooter,
                           ),
                         );

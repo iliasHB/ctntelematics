@@ -383,8 +383,8 @@ class _EshopPageState extends State<EshopPage> {
         },
         listener: (context, state) {
           if (state is EshopFailure) {
-            if (state.message.contains("401")) {
-              Navigator.pushNamed(context, "/login");
+            if (state.message.contains("Unauthenticated")) {
+              Navigator.pushNamedAndRemoveUntil(context, "/login", (route) => false);
             }
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(state.message)),
@@ -400,8 +400,7 @@ class _EshopPageState extends State<EshopPage> {
       future: _fetchCartItems(), // Fetch cart items from the database
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(
-              child: CustomContainerLoadingButton());
+          return const Center(child: CustomContainerLoadingButton());
         } else if (snapshot.hasError) {
           return Center(child: Text('Error: ${snapshot.error}'));
         } else if (!snapshot.hasData || snapshot.data!.isEmpty) {

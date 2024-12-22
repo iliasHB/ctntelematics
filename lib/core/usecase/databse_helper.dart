@@ -161,7 +161,7 @@ class DatabaseHelper {
   // Insert into user schedule table
   Future<int> insertSchedule(Map<String, dynamic> schedule) async {
     final db = await database;
-    return db.insert('schedules', schedule);
+    return db.insert('schedule', schedule);
   }
 
   // Fetch notifications from the general table
@@ -185,7 +185,7 @@ class DatabaseHelper {
   // Fetch user cart from the general table
   Future<List<Map<String, dynamic>>> fetchSchedule() async {
     final db = await database;
-    return await db.query('schedules', orderBy: 'createdAt DESC');
+    return await db.query('schedule', orderBy: 'createdAt DESC');
   }
 
   // Delete notification by ID from the general table
@@ -209,7 +209,7 @@ class DatabaseHelper {
   // Delete notification by ID from the speed limit table
   Future<int> deleteSchedule(int id) async {
     final db = await database;
-    return db.delete('schedules', where: 'id = ?', whereArgs: [id]);
+    return db.delete('schedule', where: 'id = ?', whereArgs: [id]);
   }
 
   // Clear all general notifications
@@ -232,7 +232,7 @@ class DatabaseHelper {
 
   Future<void> clearAllSchedule() async {
     final db = await database;
-    await db.delete('schedules');
+    await db.delete('schedule');
   }
 
   // Insert a profile picture
@@ -278,15 +278,6 @@ class DatabaseHelper {
       await db.insert('profile_picture', data);
     }
   }
-
-
-
-  // // Fetch profile pictures by userId
-  // Future<List<Map<String, dynamic>>> fetchProfilePictures(int userId) async {
-  //   final db = await database;
-  //   return db.query('profile_picture',
-  //       where: 'userId = ?', whereArgs: [userId], orderBy: 'uploadedAt DESC');
-  // }
 
   // Delete a profile picture by ID
   Future<int> deleteProfilePicture(int id) async {
@@ -450,7 +441,6 @@ class DB_schedule {
     final dbHelper = DatabaseHelper();
 
     final vehicleSchedule = await dbHelper.fetchSchedule();
-
     // Convert to respective objects
     List<VehicleSchedule> vehicleSchedules =
     vehicleSchedule.map((row) => VehicleSchedule.fromJson(row)).toList();

@@ -768,8 +768,8 @@ class _RouteHistoryMapState extends State<RouteHistoryMap> {
                   ),
                 ),
                 child: Text(
-                  widget.speed == null ? "" : widget.speed!,
-                  style: AppStyle.cardfooter.copyWith(fontSize: 18),
+                  widget.speed == null ? "1x" : widget.speed!,
+                    style:AppStyle.cardfooter.copyWith(fontSize: 16)
                 ),
               ),
             ],
@@ -1005,13 +1005,11 @@ class _DateTimeRangePickerState extends State<DateTimeRangePicker> {
                             ),
                             filled: true,
                             fillColor: Colors.grey[200],
-                            labelStyle: AppStyle.cardfooter,
-                            hintText:
-                            // Text(
+                            labelStyle: AppStyle.cardfooter.copyWith(fontSize: 12),
+                            labelText:
                               fromDate == null
                                   ? 'Select Start Date and Time'
                                   : fromDate.toString(),
-                            // ),
                             border: OutlineInputBorder(
                                 borderSide: BorderSide.none,
                                 borderRadius: BorderRadius.circular(5)),
@@ -1080,12 +1078,12 @@ class _DateTimeRangePickerState extends State<DateTimeRangePicker> {
                             ),
                             filled: true,
                             fillColor: Colors.grey[200],
-                            labelStyle: AppStyle.cardfooter,
                             label: Text(
                               toDate == null
                                   ? 'Select End Date and Time'
                                   : toDate.toString(),
                             ),
+                              labelStyle: AppStyle.cardfooter.copyWith(fontSize: 12),
                             border: OutlineInputBorder(
                                 borderSide: BorderSide.none,
                                 borderRadius: BorderRadius.circular(5)),

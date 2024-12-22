@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:ctntelematics/core/utils/app_export_util.dart';
+import 'package:ctntelematics/core/widgets/shimmer_loading.dart';
 import 'package:ctntelematics/modules/dashboard/domain/entitties/req_entities/dash_vehicle_req_entity.dart';
 import 'package:ctntelematics/modules/dashboard/domain/entitties/resp_entities/dash_vehicle_resp_entity.dart';
 import 'package:ctntelematics/modules/map/domain/entitties/req_entities/token_req_entity.dart';
@@ -23,6 +24,24 @@ import '../../../dashboard/presentation/bloc/dashboard_bloc.dart';
 import '../../../map/data/models/resp_models/last_location_resp_model.dart';
 import '../../../map/domain/usecases/map_usecase.dart';
 import '../widgets/vehicle_state_update.dart';
+
+
+const _shimmerGradient = LinearGradient(
+  colors: [
+    Color(0xFFEBEBF4),
+    Color(0xFFF4F4F4),
+    Color(0xFFEBEBF4),
+  ],
+  stops: [
+    0.1,
+    0.3,
+    0.4,
+  ],
+  begin: Alignment(-1.0, -0.3),
+  end: Alignment(1.0, 0.3),
+  tileMode: TileMode.clamp,
+);
+
 
 class VehiclePage extends StatefulWidget {
   const VehiclePage({super.key});
@@ -123,28 +142,6 @@ class _VehiclePageState extends State<VehiclePage> {
     };
   }
 
-//   // Add this at a global or suitable location
-//   final Map<String, DateTime> vehicleLastUpdateTime = {};
-//   int inactivityThresholdSeconds = 25;
-//
-// // Periodic Timer to check inactive vehicles
-//   void startInactivityTimer(VehicleLocationBloc bloc) {
-//     Timer.periodic(const Duration(seconds: 1), (timer) {
-//       final currentTime = DateTime.now();
-//
-//       // Check for inactive vehicles
-//       vehicleLastUpdateTime.forEach((vehicleId, lastUpdateTime) {
-//         final elapsedTime =
-//             currentTime.difference(lastUpdateTime).inSeconds;
-//
-//         if (elapsedTime > inactivityThresholdSeconds) {
-//           // Mark the vehicle as "parked" due to inactivity
-//           bloc.add(UpdateVehicleStatusEvent(vehicleId, 'parked'));
-//         }
-//       });
-//     });
-//   }
-
   @override
   Widget build(BuildContext context) {
     final tokenReq = TokenReqEntity(
@@ -159,133 +156,167 @@ class _VehiclePageState extends State<VehiclePage> {
       ),
       body: isLoading
           ? const Center(child: CustomContainerLoadingButton())
-          : Column(
-              children: [
-                BlocProvider(
-                  create: (_) =>
-                      sl<LastLocationBloc>()..add(LastLocationEvent(tokenReq)),
-                  child: BlocConsumer<LastLocationBloc, MapState>(
-                    builder: (context, state) {
-                      if (state is MapLoading) {
-                        return const Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Padding(
-                              padding: EdgeInsets.all(20.0),
-                              child: CustomContainerLoadingButton(),
-                            ),
-                          ],
-                        );
-                      } else if (state is GetLastLocationDone) {
-                        // Check if the vehicle data is empty
-                        if (state.resp == null || state.resp.isEmpty) {
-                          return Center(
-                            child: Text(
-                              'No vehicles available',
-                              style: AppStyle.cardfooter,
+          : Shimmer(
+            linearGradient: _shimmerGradient,
+            child: Column(
+                children: [
+                  BlocProvider(
+                    create: (_) =>
+                        sl<LastLocationBloc>()..add(LastLocationEvent(tokenReq)),
+                    child: BlocConsumer<LastLocationBloc, MapState>(
+                      builder: (context, state) {
+                        if (state is MapLoading) {
+                          // Shimmer Placeholder for Loading
+                          return Expanded(
+                            child: ShimmerLoading(
+                              child: ListView.builder(
+                                // shrinkWrap: true,
+                                padding: EdgeInsets.zero,
+                                itemCount: 10,
+                                itemBuilder: (context, index) {
+                                  return Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                                    child: Row(
+                                      children: [
+                                        Flexible(
+                                          flex: 2,
+                                          child: Container(
+                                            height: 120,
+                                            decoration: BoxDecoration(
+                                              color: Colors.grey[300],
+                                              borderRadius: BorderRadius.circular(10.0),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 5),
+                                        Flexible(
+                                          flex: 10,
+                                          child: Container(
+                                            height: 120.0,
+                                            decoration: BoxDecoration(
+                                              color: Colors.grey[300],
+                                              borderRadius: BorderRadius.circular(10.0),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                },
+                              ),
                             ),
                           );
-                        }
-                        final vehiclesData = state.resp ?? [];
-                        final vehicleCounts =
-                            _computeVehicleCounts(vehiclesData);
+                        } else if (state is GetLastLocationDone) {
+                          // Check if the vehicle data is empty
+                          if (state.resp == null || state.resp.isEmpty) {
+                            return Center(
+                              child: Text(
+                                'No vehicles available',
+                                style: AppStyle.cardfooter,
+                              ),
+                            );
+                          }
+                          final vehiclesData = state.resp ?? [];
+                          final vehicleCounts =
+                              _computeVehicleCounts(vehiclesData);
 
-                        return BlocListener<VehicleLocationBloc,
-                            List<VehicleEntity>>(
-                          listener: (context, vehicles) {
-
-                          },
-                          child: BlocBuilder<VehicleLocationBloc,
+                          return BlocListener<VehicleLocationBloc,
                               List<VehicleEntity>>(
-                            builder: (context, vehicles) {
-                              if (vehicles.isEmpty) {
+                            listener: (context, vehicles) {
+
+                            },
+                            child: BlocBuilder<VehicleLocationBloc,
+                                List<VehicleEntity>>(
+                              builder: (context, vehicles) {
+                                if (vehicles.isEmpty) {
+                                  return Expanded(
+                                    child: VehicleSubPage(
+                                        onlineCount: vehicleCounts['online'] ?? 0,
+                                        offlineCount: vehicleCounts['offline'] ?? 0,
+                                        idlingCount: vehicleCounts['idling'] ?? 0,
+                                        parkedCount: vehicleCounts['parked'] ?? 0,
+                                        vehiclesData: vehiclesData,
+                                        movingCount: vehicleCounts['moving'] ?? 0,
+                                        token: token!),
+                                  );
+                                }
+
+                                final vehicleWebsocketCounts =
+                                    _computeVehicleSocketCounts(vehicles);
+
                                 return Expanded(
                                   child: VehicleSubPage(
-                                      onlineCount: vehicleCounts['online'] ?? 0,
-                                      offlineCount: vehicleCounts['offline'] ?? 0,
-                                      idlingCount: vehicleCounts['idling'] ?? 0,
-                                      parkedCount: vehicleCounts['parked'] ?? 0,
+                                      onlineCount:
+                                          vehicleWebsocketCounts['online'] ?? 0,
+                                      offlineCount:
+                                          VehicleRealTimeStatus.checkStatusChange(
+                                              vehiclesData,
+                                              vehicles,
+                                              'offline',
+                                              vehicleCounts['offline']),
+                                      idlingCount:
+                                          VehicleRealTimeStatus.checkStatusChange(
+                                              vehiclesData,
+                                              vehicles,
+                                              'idling',
+                                              vehicleCounts['idling']),
+                                      parkedCount:
+                                          VehicleRealTimeStatus.checkStatusChange(
+                                              vehiclesData,
+                                              vehicles,
+                                              'parked',
+                                              vehicleCounts['parked']),
                                       vehiclesData: vehiclesData,
-                                      movingCount: vehicleCounts['moving'] ?? 0,
+                                      movingCount:
+                                          vehicleWebsocketCounts['moving'] ?? 0,
                                       token: token!),
                                 );
-                              }
-
-                              final vehicleWebsocketCounts =
-                                  _computeVehicleSocketCounts(vehicles);
-
-                              return Expanded(
-                                child: VehicleSubPage(
-                                    onlineCount:
-                                        vehicleWebsocketCounts['online'] ?? 0,
-                                    offlineCount:
-                                        VehicleRealTimeStatus.checkStatusChange(
-                                            vehiclesData,
-                                            vehicles,
-                                            'offline',
-                                            vehicleCounts['offline']),
-                                    idlingCount:
-                                        VehicleRealTimeStatus.checkStatusChange(
-                                            vehiclesData,
-                                            vehicles,
-                                            'idling',
-                                            vehicleCounts['idling']),
-                                    parkedCount:
-                                        VehicleRealTimeStatus.checkStatusChange(
-                                            vehiclesData,
-                                            vehicles,
-                                            'parked',
-                                            vehicleCounts['parked']),
-                                    vehiclesData: vehiclesData,
-                                    movingCount:
-                                        vehicleWebsocketCounts['moving'] ?? 0,
-                                    token: token!),
-                              );
-                            },
-                          ),
-                        );
-                      } else {
-                        return Center(
-                            child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Text(
-                              'No records found',
-                              style: AppStyle.cardfooter,
+                              },
                             ),
-                            const SizedBox(
-                              height: 10.0,
-                            ),
-                            CustomSecondaryButton(
-                                label: 'Refresh',
-                                onPressed: () {
-                                  BlocProvider.of<LastLocationBloc>(context)
-                                      .add(LastLocationEvent(tokenReq));
-                                })
-                          ],
-                        ));
-                      }
-                    },
-                    listener: (context, state) {
-                      if (state is MapFailure) {
-                        if (state.message.contains("Unauthenticated")) {
-                          Navigator.pushNamedAndRemoveUntil(
-                              context, "/login", (route) => false);
+                          );
+                        } else {
+                          return Center(
+                              child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Text(
+                                'No records found',
+                                style: AppStyle.cardfooter,
+                              ),
+                              const SizedBox(
+                                height: 10.0,
+                              ),
+                              CustomSecondaryButton(
+                                  label: 'Refresh',
+                                  onPressed: () {
+                                    BlocProvider.of<LastLocationBloc>(context)
+                                        .add(LastLocationEvent(tokenReq));
+                                  })
+                            ],
+                          ));
                         }
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(state.message)),
-                        );
-                      }
-                    },
-                  ),
-                )
-              ],
-            ),
+                      },
+                      listener: (context, state) {
+                        if (state is MapFailure) {
+                          if (state.message.contains("Unauthenticated")) {
+                            Navigator.pushNamedAndRemoveUntil(
+                                context, "/login", (route) => false);
+                          }
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(state.message)),
+                          );
+                        }
+                      },
+                    ),
+                  )
+                ],
+              ),
+          ),
     );
   }
 }
+
 
 class VehicleSubPage extends StatefulWidget {
   final int onlineCount, offlineCount, idlingCount, parkedCount, movingCount;
@@ -402,8 +433,6 @@ class _VehicleSubPageState extends State<VehicleSubPage> {
 }
 
 class AllVehiclesPage extends StatelessWidget {
-  // final List<DatumEntity> vehicles;
-  // final List<DashDatumEntity> vehicles;
   final List<LastLocationRespEntity> vehicles;
   final String? token;
 
@@ -411,8 +440,6 @@ class AllVehiclesPage extends StatelessWidget {
     super.key,
     this.token,
     required this.vehicles,
-    // required this.vehicles,
-    /*required this.vehicles*/
   });
 
   @override
@@ -427,15 +454,11 @@ class AllVehiclesPage extends StatelessWidget {
 }
 
 class IdleVehiclesPage extends StatelessWidget {
-  // final List<DatumEntity> data;
-  // final List<DashDatumEntity> data;
   final List<LastLocationRespEntity> data;
   final String? token;
   const IdleVehiclesPage({
-    // required this.data,
     this.token,
     required this.data,
-    // required this.data,
   });
 
   @override
@@ -443,8 +466,7 @@ class IdleVehiclesPage extends StatelessWidget {
     print("Original vehicle list: ${data.length}");
     final idleVehicles = data
         .where((v) =>
-            v.vehicle?.details?.last_location?.status?.toLowerCase() ==
-            "idling")
+            v.vehicle?.details?.last_location?.status?.toLowerCase() == "idling")
         .toList();
     print("Filtered idling vehicles: ${idleVehicles.length}");
     return idleVehicles.isEmpty
@@ -738,8 +760,7 @@ class _VehicleListItemState extends State<VehicleListItem> {
                     number_plate: updatedVehicle.locationInfo.numberPlate,
                     user_id: updatedVehicle.locationInfo.userId,
                     vehicle_owner_id: null,
-                    created_at:
-                    updatedVehicle.locationInfo.tracker?.lastUpdate,
+                    created_at: updatedVehicle.locationInfo.tracker?.lastUpdate,
                     updated_at: "",
                     owner: null,
                     tracker: null,
@@ -748,20 +769,15 @@ class _VehicleListItemState extends State<VehicleListItem> {
                       tracker_id:
                       updatedVehicle.locationInfo.tracker?.positionId,
                       latitude: updatedVehicle
-                          .locationInfo.tracker?.position?.latitude
-                          .toString(),
+                          .locationInfo.tracker?.position?.latitude!.toStringAsFixed(7),
                       longitude: updatedVehicle
-                          .locationInfo.tracker?.position?.longitude
-                          .toString(),
+                          .locationInfo.tracker?.position?.longitude!.toStringAsFixed(7),
                       speed: updatedVehicle
-                          .locationInfo.tracker?.position?.speed
-                          .toString() ??
-                          "0.00",
+                          .locationInfo.tracker?.position?.speed!.toStringAsFixed(7)
+                          ?? "0.00",
                       speed_unit: "",
-                      course: updatedVehicle
-                          .locationInfo.tracker?.position?.course,
-                      fix_time: updatedVehicle
-                          .locationInfo.tracker?.position?.fixTime,
+                      course: updatedVehicle.locationInfo.tracker?.position?.course,
+                      fix_time: updatedVehicle.locationInfo.tracker?.position?.fixTime,
                       satellite_count: 0,
                       active_satellite_count: 0,
                       real_time_gps: AllVehicles[index]
@@ -783,13 +799,8 @@ class _VehicleListItemState extends State<VehicleListItem> {
                       error_check: 0, event: "",
                       parse_time: 0, voltage_level: "",
                       gsm_signal_strength: "", response_msg: "",
-                      status: updatedVehicle.locationInfo
-                          .vehicleStatus, //parkedVehicles[index].vehicle?.details?.last_location?.status,
-                      created_at: AllVehicles[index]
-                          .vehicle
-                          ?.details
-                          ?.last_location
-                          ?.created_at,
+                      status: updatedVehicle.locationInfo.vehicleStatus, //parkedVehicles[index].vehicle?.details?.last_location?.status,
+                      created_at: updatedVehicle.locationInfo.tracker?.lastUpdate,
                       updated_at: AllVehicles[index]
                           .vehicle
                           ?.details
@@ -837,128 +848,14 @@ class _VehicleListItemState extends State<VehicleListItem> {
         } else {
           print("-----::::::updatedVehicle.locationInfo.numberPlate2: ${updatedVehicle.locationInfo.vehicleStatus.toLowerCase()}::::::------");
           AllVehicles.add(createVehicleEntity(updatedVehicle, null));
-
-          // AllVehicles[index] = LastLocationRespEntity(
-          //     vehicle: MapVehicleEntity(
-          //         id: updatedVehicle.locationInfo.id,
-          //         details: MapDetailsEntity(
-          //             id: updatedVehicle.locationInfo.id,
-          //             brand: updatedVehicle.locationInfo.brand,
-          //             model: updatedVehicle.locationInfo.model,
-          //             year: updatedVehicle.locationInfo.year,
-          //             type: updatedVehicle.locationInfo.type,
-          //             vin: updatedVehicle.locationInfo.vin,
-          //             number_plate: updatedVehicle.locationInfo.numberPlate,
-          //             user_id: updatedVehicle.locationInfo.userId,
-          //             vehicle_owner_id: null,
-          //             created_at:
-          //             updatedVehicle.locationInfo.tracker?.lastUpdate,
-          //             updated_at: "",
-          //             owner: null,
-          //             tracker: null,
-          //             last_location: MapLastLocationEntity(
-          //               vehicle_id: 0,
-          //               tracker_id:
-          //               updatedVehicle.locationInfo.tracker?.positionId,
-          //               latitude: updatedVehicle
-          //                   .locationInfo.tracker?.position?.latitude
-          //                   .toString(),
-          //               longitude: updatedVehicle
-          //                   .locationInfo.tracker?.position?.longitude
-          //                   .toString(),
-          //               speed: updatedVehicle
-          //                   .locationInfo.tracker?.position?.speed
-          //                   .toString() ??
-          //                   "0.00",
-          //               speed_unit: "",
-          //               course: updatedVehicle
-          //                   .locationInfo.tracker?.position?.course,
-          //               fix_time: updatedVehicle
-          //                   .locationInfo.tracker?.position?.fixTime,
-          //               satellite_count: 0,
-          //               active_satellite_count: 0,
-          //               real_time_gps: AllVehicles[index]
-          //                   .vehicle
-          //                   ?.details
-          //                   ?.last_location
-          //                   ?.real_time_gps ??
-          //                   false,
-          //               gps_positioned: AllVehicles[index]
-          //                   .vehicle
-          //                   ?.details
-          //                   ?.last_location
-          //                   ?.real_time_gps ??
-          //                   false,
-          //               east_longitude: false,
-          //               north_latitude: false,
-          //               mcc: 0,
-          //               mnc: 0,
-          //               lac: 0,
-          //               cell_id: 0,
-          //               serial_number: "",
-          //               error_check: 0,
-          //               event: "",
-          //               parse_time: 0,
-          //               voltage_level: "",
-          //               gsm_signal_strength: "",
-          //               response_msg: "",
-          //               status: updatedVehicle.locationInfo.vehicleStatus,
-          //               created_at: AllVehicles[index]
-          //                   .vehicle
-          //                   ?.details
-          //                   ?.last_location
-          //                   ?.created_at,
-          //               updated_at: AllVehicles[index]
-          //                   .vehicle
-          //                   ?.details
-          //                   ?.last_location
-          //                   ?.updated_at,
-          //             ),
-          //             speed_limit: null),
-          //         driver: MapDriverEntity(
-          //             id: AllVehicles[index].vehicle?.driver?.id,
-          //             name:
-          //             AllVehicles[index].vehicle?.driver?.name ?? "N/A",
-          //             email:
-          //             AllVehicles[index].vehicle?.driver?.email ?? "N/A",
-          //             phone:
-          //             AllVehicles[index].vehicle?.driver?.phone ?? "N/A",
-          //             vehicle_vin:
-          //             AllVehicles[index].vehicle?.details?.vin ?? "N/A",
-          //             vehicle_id: 0,
-          //             pin: "",
-          //             country: "",
-          //             licence_number: "",
-          //             licence_issue_date: "",
-          //             licence_expiry_date: "",
-          //             guarantor_name: "",
-          //             guarantor_phone: "",
-          //             profile_picture_path: "",
-          //             driving_licence_path: "",
-          //             pin_path: "",
-          //             miscellaneous_path: "",
-          //             created_at: "",
-          //             updated_at: ""),
-          //         address: AllVehicles[index].vehicle?.address ?? "N/A",
-          //         geofence: null,
-          //         connected_status: null)
-          //   // VehicleEntity(
-          //   //   details: VehicleDetails(
-          //   //     number_plate: updatedVehicle.locationInfo.numberPlate,
-          //   //     last_location: LastLocation(
-          //   //       latitude: updatedVehicle.locationInfo.tracker?.position?.latitude.toString(),
-          //   //       longitude: updatedVehicle.locationInfo.tracker?.position?.longitude.toString(),
-          //   //       status: 'Parked',
-          //   //       created_at: updatedVehicle.locationInfo.tracker?.lastUpdate,
-          //   //       speed: updatedVehicle.locationInfo.tracker?.position?.speed?.toString(),
-          //   //     ),
-          //   //     brand: updatedVehicle.locationInfo.brand,
-          //   //     model: updatedVehicle.locationInfo.model,
-          //   //     vin: updatedVehicle.locationInfo.vin,
-          //   //   ),
-          //   // ),
-          // );
         }
+        // Sort vehicles with "moving" status to the top
+        AllVehicles.sort((a, b) {
+          if (a.vehicle?.details?.last_location?.status!.toLowerCase() == 'moving') {
+            return -1; // Moving vehicles at the top
+          }
+          return 0;
+        });
       } else if (index != -1) {
         // Remove vehicle if status changes from "Parked"
         AllVehicles.removeAt(index);
@@ -1926,245 +1823,109 @@ class _VehicleOfflineState extends State<VehicleOffline> {
             updatedVehicle.locationInfo.numberPlate,
       );
 
+      LastLocationRespModel createVehicleEntity(VehicleEntity updatedVehicle, LastLocationRespEntity? existingVehicle) {
+        // Populate the entity fields here
+        return LastLocationRespModel(
+            vehicle: VehicleModel(
+                id: updatedVehicle.locationInfo.id,
+                details: DetailsModel(
+                    id: updatedVehicle.locationInfo.id,
+                    brand: updatedVehicle.locationInfo.brand,
+                    model: updatedVehicle.locationInfo.model,
+                    year: updatedVehicle.locationInfo.year,
+                    type: updatedVehicle.locationInfo.type,
+                    vin: updatedVehicle.locationInfo.vin,
+                    number_plate: updatedVehicle.locationInfo.numberPlate,
+                    user_id: updatedVehicle.locationInfo.userId,
+                    vehicle_owner_id: null,
+                    created_at: updatedVehicle.locationInfo.tracker?.lastUpdate,
+                    updated_at: "",
+                    owner: null,
+                    tracker: null,
+                    last_location: LastLocationModel(
+                      vehicle_id: 0,
+                      tracker_id:
+                      updatedVehicle.locationInfo.tracker?.positionId,
+                      latitude: updatedVehicle
+                          .locationInfo.tracker?.position?.latitude!.toStringAsFixed(7),
+                      longitude: updatedVehicle
+                          .locationInfo.tracker?.position?.longitude!.toStringAsFixed(7),
+                      speed: updatedVehicle
+                          .locationInfo.tracker?.position?.speed!.toStringAsFixed(7)
+                          ?? "0.00",
+                      speed_unit: "",
+                      course: updatedVehicle
+                          .locationInfo.tracker?.position?.course,
+                      fix_time: updatedVehicle
+                          .locationInfo.tracker?.position?.fixTime,
+                      satellite_count: 0,
+                      active_satellite_count: 0,
+                      real_time_gps: offlineVehicles[index]
+                          .vehicle
+                          ?.details
+                          ?.last_location
+                          ?.real_time_gps ??
+                          false,
+                      gps_positioned: offlineVehicles[index]
+                          .vehicle
+                          ?.details
+                          ?.last_location
+                          ?.real_time_gps ??
+                          false,
+                      east_longitude: false,
+                      north_latitude: false,
+                      mcc: 0,
+                      mnc: 0, lac: 0, cell_id: 0, serial_number: "",
+                      error_check: 0, event: "",
+                      parse_time: 0, voltage_level: "",
+                      gsm_signal_strength: "", response_msg: "",
+                      status: updatedVehicle.locationInfo
+                          .vehicleStatus, //parkedVehicles[index].vehicle?.details?.last_location?.status,
+                      created_at: updatedVehicle.locationInfo.tracker?.lastUpdate,
+                      updated_at: offlineVehicles[index]
+                          .vehicle
+                          ?.details
+                          ?.last_location
+                          ?.updated_at,
+                    ),
+                    speed_limit: null),
+                driver: DriverModel(
+                    id: offlineVehicles[index].vehicle?.driver?.id,
+                    name: offlineVehicles[index].vehicle?.driver?.name ?? "N/A",
+                    email: offlineVehicles[index].vehicle?.driver?.email ?? "N/A",
+                    phone: offlineVehicles[index].vehicle?.driver?.phone ?? "N/A",
+                    vehicle_vin: offlineVehicles[index].vehicle?.details?.vin ?? "N/A",
+                    vehicle_id: 0,
+                    pin: "",
+                    country: "",
+                    licence_number: "",
+                    licence_issue_date: "",
+                    licence_expiry_date: "",
+                    guarantor_name: "",
+                    guarantor_phone: "",
+                    profile_picture_path: "",
+                    driving_licence_path: "",
+                    pin_path: "",
+                    miscellaneous_path: "",
+                    created_at: "",
+                    updated_at: ""),
+                address: offlineVehicles[index].vehicle?.address ?? "N/A",
+                geofence: null,
+                connected_status: null));
+      }
+
       if (updatedVehicle.locationInfo.vehicleStatus.toLowerCase() == 'offline') {
         // Update the existing vehicle or add it if not found
         if (index != -1) {
-          offlineVehicles[index] = LastLocationRespEntity(
-              vehicle: MapVehicleEntity(
-                  id: updatedVehicle.locationInfo.id,
-                  details: MapDetailsEntity(
-                      id: updatedVehicle.locationInfo.id,
-                      brand: updatedVehicle.locationInfo.brand,
-                      model: updatedVehicle.locationInfo.model,
-                      year: updatedVehicle.locationInfo.year,
-                      type: updatedVehicle.locationInfo.type,
-                      vin: updatedVehicle.locationInfo.vin,
-                      number_plate: updatedVehicle.locationInfo.numberPlate,
-                      user_id: updatedVehicle.locationInfo.userId,
-                      vehicle_owner_id: null,
-                      created_at:
-                          updatedVehicle.locationInfo.tracker?.lastUpdate,
-                      updated_at: "",
-                      owner: null,
-                      tracker: null,
-                      last_location: MapLastLocationEntity(
-                        vehicle_id: 0,
-                        tracker_id:
-                            updatedVehicle.locationInfo.tracker?.positionId,
-                        latitude: updatedVehicle
-                            .locationInfo.tracker?.position?.latitude
-                            .toString(),
-                        longitude: updatedVehicle
-                            .locationInfo.tracker?.position?.longitude
-                            .toString(),
-                        speed: updatedVehicle
-                                .locationInfo.tracker?.position?.speed
-                                .toString() ??
-                            "0.00",
-                        speed_unit: "",
-                        course: updatedVehicle
-                            .locationInfo.tracker?.position?.course,
-                        fix_time: updatedVehicle
-                            .locationInfo.tracker?.position?.fixTime,
-                        satellite_count: 0,
-                        active_satellite_count: 0,
-                        real_time_gps: offlineVehicles[index]
-                                .vehicle
-                                ?.details
-                                ?.last_location
-                                ?.real_time_gps ??
-                            false,
-                        gps_positioned: offlineVehicles[index]
-                                .vehicle
-                                ?.details
-                                ?.last_location
-                                ?.real_time_gps ??
-                            false,
-                        east_longitude: false,
-                        north_latitude: false,
-                        mcc: 0,
-                        mnc: 0,
-                        lac: 0,
-                        cell_id: 0,
-                        serial_number: "",
-                        error_check: 0,
-                        event: "",
-                        parse_time: 0,
-                        voltage_level: "",
-                        gsm_signal_strength: "",
-                        response_msg: "",
-                        status: offlineVehicles[index]
-                            .vehicle
-                            ?.details
-                            ?.last_location
-                            ?.status,
-                        created_at: offlineVehicles[index]
-                            .vehicle
-                            ?.details
-                            ?.last_location
-                            ?.created_at,
-                        updated_at: offlineVehicles[index]
-                            .vehicle
-                            ?.details
-                            ?.last_location
-                            ?.updated_at,
-                      ),
-                      speed_limit: null),
-                  driver: MapDriverEntity(
-                      id: offlineVehicles[index].vehicle?.driver?.id,
-                      name:
-                          offlineVehicles[index].vehicle?.driver?.name ?? "N/A",
-                      email: offlineVehicles[index].vehicle?.driver?.email ??
-                          "N/A",
-                      phone: offlineVehicles[index].vehicle?.driver?.phone ??
-                          "N/A",
-                      vehicle_vin:
-                          offlineVehicles[index].vehicle?.details?.vin ?? "N/A",
-                      vehicle_id: 0,
-                      pin: "",
-                      country: "",
-                      licence_number: "",
-                      licence_issue_date: "",
-                      licence_expiry_date: "",
-                      guarantor_name: "",
-                      guarantor_phone: "",
-                      profile_picture_path: "",
-                      driving_licence_path: "",
-                      pin_path: "",
-                      miscellaneous_path: "",
-                      created_at: "",
-                      updated_at: ""),
-                  address: offlineVehicles[index].vehicle?.address ?? "N/A",
-                  geofence: null,
-                  connected_status: null));
+          print("-----::::::offlineVehicle.locationInfo.numberPlate1: ${updatedVehicle.locationInfo.vehicleStatus.toLowerCase()}::::::------");
+          offlineVehicles[index] = createVehicleEntity(updatedVehicle, offlineVehicles[index]);
         } else {
-          offlineVehicles[index] = LastLocationRespEntity(
-              vehicle: MapVehicleEntity(
-                  id: updatedVehicle.locationInfo.id,
-                  details: MapDetailsEntity(
-                      id: updatedVehicle.locationInfo.id,
-                      brand: updatedVehicle.locationInfo.brand,
-                      model: updatedVehicle.locationInfo.model,
-                      year: updatedVehicle.locationInfo.year,
-                      type: updatedVehicle.locationInfo.type,
-                      vin: updatedVehicle.locationInfo.vin,
-                      number_plate: updatedVehicle.locationInfo.numberPlate,
-                      user_id: updatedVehicle.locationInfo.userId,
-                      vehicle_owner_id: null,
-                      created_at:
-                          updatedVehicle.locationInfo.tracker?.lastUpdate,
-                      updated_at: "",
-                      owner: null,
-                      tracker: null,
-                      last_location: MapLastLocationEntity(
-                        vehicle_id: 0,
-                        tracker_id:
-                            updatedVehicle.locationInfo.tracker?.positionId,
-                        latitude: updatedVehicle
-                            .locationInfo.tracker?.position?.latitude
-                            .toString(),
-                        longitude: updatedVehicle
-                            .locationInfo.tracker?.position?.longitude
-                            .toString(),
-                        speed: updatedVehicle
-                                .locationInfo.tracker?.position?.speed
-                                .toString() ??
-                            "0.00",
-                        speed_unit: "",
-                        course: updatedVehicle
-                            .locationInfo.tracker?.position?.course,
-                        fix_time: updatedVehicle
-                            .locationInfo.tracker?.position?.fixTime,
-                        satellite_count: 0,
-                        active_satellite_count: 0,
-                        real_time_gps: offlineVehicles[index]
-                                .vehicle
-                                ?.details
-                                ?.last_location
-                                ?.real_time_gps ??
-                            false,
-                        gps_positioned: offlineVehicles[index]
-                                .vehicle
-                                ?.details
-                                ?.last_location
-                                ?.real_time_gps ??
-                            false,
-                        east_longitude: false,
-                        north_latitude: false,
-                        mcc: 0,
-                        mnc: 0,
-                        lac: 0,
-                        cell_id: 0,
-                        serial_number: "",
-                        error_check: 0,
-                        event: "",
-                        parse_time: 0,
-                        voltage_level: "",
-                        gsm_signal_strength: "",
-                        response_msg: "",
-                        status: offlineVehicles[index]
-                            .vehicle
-                            ?.details
-                            ?.last_location
-                            ?.status,
-                        created_at: offlineVehicles[index]
-                            .vehicle
-                            ?.details
-                            ?.last_location
-                            ?.created_at,
-                        updated_at: offlineVehicles[index]
-                            .vehicle
-                            ?.details
-                            ?.last_location
-                            ?.updated_at,
-                      ),
-                      speed_limit: null),
-                  driver: MapDriverEntity(
-                      id: offlineVehicles[index].vehicle?.driver?.id,
-                      name:
-                          offlineVehicles[index].vehicle?.driver?.name ?? "N/A",
-                      email: offlineVehicles[index].vehicle?.driver?.email ??
-                          "N/A",
-                      phone: offlineVehicles[index].vehicle?.driver?.phone ??
-                          "N/A",
-                      vehicle_vin:
-                          offlineVehicles[index].vehicle?.details?.vin ?? "N/A",
-                      vehicle_id: 0,
-                      pin: "",
-                      country: "",
-                      licence_number: "",
-                      licence_issue_date: "",
-                      licence_expiry_date: "",
-                      guarantor_name: "",
-                      guarantor_phone: "",
-                      profile_picture_path: "",
-                      driving_licence_path: "",
-                      pin_path: "",
-                      miscellaneous_path: "",
-                      created_at: "",
-                      updated_at: ""),
-                  address: offlineVehicles[index].vehicle?.address ?? "N/A",
-                  geofence: null,
-                  connected_status: null)
-              // VehicleEntity(
-              //   details: VehicleDetails(
-              //     number_plate: updatedVehicle.locationInfo.numberPlate,
-              //     last_location: LastLocation(
-              //       latitude: updatedVehicle.locationInfo.tracker?.position?.latitude.toString(),
-              //       longitude: updatedVehicle.locationInfo.tracker?.position?.longitude.toString(),
-              //       status: 'Parked',
-              //       created_at: updatedVehicle.locationInfo.tracker?.lastUpdate,
-              //       speed: updatedVehicle.locationInfo.tracker?.position?.speed?.toString(),
-              //     ),
-              //     brand: updatedVehicle.locationInfo.brand,
-              //     model: updatedVehicle.locationInfo.model,
-              //     vin: updatedVehicle.locationInfo.vin,
-              //   ),
-              // ),
-              );
+          print("-----::::::offlineVehicle.locationInfo.numberPlate2: ${updatedVehicle.locationInfo.vehicleStatus.toLowerCase()}::::::------");
+          offlineVehicles.add(createVehicleEntity(updatedVehicle, null));
+
         }
       } else if (index != -1) {
-        // Remove vehicle if status changes from "Parked"
+        // Remove vehicle if status changes from "Offline"
         offlineVehicles.removeAt(index);
       }
     });
@@ -2768,8 +2529,7 @@ class _VehicleIdleState extends State<VehicleIdle> {
     super.initState();
     idlingVehicles = widget.data
         .where((data) =>
-            data.vehicle?.details?.last_location?.status?.toLowerCase() ==
-            'idling')
+            data.vehicle?.details?.last_location?.status?.toLowerCase() == 'idling')
         .toList();
   }
 
@@ -2782,242 +2542,107 @@ class _VehicleIdleState extends State<VehicleIdle> {
             updatedVehicle.locationInfo.numberPlate,
       );
 
+      LastLocationRespModel createVehicleEntity(VehicleEntity updatedVehicle, LastLocationRespEntity? existingVehicle) {
+        // Populate the entity fields here
+        return LastLocationRespModel(
+            vehicle: VehicleModel(
+                id: updatedVehicle.locationInfo.id,
+                details: DetailsModel(
+                    id: updatedVehicle.locationInfo.id,
+                    brand: updatedVehicle.locationInfo.brand,
+                    model: updatedVehicle.locationInfo.model,
+                    year: updatedVehicle.locationInfo.year,
+                    type: updatedVehicle.locationInfo.type,
+                    vin: updatedVehicle.locationInfo.vin,
+                    number_plate: updatedVehicle.locationInfo.numberPlate,
+                    user_id: updatedVehicle.locationInfo.userId,
+                    vehicle_owner_id: null,
+                    created_at: updatedVehicle.locationInfo.tracker?.lastUpdate,
+                    updated_at: "",
+                    owner: null,
+                    tracker: null,
+                    last_location: LastLocationModel(
+                      vehicle_id: 0,
+                      tracker_id:
+                      updatedVehicle.locationInfo.tracker?.positionId,
+                      latitude: updatedVehicle
+                          .locationInfo.tracker?.position?.latitude!.toStringAsFixed(7),
+                      longitude: updatedVehicle
+                          .locationInfo.tracker?.position?.longitude!.toStringAsFixed(7),
+                      speed: updatedVehicle
+                          .locationInfo.tracker?.position?.speed!.toStringAsFixed(7)
+                          ?? "0.00",
+                      speed_unit: "",
+                      course: updatedVehicle
+                          .locationInfo.tracker?.position?.course,
+                      fix_time: updatedVehicle
+                          .locationInfo.tracker?.position?.fixTime,
+                      satellite_count: 0,
+                      active_satellite_count: 0,
+                      real_time_gps: idlingVehicles[index]
+                          .vehicle
+                          ?.details
+                          ?.last_location
+                          ?.real_time_gps ??
+                          false,
+                      gps_positioned: idlingVehicles[index]
+                          .vehicle
+                          ?.details
+                          ?.last_location
+                          ?.real_time_gps ??
+                          false,
+                      east_longitude: false,
+                      north_latitude: false,
+                      mcc: 0,
+                      mnc: 0, lac: 0, cell_id: 0, serial_number: "",
+                      error_check: 0, event: "",
+                      parse_time: 0, voltage_level: "",
+                      gsm_signal_strength: "", response_msg: "",
+                      status: updatedVehicle.locationInfo
+                          .vehicleStatus, //parkedVehicles[index].vehicle?.details?.last_location?.status,
+                      created_at: updatedVehicle.locationInfo.tracker?.lastUpdate,
+                      updated_at: idlingVehicles[index]
+                          .vehicle
+                          ?.details
+                          ?.last_location
+                          ?.updated_at,
+                    ),
+                    speed_limit: null),
+                driver: DriverModel(
+                    id: idlingVehicles[index].vehicle?.driver?.id,
+                    name: idlingVehicles[index].vehicle?.driver?.name ?? "N/A",
+                    email: idlingVehicles[index].vehicle?.driver?.email ?? "N/A",
+                    phone: idlingVehicles[index].vehicle?.driver?.phone ?? "N/A",
+                    vehicle_vin: idlingVehicles[index].vehicle?.details?.vin ?? "N/A",
+                    vehicle_id: 0,
+                    pin: "",
+                    country: "",
+                    licence_number: "",
+                    licence_issue_date: "",
+                    licence_expiry_date: "",
+                    guarantor_name: "",
+                    guarantor_phone: "",
+                    profile_picture_path: "",
+                    driving_licence_path: "",
+                    pin_path: "",
+                    miscellaneous_path: "",
+                    created_at: "",
+                    updated_at: ""),
+                address: idlingVehicles[index].vehicle?.address ?? "N/A",
+                geofence: null,
+                connected_status: null));
+      }
+
+
       if (updatedVehicle.locationInfo.vehicleStatus.toLowerCase() == 'idling') {
         // Update the existing vehicle or add it if not found
         if (index != -1) {
-          idlingVehicles[index] = LastLocationRespEntity(
-              vehicle: MapVehicleEntity(
-                  id: updatedVehicle.locationInfo.id,
-                  details: MapDetailsEntity(
-                      id: updatedVehicle.locationInfo.id,
-                      brand: updatedVehicle.locationInfo.brand,
-                      model: updatedVehicle.locationInfo.model,
-                      year: updatedVehicle.locationInfo.year,
-                      type: updatedVehicle.locationInfo.type,
-                      vin: updatedVehicle.locationInfo.vin,
-                      number_plate: updatedVehicle.locationInfo.numberPlate,
-                      user_id: updatedVehicle.locationInfo.userId,
-                      vehicle_owner_id: null,
-                      created_at:
-                          updatedVehicle.locationInfo.tracker?.lastUpdate,
-                      updated_at: "",
-                      owner: null,
-                      tracker: null,
-                      last_location: MapLastLocationEntity(
-                        vehicle_id: 0,
-                        tracker_id:
-                            updatedVehicle.locationInfo.tracker?.positionId,
-                        latitude: updatedVehicle
-                            .locationInfo.tracker?.position?.latitude
-                            .toString(),
-                        longitude: updatedVehicle
-                            .locationInfo.tracker?.position?.longitude
-                            .toString(),
-                        speed: updatedVehicle
-                                .locationInfo.tracker?.position?.speed
-                                .toString() ??
-                            "0.00",
-                        speed_unit: "",
-                        course: updatedVehicle
-                            .locationInfo.tracker?.position?.course,
-                        fix_time: updatedVehicle
-                            .locationInfo.tracker?.position?.fixTime,
-                        satellite_count: 0,
-                        active_satellite_count: 0,
-                        real_time_gps: idlingVehicles[index]
-                                .vehicle
-                                ?.details
-                                ?.last_location
-                                ?.real_time_gps ??
-                            false,
-                        gps_positioned: idlingVehicles[index]
-                                .vehicle
-                                ?.details
-                                ?.last_location
-                                ?.real_time_gps ??
-                            false,
-                        east_longitude: false,
-                        north_latitude: false,
-                        mcc: 0,
-                        mnc: 0,
-                        lac: 0,
-                        cell_id: 0,
-                        serial_number: "",
-                        error_check: 0,
-                        event: "",
-                        parse_time: 0,
-                        voltage_level: "",
-                        gsm_signal_strength: "",
-                        response_msg: "",
-                        status: idlingVehicles[index]
-                            .vehicle
-                            ?.details
-                            ?.last_location
-                            ?.status,
-                        created_at: idlingVehicles[index]
-                            .vehicle
-                            ?.details
-                            ?.last_location
-                            ?.created_at,
-                        updated_at: idlingVehicles[index]
-                            .vehicle
-                            ?.details
-                            ?.last_location
-                            ?.updated_at,
-                      ),
-                      speed_limit: null),
-                  driver: MapDriverEntity(
-                      id: idlingVehicles[index].vehicle?.driver?.id,
-                      name:
-                          idlingVehicles[index].vehicle?.driver?.name ?? "N/A",
-                      email:
-                          idlingVehicles[index].vehicle?.driver?.email ?? "N/A",
-                      phone:
-                          idlingVehicles[index].vehicle?.driver?.phone ?? "N/A",
-                      vehicle_vin:
-                          idlingVehicles[index].vehicle?.details?.vin ?? "N/A",
-                      vehicle_id: 0,
-                      pin: "",
-                      country: "",
-                      licence_number: "",
-                      licence_issue_date: "",
-                      licence_expiry_date: "",
-                      guarantor_name: "",
-                      guarantor_phone: "",
-                      profile_picture_path: "",
-                      driving_licence_path: "",
-                      pin_path: "",
-                      miscellaneous_path: "",
-                      created_at: "",
-                      updated_at: ""),
-                  address: idlingVehicles[index].vehicle?.address ?? "N/A",
-                  geofence: null,
-                  connected_status: null));
+          print("-----::::::idlingVehicle.locationInfo.numberPlate1: ${updatedVehicle.locationInfo.vehicleStatus.toLowerCase()}::::::------");
+          idlingVehicles[index] = createVehicleEntity(updatedVehicle, idlingVehicles[index]);
         } else {
-          idlingVehicles[index] = LastLocationRespEntity(
-              vehicle: MapVehicleEntity(
-                  id: updatedVehicle.locationInfo.id,
-                  details: MapDetailsEntity(
-                      id: updatedVehicle.locationInfo.id,
-                      brand: updatedVehicle.locationInfo.brand,
-                      model: updatedVehicle.locationInfo.model,
-                      year: updatedVehicle.locationInfo.year,
-                      type: updatedVehicle.locationInfo.type,
-                      vin: updatedVehicle.locationInfo.vin,
-                      number_plate: updatedVehicle.locationInfo.numberPlate,
-                      user_id: updatedVehicle.locationInfo.userId,
-                      vehicle_owner_id: null,
-                      created_at:
-                          updatedVehicle.locationInfo.tracker?.lastUpdate,
-                      updated_at: "",
-                      owner: null,
-                      tracker: null,
-                      last_location: MapLastLocationEntity(
-                        vehicle_id: 0,
-                        tracker_id:
-                            updatedVehicle.locationInfo.tracker?.positionId,
-                        latitude: updatedVehicle
-                            .locationInfo.tracker?.position?.latitude
-                            .toString(),
-                        longitude: updatedVehicle
-                            .locationInfo.tracker?.position?.longitude
-                            .toString(),
-                        speed: updatedVehicle
-                                .locationInfo.tracker?.position?.speed
-                                .toString() ??
-                            "0.00",
-                        speed_unit: "",
-                        course: updatedVehicle
-                            .locationInfo.tracker?.position?.course,
-                        fix_time: updatedVehicle
-                            .locationInfo.tracker?.position?.fixTime,
-                        satellite_count: 0,
-                        active_satellite_count: 0,
-                        real_time_gps: idlingVehicles[index]
-                                .vehicle
-                                ?.details
-                                ?.last_location
-                                ?.real_time_gps ??
-                            false,
-                        gps_positioned: idlingVehicles[index]
-                                .vehicle
-                                ?.details
-                                ?.last_location
-                                ?.real_time_gps ??
-                            false,
-                        east_longitude: false,
-                        north_latitude: false,
-                        mcc: 0,
-                        mnc: 0,
-                        lac: 0,
-                        cell_id: 0,
-                        serial_number: "",
-                        error_check: 0,
-                        event: "",
-                        parse_time: 0,
-                        voltage_level: "",
-                        gsm_signal_strength: "",
-                        response_msg: "",
-                        status: idlingVehicles[index]
-                            .vehicle
-                            ?.details
-                            ?.last_location
-                            ?.status,
-                        created_at: idlingVehicles[index]
-                            .vehicle
-                            ?.details
-                            ?.last_location
-                            ?.created_at,
-                        updated_at: idlingVehicles[index]
-                            .vehicle
-                            ?.details
-                            ?.last_location
-                            ?.updated_at,
-                      ),
-                      speed_limit: null),
-                  driver: MapDriverEntity(
-                      id: idlingVehicles[index].vehicle?.driver?.id,
-                      name:
-                          idlingVehicles[index].vehicle?.driver?.name ?? "N/A",
-                      email:
-                          idlingVehicles[index].vehicle?.driver?.email ?? "N/A",
-                      phone:
-                          idlingVehicles[index].vehicle?.driver?.phone ?? "N/A",
-                      vehicle_vin:
-                          idlingVehicles[index].vehicle?.details?.vin ?? "N/A",
-                      vehicle_id: 0,
-                      pin: "",
-                      country: "",
-                      licence_number: "",
-                      licence_issue_date: "",
-                      licence_expiry_date: "",
-                      guarantor_name: "",
-                      guarantor_phone: "",
-                      profile_picture_path: "",
-                      driving_licence_path: "",
-                      pin_path: "",
-                      miscellaneous_path: "",
-                      created_at: "",
-                      updated_at: ""),
-                  address: idlingVehicles[index].vehicle?.address ?? "N/A",
-                  geofence: null,
-                  connected_status: null)
-              // VehicleEntity(
-              //   details: VehicleDetails(
-              //     number_plate: updatedVehicle.locationInfo.numberPlate,
-              //     last_location: LastLocation(
-              //       latitude: updatedVehicle.locationInfo.tracker?.position?.latitude.toString(),
-              //       longitude: updatedVehicle.locationInfo.tracker?.position?.longitude.toString(),
-              //       status: 'Parked',
-              //       created_at: updatedVehicle.locationInfo.tracker?.lastUpdate,
-              //       speed: updatedVehicle.locationInfo.tracker?.position?.speed?.toString(),
-              //     ),
-              //     brand: updatedVehicle.locationInfo.brand,
-              //     model: updatedVehicle.locationInfo.model,
-              //     vin: updatedVehicle.locationInfo.vin,
-              //   ),
-              // ),
-              );
+          print("-----::::::idlingVehicle.locationInfo.numberPlate2: ${updatedVehicle.locationInfo.vehicleStatus.toLowerCase()}::::::------");
+          idlingVehicles.add(createVehicleEntity(updatedVehicle, null));
+
         }
       } else if (index != -1) {
         // Remove vehicle if status changes from "Parked"
@@ -3632,6 +3257,9 @@ class _VehicleParkedState extends State<VehicleParked> {
         .toList();
   }
 
+
+
+
   void _updateParkedVehicles(VehicleEntity updatedVehicle) {
     setState(() {
       // Check if the updated vehicle is in the parked list
@@ -3640,230 +3268,106 @@ class _VehicleParkedState extends State<VehicleParked> {
             vehicle.vehicle?.details?.number_plate ==
             updatedVehicle.locationInfo.numberPlate,
       );
+      LastLocationRespModel createVehicleEntity(VehicleEntity updatedVehicle, LastLocationRespEntity? existingVehicle) {
+        // Populate the entity fields here
+        return LastLocationRespModel(
+            vehicle: VehicleModel(
+                id: updatedVehicle.locationInfo.id,
+                details: DetailsModel(
+                    id: updatedVehicle.locationInfo.id,
+                    brand: updatedVehicle.locationInfo.brand,
+                    model: updatedVehicle.locationInfo.model,
+                    year: updatedVehicle.locationInfo.year,
+                    type: updatedVehicle.locationInfo.type,
+                    vin: updatedVehicle.locationInfo.vin,
+                    number_plate: updatedVehicle.locationInfo.numberPlate,
+                    user_id: updatedVehicle.locationInfo.userId,
+                    vehicle_owner_id: null,
+                    created_at: updatedVehicle.locationInfo.tracker?.lastUpdate,
+                    updated_at: "",
+                    owner: null,
+                    tracker: null,
+                    last_location: LastLocationModel(
+                      vehicle_id: 0,
+                      tracker_id:
+                      updatedVehicle.locationInfo.tracker?.positionId,
+                      latitude: updatedVehicle
+                          .locationInfo.tracker?.position?.latitude!.toStringAsFixed(7),
+                      longitude: updatedVehicle
+                          .locationInfo.tracker?.position?.longitude!.toStringAsFixed(7),
+                      speed: updatedVehicle
+                          .locationInfo.tracker?.position?.speed!.toStringAsFixed(7)
+                          ?? "0.00",
+                      speed_unit: "",
+                      course: updatedVehicle
+                          .locationInfo.tracker?.position?.course,
+                      fix_time: updatedVehicle
+                          .locationInfo.tracker?.position?.fixTime,
+                      satellite_count: 0,
+                      active_satellite_count: 0,
+                      real_time_gps: parkedVehicles[index]
+                          .vehicle
+                          ?.details
+                          ?.last_location
+                          ?.real_time_gps ??
+                          false,
+                      gps_positioned: parkedVehicles[index]
+                          .vehicle
+                          ?.details
+                          ?.last_location
+                          ?.real_time_gps ??
+                          false,
+                      east_longitude: false,
+                      north_latitude: false,
+                      mcc: 0,
+                      mnc: 0, lac: 0, cell_id: 0, serial_number: "",
+                      error_check: 0, event: "",
+                      parse_time: 0, voltage_level: "",
+                      gsm_signal_strength: "", response_msg: "",
+                      status: updatedVehicle.locationInfo.vehicleStatus, //parkedVehicles[index].vehicle?.details?.last_location?.status,
+                      created_at: updatedVehicle.locationInfo.tracker?.lastUpdate,
+                      updated_at: parkedVehicles[index]
+                          .vehicle
+                          ?.details
+                          ?.last_location
+                          ?.updated_at,
+                    ),
+                    speed_limit: null),
+                driver: DriverModel(
+                    id: parkedVehicles[index].vehicle?.driver?.id,
+                    name: parkedVehicles[index].vehicle?.driver?.name ?? "N/A",
+                    email: parkedVehicles[index].vehicle?.driver?.email ?? "N/A",
+                    phone: parkedVehicles[index].vehicle?.driver?.phone ?? "N/A",
+                    vehicle_vin: parkedVehicles[index].vehicle?.details?.vin ?? "N/A",
+                    vehicle_id: 0,
+                    pin: "",
+                    country: "",
+                    licence_number: "",
+                    licence_issue_date: "",
+                    licence_expiry_date: "",
+                    guarantor_name: "",
+                    guarantor_phone: "",
+                    profile_picture_path: "",
+                    driving_licence_path: "",
+                    pin_path: "",
+                    miscellaneous_path: "",
+                    created_at: "",
+                    updated_at: ""),
+                address: parkedVehicles[index].vehicle?.address ?? "N/A",
+                geofence: null,
+                connected_status: null));
+      }
+
 
       if (updatedVehicle.locationInfo.vehicleStatus.toLowerCase() == 'parked') {
         // Update the existing vehicle or add it if not found
         if (index != -1) {
-          parkedVehicles[index] = LastLocationRespEntity(
-              vehicle: MapVehicleEntity(
-                  id: updatedVehicle.locationInfo.id,
-                  details: MapDetailsEntity(
-                      id: updatedVehicle.locationInfo.id,
-                      brand: updatedVehicle.locationInfo.brand,
-                      model: updatedVehicle.locationInfo.model,
-                      year: updatedVehicle.locationInfo.year,
-                      type: updatedVehicle.locationInfo.type,
-                      vin: updatedVehicle.locationInfo.vin,
-                      number_plate: updatedVehicle.locationInfo.numberPlate,
-                      user_id: updatedVehicle.locationInfo.userId,
-                      vehicle_owner_id: null,
-                      created_at:
-                          updatedVehicle.locationInfo.tracker?.lastUpdate,
-                      updated_at: "",
-                      owner: null,
-                      tracker: null,
-                      last_location: MapLastLocationEntity(
-                        vehicle_id: 0,
-                        tracker_id:
-                            updatedVehicle.locationInfo.tracker?.positionId,
-                        latitude: updatedVehicle
-                            .locationInfo.tracker?.position?.latitude
-                            .toString(),
-                        longitude: updatedVehicle
-                            .locationInfo.tracker?.position?.longitude
-                            .toString(),
-                        speed: updatedVehicle
-                                .locationInfo.tracker?.position?.speed
-                                .toString() ??
-                            "0.00",
-                        speed_unit: "",
-                        course: updatedVehicle
-                            .locationInfo.tracker?.position?.course,
-                        fix_time: updatedVehicle
-                            .locationInfo.tracker?.position?.fixTime,
-                        satellite_count: 0,
-                        active_satellite_count: 0,
-                        real_time_gps: parkedVehicles[index]
-                                .vehicle
-                                ?.details
-                                ?.last_location
-                                ?.real_time_gps ??
-                            false,
-                        gps_positioned: parkedVehicles[index]
-                                .vehicle
-                                ?.details
-                                ?.last_location
-                                ?.real_time_gps ??
-                            false,
-                        east_longitude: false,
-                        north_latitude: false,
-                        mcc: 0,
-                        mnc: 0, lac: 0, cell_id: 0, serial_number: "",
-                        error_check: 0, event: "",
-                        parse_time: 0, voltage_level: "",
-                        gsm_signal_strength: "", response_msg: "",
-                        status: updatedVehicle.locationInfo
-                            .vehicleStatus, //parkedVehicles[index].vehicle?.details?.last_location?.status,
-                        created_at: parkedVehicles[index]
-                            .vehicle
-                            ?.details
-                            ?.last_location
-                            ?.created_at,
-                        updated_at: parkedVehicles[index]
-                            .vehicle
-                            ?.details
-                            ?.last_location
-                            ?.updated_at,
-                      ),
-                      speed_limit: null),
-                  driver: MapDriverEntity(
-                      id: parkedVehicles[index].vehicle?.driver?.id,
-                      name:
-                          parkedVehicles[index].vehicle?.driver?.name ?? "N/A",
-                      email:
-                          parkedVehicles[index].vehicle?.driver?.email ?? "N/A",
-                      phone:
-                          parkedVehicles[index].vehicle?.driver?.phone ?? "N/A",
-                      vehicle_vin:
-                          parkedVehicles[index].vehicle?.details?.vin ?? "N/A",
-                      vehicle_id: 0,
-                      pin: "",
-                      country: "",
-                      licence_number: "",
-                      licence_issue_date: "",
-                      licence_expiry_date: "",
-                      guarantor_name: "",
-                      guarantor_phone: "",
-                      profile_picture_path: "",
-                      driving_licence_path: "",
-                      pin_path: "",
-                      miscellaneous_path: "",
-                      created_at: "",
-                      updated_at: ""),
-                  address: parkedVehicles[index].vehicle?.address ?? "N/A",
-                  geofence: null,
-                  connected_status: null));
+          print("-----::::::parkedVehicle.locationInfo.numberPlate1: ${updatedVehicle.locationInfo.vehicleStatus.toLowerCase()}::::::------");
+          parkedVehicles[index] = createVehicleEntity(updatedVehicle, parkedVehicles[index]);
         } else {
-          parkedVehicles[index] = LastLocationRespEntity(
-              vehicle: MapVehicleEntity(
-                  id: updatedVehicle.locationInfo.id,
-                  details: MapDetailsEntity(
-                      id: updatedVehicle.locationInfo.id,
-                      brand: updatedVehicle.locationInfo.brand,
-                      model: updatedVehicle.locationInfo.model,
-                      year: updatedVehicle.locationInfo.year,
-                      type: updatedVehicle.locationInfo.type,
-                      vin: updatedVehicle.locationInfo.vin,
-                      number_plate: updatedVehicle.locationInfo.numberPlate,
-                      user_id: updatedVehicle.locationInfo.userId,
-                      vehicle_owner_id: null,
-                      created_at:
-                          updatedVehicle.locationInfo.tracker?.lastUpdate,
-                      updated_at: "",
-                      owner: null,
-                      tracker: null,
-                      last_location: MapLastLocationEntity(
-                        vehicle_id: 0,
-                        tracker_id:
-                            updatedVehicle.locationInfo.tracker?.positionId,
-                        latitude: updatedVehicle
-                            .locationInfo.tracker?.position?.latitude
-                            .toString(),
-                        longitude: updatedVehicle
-                            .locationInfo.tracker?.position?.longitude
-                            .toString(),
-                        speed: updatedVehicle
-                                .locationInfo.tracker?.position?.speed
-                                .toString() ??
-                            "0.00",
-                        speed_unit: "",
-                        course: updatedVehicle
-                            .locationInfo.tracker?.position?.course,
-                        fix_time: updatedVehicle
-                            .locationInfo.tracker?.position?.fixTime,
-                        satellite_count: 0,
-                        active_satellite_count: 0,
-                        real_time_gps: parkedVehicles[index]
-                                .vehicle
-                                ?.details
-                                ?.last_location
-                                ?.real_time_gps ??
-                            false,
-                        gps_positioned: parkedVehicles[index]
-                                .vehicle
-                                ?.details
-                                ?.last_location
-                                ?.real_time_gps ??
-                            false,
-                        east_longitude: false,
-                        north_latitude: false,
-                        mcc: 0,
-                        mnc: 0,
-                        lac: 0,
-                        cell_id: 0,
-                        serial_number: "",
-                        error_check: 0,
-                        event: "",
-                        parse_time: 0,
-                        voltage_level: "",
-                        gsm_signal_strength: "",
-                        response_msg: "",
-                        status: updatedVehicle.locationInfo.vehicleStatus,
-                        created_at: parkedVehicles[index]
-                            .vehicle
-                            ?.details
-                            ?.last_location
-                            ?.created_at,
-                        updated_at: parkedVehicles[index]
-                            .vehicle
-                            ?.details
-                            ?.last_location
-                            ?.updated_at,
-                      ),
-                      speed_limit: null),
-                  driver: MapDriverEntity(
-                      id: parkedVehicles[index].vehicle?.driver?.id,
-                      name:
-                          parkedVehicles[index].vehicle?.driver?.name ?? "N/A",
-                      email:
-                          parkedVehicles[index].vehicle?.driver?.email ?? "N/A",
-                      phone:
-                          parkedVehicles[index].vehicle?.driver?.phone ?? "N/A",
-                      vehicle_vin:
-                          parkedVehicles[index].vehicle?.details?.vin ?? "N/A",
-                      vehicle_id: 0,
-                      pin: "",
-                      country: "",
-                      licence_number: "",
-                      licence_issue_date: "",
-                      licence_expiry_date: "",
-                      guarantor_name: "",
-                      guarantor_phone: "",
-                      profile_picture_path: "",
-                      driving_licence_path: "",
-                      pin_path: "",
-                      miscellaneous_path: "",
-                      created_at: "",
-                      updated_at: ""),
-                  address: parkedVehicles[index].vehicle?.address ?? "N/A",
-                  geofence: null,
-                  connected_status: null)
-              // VehicleEntity(
-              //   details: VehicleDetails(
-              //     number_plate: updatedVehicle.locationInfo.numberPlate,
-              //     last_location: LastLocation(
-              //       latitude: updatedVehicle.locationInfo.tracker?.position?.latitude.toString(),
-              //       longitude: updatedVehicle.locationInfo.tracker?.position?.longitude.toString(),
-              //       status: 'Parked',
-              //       created_at: updatedVehicle.locationInfo.tracker?.lastUpdate,
-              //       speed: updatedVehicle.locationInfo.tracker?.position?.speed?.toString(),
-              //     ),
-              //     brand: updatedVehicle.locationInfo.brand,
-              //     model: updatedVehicle.locationInfo.model,
-              //     vin: updatedVehicle.locationInfo.vin,
-              //   ),
-              // ),
-              );
+          print("-----::::::parkedVehicle.locationInfo.numberPlate2: ${updatedVehicle.locationInfo.vehicleStatus.toLowerCase()}::::::------");
+          parkedVehicles.add(createVehicleEntity(updatedVehicle, null));
+
         }
       } else if (index != -1) {
         // Remove vehicle if status changes from "Parked"
@@ -4478,7 +3982,8 @@ class _VehicleDescriptionState extends State<VehicleDescription> {
                       style: AppStyle.cardSubtitle.copyWith(fontSize: 12),
                     ),
                     Text(
-                      '${widget.vehicle.vehicle?.details?.last_location?.latitude}, ${widget.vehicle.vehicle?.details?.last_location?.longitude}',
+                      '${widget.vehicle.vehicle?.details?.last_location?.latitude}, '
+                          '${widget.vehicle.vehicle?.details?.last_location?.longitude}',
                       style: AppStyle.cardfooter.copyWith(fontSize: 12),
                     ),
                   ],
@@ -4493,8 +3998,7 @@ class _VehicleDescriptionState extends State<VehicleDescription> {
                       style: AppStyle.cardfooter,
                     ),
                     Text(
-                      FormatData.formatTimeAgo(widget.vehicle.vehicle!.details!
-                          .last_location!.created_at!),
+                      FormatData.formatTimeAgo(widget.vehicle.vehicle!.details!.last_location!.created_at!),
                       style: AppStyle.cardfooter.copyWith(fontSize: 12),
                     ),
                   ],
@@ -4556,7 +4060,9 @@ class _VehicleDescriptionState extends State<VehicleDescription> {
               const SizedBox(width: 15),
               Column(
                 children: [
-                  Icon(Icons.power, color: vehicle.vehicle?.details?.last_location?.status?.toLowerCase() == "online" ? Colors.green : Colors.grey),
+                  Icon(Icons.power, color: vehicle.vehicle?.details?.last_location?.status?.toLowerCase() == "moving"
+                      ? Colors.green
+                      : Colors.grey),
                   // widget.vehicle.vehicle?.details?.last_location?.status?.toLowerCase() == "online" ? Colors.green : Colors.grey),
                   Text("Ignition",
                       style: AppStyle.cardfooter.copyWith(fontSize: 10)),
