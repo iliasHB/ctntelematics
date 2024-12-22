@@ -16,8 +16,27 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import '../../../../core/usecase/provider_usecase.dart';
+import '../../../../core/widgets/shimmer_loading.dart';
 import '../../../../service_locator.dart';
 import '../../../websocket/domain/entitties/resp_entities/vehicle_entity.dart';
+
+
+const _shimmerGradient = LinearGradient(
+  colors: [
+    Color(0xFFEBEBF4),
+    Color(0xFFF4F4F4),
+    Color(0xFFEBEBF4),
+  ],
+  stops: [
+    0.1,
+    0.3,
+    0.4,
+  ],
+  begin: Alignment(-1.0, -0.3),
+  end: Alignment(1.0, 0.3),
+  tileMode: TileMode.clamp,
+);
+
 
 class MapPage extends StatefulWidget {
   MapPage({super.key});
@@ -125,113 +144,112 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AnimatedAppBar(firstname: first_name ?? ""),
-      body: FutureBuilder(
-        future: _getAuthUserFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-                child: CircularProgressIndicator(
-              strokeWidth: 2.0,
-              color: Colors.green,
-            ));
-          } else if (snapshot.hasError) {
-            return const Center(child: Text('Failed to fetch user data'));
-          } else {
-            final tokenReq = TokenReqEntity(
-              token: token ?? '',
-              contentType: 'application/json',
-            );
+      body: Shimmer(
+        linearGradient: _shimmerGradient,
+        child: FutureBuilder(
+          future: _getAuthUserFuture,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(
+                  child: CustomContainerLoadingButton());
+            } else if (snapshot.hasError) {
+              return const Center(child: Text('Failed to fetch user data'));
+            } else {
+              final tokenReq = TokenReqEntity(
+                token: token ?? '',
+                contentType: 'application/json',
+              );
 
-            return BlocProvider(
-              create: (_) =>
-                  sl<LastLocationBloc>()..add(LastLocationEvent(tokenReq)),
-              child: BlocConsumer<LastLocationBloc, MapState>(
-                listener: (context, state) {
-                  if (state is MapFailure) {
-                    if (state.message.contains("Unauthenticated")) {
-                      Navigator.pushNamedAndRemoveUntil(
-                          context, "/login", (route) => false);
+              return BlocProvider(
+                create: (_) =>
+                    sl<LastLocationBloc>()..add(LastLocationEvent(tokenReq)),
+                child: BlocConsumer<LastLocationBloc, MapState>(
+                  listener: (context, state) {
+                    if (state is MapFailure) {
+                      if (state.message.contains("Unauthenticated")) {
+                        Navigator.pushNamedAndRemoveUntil(
+                            context, "/login", (route) => false);
+                      }
+                      ScaffoldMessenger.of(context)
+                          .showSnackBar(SnackBar(content: Text(state.message)));
                     }
-                    ScaffoldMessenger.of(context)
-                        .showSnackBar(SnackBar(content: Text(state.message)));
-                  }
-                },
-                builder: (context, state) {
-                  final isGeofence =
-                      context.watch<GeofenceProvider>().isGeofence;
+                  },
+                  builder: (context, state) {
+                    final isGeofence =
+                        context.watch<GeofenceProvider>().isGeofence;
 
-                  if (state is MapLoading) {
-                    return Stack(
-                      children: [
-                          GoogleMap(
-                            onMapCreated: (GoogleMapController controller) {
-                              mapController = controller;
-                            },
+                    if (state is MapLoading) {
+                      return Stack(
+                        children: [
+                            GoogleMap(
+                              onMapCreated: (GoogleMapController controller) {
+                                mapController = controller;
+                              },
 
-                            initialCameraPosition: const CameraPosition(
-                              target: LatLng(9.0820, 8.6753), // Center of Nigeria
-                              zoom: 6.0, // Adjust zoom for initialization
+                              initialCameraPosition: const CameraPosition(
+                                target: LatLng(9.0820, 8.6753), // Center of Nigeria
+                                zoom: 6.0, // Adjust zoom for initialization
+                              ),
+
+                              markers: Set<Marker>.of(_mark),
+                              polygons: isGeofence && _geofencePolygon != null
+                                  ? {_geofencePolygon!}
+                                  : {}, // Toggle geofence
                             ),
-
-                            markers: Set<Marker>.of(_mark),
-                            polygons: isGeofence && _geofencePolygon != null
-                                ? {_geofencePolygon!}
-                                : {}, // Toggle geofence
-                          ),
-                        const Positioned(
-                          child: Center(
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2.0,
-                              color: Colors.green,
+                          Positioned.fill(
+                            child: ShimmerLoading(
+                              child: Container(
+                                color: Colors.white.withOpacity(0.8),
+                              ),
                             ),
                           ),
-                        ),
-                      ],
-                    );
-                  } else if (state is GetLastLocationDone) {
-                    // Add markers for all vehicles' last known location
-                    _updateMarkers(state.resp, vehicles: []);
+                        ],
+                      );
+                    } else if (state is GetLastLocationDone) {
+                      // Add markers for all vehicles' last known location
+                      _updateMarkers(state.resp, vehicles: []);
 
-                    return BlocListener<VehicleLocationBloc, List<VehicleEntity>>(
-                      listener: (context, vehicles) {
-                        // Handle additional logic if needed
-                      },
-                      child: BlocBuilder<VehicleLocationBloc, List<VehicleEntity>>(
-                        builder: (context, vehicles) {
-                          // Update markers for vehicles that have moved
-                          _updateMarkers(state.resp, vehicles: vehicles);
-
-                          return buildMap(isGeofence);
+                      return BlocListener<VehicleLocationBloc, List<VehicleEntity>>(
+                        listener: (context, vehicles) {
+                          // Handle additional logic if needed
                         },
-                      ),
-                    );
-                  } else {
-                    return Center(
-                        child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Text(
-                          'No records found',
-                          style: AppStyle.cardfooter,
+                        child: BlocBuilder<VehicleLocationBloc, List<VehicleEntity>>(
+                          builder: (context, vehicles) {
+                            // Update markers for vehicles that have moved
+                            _updateMarkers(state.resp, vehicles: vehicles);
+
+                            return buildMap(isGeofence);
+                          },
                         ),
-                        const SizedBox(
-                          height: 10.0,
-                        ),
-                        CustomSecondaryButton(
-                            label: 'Refresh',
-                            onPressed: () {
-                              BlocProvider.of<LastLocationBloc>(context)
-                                  .add(LastLocationEvent(tokenReq));
-                            })
-                      ],
-                    ));
-                  }
-                },
-              ),
-            );
-          }
-        },
+                      );
+                    } else {
+                      return Center(
+                          child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(
+                            'No records found',
+                            style: AppStyle.cardfooter,
+                          ),
+                          const SizedBox(
+                            height: 10.0,
+                          ),
+                          CustomSecondaryButton(
+                              label: 'Refresh',
+                              onPressed: () {
+                                BlocProvider.of<LastLocationBloc>(context)
+                                    .add(LastLocationEvent(tokenReq));
+                              })
+                        ],
+                      ));
+                    }
+                  },
+                ),
+              );
+            }
+          },
+        ),
       ),
     );
   }
@@ -285,17 +303,27 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
     }).toSet();
   }
 
+  void _updatePolylinesOnMap() {
+    final updatedPolylines = _routes.values.toSet();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      updatedPolylines;
+      //_polylinesController.value = updatedPolylines; // Assuming `_polylinesController` is used for managing polylines on the map.
+    });
+  }
 
 
   void _updateMarkers(List<LastLocationRespEntity> allVehicles, {required List<VehicleEntity> vehicles}) async {
     // Set<Marker> updatedMarkers = {};
+    final Map<String, LatLng> _lastMovingPositions = {}; // Store last moving positions
+    final Map<String, double> _lastMovingBearings = {}; // Store last moving bearings
+
     final Map<String, Marker> updatedMarkers = Map.fromEntries(
       _markers.value.map((marker) => MapEntry(marker.markerId.value, marker)),
     );
     final interpolatedPositions = <LatLng>[];
     final Set<String> activeVehicles = {};
     // List<Marker> updatedMarkers = List.from(_markers);
-// Map to track timers for inactive vehicles
+    // Map to track timers for inactive vehicles
     final Map<String, Timer> _inactiveTimers = {};
 
     /// Offline vehicle markers
@@ -304,25 +332,39 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
         _addGeofencePolygon(vehicle.vehicle?.geofence?.coordinates);
 
         final currentPosition = LatLng(
-          double.parse(
-              vehicle.vehicle!.details!.last_location!.latitude.toString()),
-          double.parse(
-              vehicle.vehicle!.details!.last_location!.longitude.toString()),
+          double.parse(vehicle.vehicle!.details!.last_location!.latitude.toString()),
+          double.parse(vehicle.vehicle!.details!.last_location!.longitude.toString()),
         );
 
         final numberPlate = vehicle.vehicle!.details!.number_plate!;
 
+
         // Add offline marker if the vehicle is not moving
-        if (vehicle.vehicle!.details?.last_location?.status != 'Moving' ||
-            vehicle.vehicle!.details?.last_location?.status != 'moving') {
+        if (vehicle.vehicle!.details?.last_location?.status!.toLowerCase() != 'moving' ) {
+
+          // Remove the polyline associated with this vehicle
+          if (_routes.containsKey(numberPlate)) {
+            _routes.remove(numberPlate);
+
+            // Optionally update the map to reflect the change
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              _updatePolylinesOnMap();
+            });
+          }
+
+
           if (_offlineCustomIcon == null) {
             _setOfflineCustomMarkerIcon();
           }
 
+          final parkedPosition = _lastMovingPositions[numberPlate] ?? currentPosition;
+          final parkedBearing = _lastMovingBearings[numberPlate] ?? 0;
+
           updatedMarkers[numberPlate] = Marker(
               icon: _offlineCustomIcon!, // Icon for stationary vehicles
               markerId: MarkerId(numberPlate),
-              position: currentPosition,
+              position: parkedPosition,
+              rotation: parkedBearing, // Maintain last known direction
               onTap: () {
                 mapController.animateCamera(
                   CameraUpdate.newLatLngZoom(currentPosition, 15.0), // Reduced zoom level
@@ -370,6 +412,8 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
             (v) => v.vehicle?.details?.number_plate == vehicle.locationInfo.numberPlate,
       );
 
+
+
       if ((vehicle.locationInfo.vehicleStatus.toLowerCase() == "moving" &&
               vehicle.locationInfo.tracker!.status!.toLowerCase() == "online" &&
               vehicle.locationInfo.tracker!.position!.latitude != null &&
@@ -394,32 +438,27 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
         }
         _routes[numberPlate] = _routes[numberPlate] ?? [];
 
-        // if (!_routes.containsKey(numberPlate)) {
-        //   _routes[numberPlate] = [];
-        // }
-
-
         final previousPosition = _previousPositions[numberPlate] ?? currentPosition;
         // Cache the current position as the new previous position
         _previousPositions[numberPlate] = currentPosition;
 
-        // Calculate bearing if we have a previous position
-        double? bearing;
+        double bearing = 0.0;
         if (previousPosition != null) {
           bearing = _calculateBearing(previousPosition, currentPosition);
+          _lastMovingBearings[numberPlate] = bearing; // Update last moving bearing
         }
 
-        // final distance = _calculateDistance(previousPosition, currentPosition);
-        // if (distance < 1) continue;
-
+        final distance = _calculateDistance(previousPosition, currentPosition);
         // Add or update the marker only if the vehicle has moved significantly
-        if (previousPosition == null || _calculateDistance(previousPosition, currentPosition) >= 1) {
-
-          final distance = _calculateDistance(previousPosition, currentPosition);
+        if (previousPosition == null || distance >= 1) {
 
           if (_onlineCustomIcon == null) {
             await _setOnlineCustomMarkerIcon();
           }
+
+          _lastMovingPositions[numberPlate] = currentPosition; // Update last moving position
+          //_lastMovingBearings[numberPlate] = bearing;
+
           // Ensure significant movement has occurred
           if (!_routes.containsKey(numberPlate)) {
             _routes[numberPlate] = [];
@@ -455,9 +494,6 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
                 mapController.animateCamera(
                   CameraUpdate.newLatLngZoom(currentPosition, 15.0),
                 );
-                // // Optionally animate the camera to follow the vehicle
-                // mapController.animateCamera(CameraUpdate.newLatLng(interpolatedPosition));
-
                 _showVehicleOnlineToolTip(
                   // Pass relevant data
                   numberPlate: vehicle.locationInfo.numberPlate,
@@ -504,8 +540,7 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
       }
     }
 
-
-
+    // Schedule offline marker for inactive vehicles
     for (var numberPlate in _previousPositions.keys) {
       if (!activeVehicles.contains(numberPlate)) {
         if (!_inactiveTimers.containsKey(numberPlate)) {
@@ -528,50 +563,12 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
               });
         }}}
 
-    // // Schedule offline marker for inactive vehicles
-    // for (var numberPlate in _routes.keys) {
-    //   if (!activeVehicles.contains(numberPlate)) {
-    //     // Only schedule if there's no existing timer
-    //     if (!_inactiveTimers.containsKey(numberPlate)) {
-    //       _inactiveTimers[numberPlate] = Timer(const Duration(seconds: 120), () async {
-    //         // Change the marker to offline
-    //         if (_offlineCustomIcon == null) {
-    //           await _setOfflineCustomMarkerIcon();
-    //         }
-    //
-    //         final currentPosition = _previousPositions[numberPlate] ?? _routes[numberPlate]?.last;
-    //         if (currentPosition != null) {
-    //           updatedMarkers[numberPlate] = Marker(
-    //             icon: _offlineCustomIcon!,
-    //             markerId: MarkerId(numberPlate),
-    //             position: currentPosition,
-    //             onTap: () {
-    //               mapController.animateCamera(CameraUpdate.newLatLngZoom(currentPosition, 15.0));
-    //             },
-    //             infoWindow: InfoWindow(title: numberPlate),
-    //           );
-    //
-    //           // Update the map markers
-    //           WidgetsBinding.instance.addPostFrameCallback((_) {
-    //             _markers.value = updatedMarkers.values.toSet();
-    //           });
-    //         }
-    //
-    //         // Remove the timer reference after updating the marker
-    //         _inactiveTimers.remove(numberPlate);
-    //       });
-    //     }
-    //   }
-    // }
-
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _markers.value = updatedMarkers.values.toSet();
     });
 
   }
-
-
 
   double _calculateDistance(LatLng start, LatLng end) {
     return Geolocator.distanceBetween(
@@ -606,6 +603,43 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
   double _toDegrees(double radians) {
     return radians * 180 / pi;
   }
+
+
+  // // Schedule offline marker for inactive vehicles
+  // for (var numberPlate in _routes.keys) {
+  //   if (!activeVehicles.contains(numberPlate)) {
+  //     // Only schedule if there's no existing timer
+  //     if (!_inactiveTimers.containsKey(numberPlate)) {
+  //       _inactiveTimers[numberPlate] = Timer(const Duration(seconds: 120), () async {
+  //         // Change the marker to offline
+  //         if (_offlineCustomIcon == null) {
+  //           await _setOfflineCustomMarkerIcon();
+  //         }
+  //
+  //         final currentPosition = _previousPositions[numberPlate] ?? _routes[numberPlate]?.last;
+  //         if (currentPosition != null) {
+  //           updatedMarkers[numberPlate] = Marker(
+  //             icon: _offlineCustomIcon!,
+  //             markerId: MarkerId(numberPlate),
+  //             position: currentPosition,
+  //             onTap: () {
+  //               mapController.animateCamera(CameraUpdate.newLatLngZoom(currentPosition, 15.0));
+  //             },
+  //             infoWindow: InfoWindow(title: numberPlate),
+  //           );
+  //
+  //           // Update the map markers
+  //           WidgetsBinding.instance.addPostFrameCallback((_) {
+  //             _markers.value = updatedMarkers.values.toSet();
+  //           });
+  //         }
+  //
+  //         // Remove the timer reference after updating the marker
+  //         _inactiveTimers.remove(numberPlate);
+  //       });
+  //     }
+  //   }
+  // }
 
   _showVehicleOnlineToolTip(
       {required String numberPlate,

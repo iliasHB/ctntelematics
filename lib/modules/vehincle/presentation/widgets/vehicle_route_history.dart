@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:ctntelematics/core/widgets/custom_button.dart';
 import 'package:ctntelematics/modules/vehincle/domain/entities/req_entities/route_history_req_entity.dart';
 import 'package:ctntelematics/modules/vehincle/domain/entities/resp_entities/route_history_resp_entity.dart';
 import 'package:flutter/cupertino.dart';
@@ -113,54 +114,21 @@ class _VehicleRouteHistoryState extends State<VehicleRouteHistory> {
                   ],
                 ),
               ),
-              // Row(
-              //   children: [
-              //     Expanded(
-              //       child: SizedBox(
-              //           height: 50,
-              //           child: ListView(
-              //             scrollDirection: Axis.horizontal,
-              //             children: [
-              //               const SizedBox(
-              //                 width: 10,
-              //               ),
-              //               RouteWidget(
-              //                   title: "Route Length",
-              //                   subTitle: FormatData.handle2DecimalPointFormat(0.0),
-              //                   color: Colors.green),
-              //               const SizedBox(
-              //                 width: 10,
-              //               ),
-              //               const RouteWidget(
-              //                   title: "Move Duration",
-              //                   subTitle: "33min 0s",
-              //                   color: Colors.brown),
-              //               const SizedBox(
-              //                 width: 10,
-              //               ),
-              //               const RouteWidget(
-              //                   title: "Stop Duration",
-              //                   subTitle: "16h 32min 22s",
-              //                   color: Colors.blue),
-              //               const SizedBox(
-              //                 width: 10,
-              //               ),
-              //               const RouteWidget(
-              //                   title: "Max Speed",
-              //                   subTitle: "6kph",
-              //                   color: Colors.purpleAccent)
-              //             ],
-              //           )),
-              //     )
-              //   ],
-              // ),
+
 
               BlocConsumer<VehicleRouteHistoryBloc, VehicleState>(
                   builder: (BuildContext context, state) {
                 if (state is VehicleLoading) {
-                  return const Center(child: CircularProgressIndicator(
-                    color: Colors.green, strokeWidth: 2.0,
-                  ));
+                  return const Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Padding(
+                        padding: EdgeInsets.all(20.0),
+                        child: CustomContainerLoadingButton(),
+                      )
+                    ],
+                  );
                 } else if (state is GetVehicleRouteHistoryDone) {
                   return Flexible(
                     child: RouteHistoryMap(resp: state.resp, speed: speed),
@@ -946,8 +914,8 @@ class _RouteHistoryMapState extends State<RouteHistoryMap> {
                   ),
                 ),
                 child: Text(
-                  widget.speed == null ? "" : widget.speed!,
-                  style: const TextStyle(fontSize: 18),
+                  widget.speed == null ? "1x" : widget.speed!,
+                  style:AppStyle.cardfooter.copyWith(fontSize: 16)
                 ),
               ),
             ],
@@ -958,8 +926,6 @@ class _RouteHistoryMapState extends State<RouteHistoryMap> {
               padding: EdgeInsets.zero,
               itemCount: widget.resp.data.length,
               itemBuilder: (BuildContext context, index) {
-                print('length of route ${widget.resp.data.length}');
-                // _fetchAddresses();
                 return Card(
                   color: Colors.white,
                   child: Padding(
@@ -988,18 +954,18 @@ class _RouteHistoryMapState extends State<RouteHistoryMap> {
                                     : "Loading...",
                                 style: AppStyle.cardfooter,
                               ),
-                              Text(
-                                widget.resp.data[index].fix_time ??
-                                    widget.resp.data[index].updated_at,
+                              Text(FormatData.formatTimestamp(widget.resp.data[index].fix_time ??
+                                  widget.resp.data[index].updated_at,),
+
                                 style: AppStyle.cardfooter,
                               ),
                               const SizedBox(height: 20),
                               Text(addresses.length > index + 1
                                   ? addresses[index + 1]
                                   : "Loading..."),
-                              Text(
-                                widget.resp.data[index].fix_time ??
-                                    widget.resp.data[index].updated_at,
+                              Text(FormatData.formatTimestamp(widget.resp.data[index].fix_time ??
+                                  widget.resp.data[index].updated_at),
+
                                 style: AppStyle.cardfooter,
                               ),
                             ],
@@ -1282,7 +1248,7 @@ class _DateTimeRangePickerState extends State<DateTimeRangePicker> {
                         child: TextFormField(
                           decoration: InputDecoration(
                             // enabled: false,
-                            prefixIcon: Icon(Icons.calendar_month,
+                            prefixIcon: const Icon(Icons.calendar_month,
                               color: Colors.green,),
                             filled: true,
                             fillColor: Colors.grey[200],
@@ -1291,6 +1257,7 @@ class _DateTimeRangePickerState extends State<DateTimeRangePicker> {
                                   ? 'Select Start Date and Time'
                                   : fromDate.toString(),
                             ),
+                            labelStyle: AppStyle.cardfooter.copyWith(fontSize: 12),
                             border: OutlineInputBorder(
                                 borderSide: BorderSide.none,
                                 borderRadius: BorderRadius.circular(5)),
@@ -1309,24 +1276,6 @@ class _DateTimeRangePickerState extends State<DateTimeRangePicker> {
                           },
                         ),
                       )),
-                      // const SizedBox(width: 5),
-                      // InkWell(
-                      //     onTap: () {
-                      //       DatePicker.showDateTimePicker(
-                      //         context,
-                      //         showTitleActions: true,
-                      //         onConfirm: (date) {
-                      //           setState(() {
-                      //             fromDate = date;
-                      //           });
-                      //         },
-                      //         currentTime: DateTime.now(),
-                      //       );
-                      //     },
-                      //     child: const Icon(
-                      //       Icons.calendar_month,
-                      //       color: Colors.green,
-                      //     ))
                     ],
                   ),
                 ],
@@ -1364,6 +1313,7 @@ class _DateTimeRangePickerState extends State<DateTimeRangePicker> {
                                   ? 'Select End Date and Time'
                                   : toDate.toString(),
                             ),
+                            labelStyle: AppStyle.cardfooter.copyWith(fontSize: 12),
                             border: OutlineInputBorder(
                                 borderSide: BorderSide.none,
                                 borderRadius: BorderRadius.circular(5)),

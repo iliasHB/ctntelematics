@@ -16,6 +16,7 @@ class VehicleLocationBloc extends Cubit<List<VehicleEntity>> {
   final Map<String, DateTime> _vehicleLastUpdateTime = {};
   Timer? _inactivityTimer;
   static const int inactivityThresholdSeconds = 120;
+  final Map<String, String> _lastKnownVehicleStatus = {};
 
   VehicleLocationBloc(this._getVehicleLocationUpdateUseCase) : super([]) {
     _startListening();
@@ -27,6 +28,17 @@ class VehicleLocationBloc extends Cubit<List<VehicleEntity>> {
           (vehicle) {
         // Update the last update time for the vehicle
         _vehicleLastUpdateTime[vehicle.locationInfo.numberPlate] = DateTime.now();
+
+        final now = DateTime.now();
+        final numberPlate = vehicle.locationInfo.numberPlate;
+
+        // Update the last update time
+        _vehicleLastUpdateTime[numberPlate] = now;
+
+        // If the vehicle was marked as "Parked," update it to "Moving"
+        if (_lastKnownVehicleStatus[numberPlate] == 'Parked') {
+          _updateVehicleStatus(numberPlate, 'Moving');
+        }
 
         // Update the state with the incoming vehicle data
         final updatedVehicles = List<VehicleEntity>.from(state);
@@ -53,37 +65,42 @@ class VehicleLocationBloc extends Cubit<List<VehicleEntity>> {
 
   void _startInactivityTimer() {
     print('>>>>>>>>>> _startInactivityTimer <<<<<<<<<<');
-    _inactivityTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
+    _inactivityTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
       final currentTime = DateTime.now();
       // Check for inactive vehicles
-      _vehicleLastUpdateTime.forEach((vin, lastUpdate) {
-        print(":::::vin:::: $vin & lastUpdateTime:::::: $lastUpdate");
+      _vehicleLastUpdateTime.forEach((numberPlate, lastUpdate) {
+        print(":::::numberPlate:::: $numberPlate & lastUpdateTime:::::: $lastUpdate");
         final elapsedTime = currentTime.difference(lastUpdate).inSeconds;
 
-        if (elapsedTime > inactivityThresholdSeconds) {
-          print('>>>>>>>>>> _updateVehicleStatus <<<<<<<<<<');
+        if (elapsedTime >= inactivityThresholdSeconds) {
+          print('>>>>>>>>>> _updateVehicleStatus1 <<<<<<<<<<');
           // Mark vehicle as "parked" due to inactivity
-          _updateVehicleStatus(vin, 'Parked');
+          _updateVehicleStatus(numberPlate, 'Parked');
         }
       });
     });
   }
 
   void _updateVehicleStatus(String numberPlate, String newStatus) {
-    print('>>>>>>>>>>::::: _updateVehicleStatus :::::<<<<<<<<<<');
+    print('>>>>>>>>>>::::: _updateVehicleStatus2::: $numberPlate $newStatus:::::<<<<<<<<<<');
+    final lastStatus = _lastKnownVehicleStatus[numberPlate];
+    print('>>>>>>>>>>::::: lastStatus::: $numberPlate $lastStatus:::::<<<<<<<<<<');
+    if (lastStatus == newStatus) return; // Avoid redundant updates
+
+    _lastKnownVehicleStatus[numberPlate] = newStatus;
+
     final updatedVehicles = List<VehicleEntity>.from(state);
     final index = updatedVehicles.indexWhere(
           (v) => v.locationInfo.numberPlate == numberPlate,
     );
 
     if (index != -1) {
-      print('>>>>>>>>>>::::: updatedVehicles :::::<<<<<<<<<<');
+      print('>>>>>>>>>>::::: updatedVehicles3 :::::<<<<<<<<<<');
       // Update the status of the inactive vehicle
       final vehicle = updatedVehicles[index];
       updatedVehicles[index] = vehicle.copyWith(
         locationInfo: vehicle.locationInfo.copyWith(vehicleStatus: newStatus),
       );
-
       emit(updatedVehicles);
     }
   }
@@ -100,6 +117,28 @@ class VehicleLocationBloc extends Cubit<List<VehicleEntity>> {
     return super.close();
   }
 }
+
+
+// void _updateVehicleStatus(String numberPlate, String newStatus) {
+//   print('>>>>>>>>>>::::: _updateVehicleStatus :::::<<<<<<<<<<');
+//   final updatedVehicles = List<VehicleEntity>.from(state);
+//   final index = updatedVehicles.indexWhere(
+//         (v) => v.locationInfo.numberPlate == numberPlate,
+//   );
+//
+//   if (index != -1) {
+//     print('>>>>>>>>>>::::: updatedVehicles :::::<<<<<<<<<<');
+//     // Update the status of the inactive vehicle
+//     final vehicle = updatedVehicles[index];
+//     updatedVehicles[index] = vehicle.copyWith(
+//       locationInfo: vehicle.locationInfo.copyWith(vehicleStatus: newStatus),
+//     );
+//
+//     emit(updatedVehicles);
+//   }
+// }
+
+///
 
 
 // class VehicleLocationBloc extends Cubit<List<VehicleEntity>> {

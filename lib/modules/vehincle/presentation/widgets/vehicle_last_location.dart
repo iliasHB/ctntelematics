@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:ctntelematics/core/widgets/custom_button.dart';
 import 'package:ctntelematics/modules/vehincle/presentation/widgets/vehicle_dashcam.dart';
 import 'package:ctntelematics/modules/vehincle/presentation/widgets/vehicle_operations.dart';
 import 'package:ctntelematics/modules/vehincle/presentation/widgets/vehicle_route_history.dart';
@@ -132,10 +133,7 @@ class _VehicleRouteLastLocationState extends State<VehicleRouteLastLocation> {
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const Center(
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2.0,
-                    color: Colors.green,
-                  ),
+                  child: CustomContainerLoadingButton()
                 );
               } else if (snapshot.hasError) {
                 return const Center(

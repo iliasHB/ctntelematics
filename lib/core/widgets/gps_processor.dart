@@ -52,7 +52,6 @@ class GpsProcessor {
     // Count stops and total stop duration
     int stopCount = gpsData.length - movingData.length;
     Duration totalStopDuration = _calculateStopDuration(gpsData);
-    print(">>>>>>> kkkkkkkkkkkkkkkkkkkkkkk1<<<<<<<<<");
     return {
       'routeStart': routeStart.toString(),
       'routeEnd': routeEnd.toString(),
@@ -97,7 +96,6 @@ class GpsProcessor {
       }
       totalStopDuration += lastCreatedAt.difference(stopStartTime);
     }
-    print(">>>>>>> kkkkkkkkkkkkkkkkkkkkkkk2<<<<<<<<<");
     return totalStopDuration;
   }
 

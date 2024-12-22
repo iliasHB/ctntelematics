@@ -101,8 +101,7 @@ class _CreateScheduleWidgetState extends State<CreateScheduleWidget> {
                   decoration: InputDecoration(
                     hintText: 'Routine Service',
                     hintStyle: AppStyle.cardfooter,
-                    border:
-                        const OutlineInputBorder(borderSide: BorderSide.none),
+                    border: const OutlineInputBorder(borderSide: BorderSide.none),
                     filled: true,
                     fillColor: Colors.grey[200],
                   ),
@@ -130,16 +129,7 @@ class _CreateScheduleWidgetState extends State<CreateScheduleWidget> {
                   child: BlocConsumer<ProfileVehiclesBloc, ProfileState>(
                     builder: (context, state) {
                       if (state is ProfileLoading) {
-                        return Center(
-                          child: Padding(
-                            padding: EdgeInsets.only(top: 10.0),
-                            child: Container(
-                                height: 30,
-                                width: 30,
-                                child: CircularProgressIndicator(
-                                    strokeWidth: 2.0)),
-                          ),
-                        );
+                        return const CustomContainerLoadingButton();
                       } else if (state is GetVehicleDone) {
                         // Check if vehicle data is null or empty
                         if (state.resp.data == null ||
@@ -212,11 +202,35 @@ class _CreateScheduleWidgetState extends State<CreateScheduleWidget> {
                         );
                       } else {
                         return Center(
-                          child: Text(
-                            'No records found',
-                            style: AppStyle.cardfooter,
-                          ),
-                        );
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Text(
+                                  'Unable to load vehicles',
+                                  style: AppStyle.cardfooter.copyWith(fontSize: 12),
+                                ),
+                                const SizedBox(
+                                  width: 10.0,
+                                ),
+                                IconButton(
+                                    onPressed: () {
+                                      BlocProvider.of<ProfileVehiclesBloc>(context)
+                                          .add(ProfileVehicleEvent(TokenReqEntity(
+                                          token: widget.token ?? "",
+                                          contentType: 'application/json')));
+                                    },
+                                    icon: const Icon(Icons.refresh, color: Colors.green,))
+                                // CustomSecondaryButton(
+                                //     label: 'Refresh',
+                                //     onPressed: () {
+                                //       BlocProvider.of<ProfileVehiclesBloc>(context)
+                                //           .add(ProfileVehicleEvent(TokenReqEntity(
+                                //           token: widget.token ?? "",
+                                //           contentType: 'application/json')));
+                                //     })
+                              ],
+                            ));
                       }
                     },
                     listener: (context, state) {
@@ -463,8 +477,7 @@ class _CreateScheduleWidgetState extends State<CreateScheduleWidget> {
                               filled: true, // Enables the background color
                               fillColor: Colors.white, // Removes the border
                             ),
-                            textStyle:
-                                AppStyle.cardfooter.copyWith(fontSize: 12),
+                            textStyle: AppStyle.cardfooter.copyWith(fontSize: 12),
                             onSelected: (String? value) {
                               // This is called when the user selects an item.
                               setState(() {
@@ -719,15 +732,7 @@ class _CreateScheduleWidgetState extends State<CreateScheduleWidget> {
                   builder: (context, state) {
                     if (state is ProfileLoading) {
                       return const Center(
-                        child: SizedBox(
-                          height: 30, // Adjust the height
-                          width: 30, // Adjust the width
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2.0, // Adjust the thickness
-                            color: Colors
-                                .green, // Optional: Change the color to match your theme
-                          ),
-                        ),
+                        child: CustomContainerLoadingButton()
                       );
                     }
                     return Align(
@@ -885,110 +890,3 @@ class _CreateScheduleWidgetState extends State<CreateScheduleWidget> {
   }
 }
 
-// import 'package:flutter/cupertino.dart';
-// import 'package:flutter/material.dart';
-//
-// import '../../../../config/theme/app_style.dart';
-//
-// class CreateSchedule extends StatelessWidget {
-//   const CreateSchedule({super.key});
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return Padding(
-//       padding: const EdgeInsets.only(top: 50.0),
-//       child: Scaffold(
-//         appBar: AppBar(
-//           title: Row(
-//             children: [
-//               Text('Create Schedule', style: AppStyle.pageTitle,)
-//             ],
-//           ),
-//         ),
-//         body: Padding(
-//           padding: const EdgeInsets.symmetric(horizontal: 10.0),
-//           child: Column(
-//             mainAxisAlignment: MainAxisAlignment.start,
-//             crossAxisAlignment: CrossAxisAlignment.start,
-//             children: [
-//               Text('Title', style: AppStyle.cardTitle,),
-//               Row(
-//                 children: [
-//                   Expanded(
-//                     child: Container(
-//                       padding: EdgeInsets.all(10.0),
-//                       decoration: BoxDecoration(
-//                         color: Colors.grey.shade200,
-//                         borderRadius: BorderRadius.circular(5)
-//                       ),
-//                       child: Text('Routing service', style: AppStyle.cardSubtitle,),
-//                     ),
-//                   ),
-//                 ],
-//               ),
-//               SizedBox(height: 20,),
-//               Text('Choose Vehicle', style: AppStyle.cardTitle,),
-//               Row(
-//                 children: [
-//                   Expanded(
-//                     child: Form(
-//                       child: TextFormField(
-//                         decoration: InputDecoration(
-//                           border: OutlineInputBorder()
-//                         ),
-//                       ),
-//                     )
-//                   ),
-//                 ],
-//               ),
-//               Text('Service Tasks', style: AppStyle.cardTitle,),
-//               Row(
-//                 children: [
-//                   Container(
-//                     padding: EdgeInsets.all(10),
-//                     decoration: BoxDecoration(
-//                       borderRadius: BorderRadius.circular(50),
-//                       border: Border.all(width: 1, color: Colors.grey),
-//                     ),
-//                     child: Row(
-//                       children: [
-//                         Text('Oil Change'),
-//                         SizedBox(width: 10,),
-//                         Icon(Icons.cancel, color: Colors.redAccent,),
-//                       ],
-//                     ),
-//                   ),
-//                   Container(
-//                     margin: EdgeInsets.only(left: 10),
-//                     padding: EdgeInsets.all(10),
-//                     decoration: BoxDecoration(
-//                       borderRadius: BorderRadius.circular(50),
-//                       border: Border.all(width: 1, color: Colors.grey),
-//                     ),
-//                     child: Row(
-//                       children: [
-//                         Text('Oil Filter Replacement'),
-//                         SizedBox(width: 10,),
-//                         Icon(Icons.cancel, color: Colors.redAccent,),
-//                       ],
-//                     ),
-//                   ),
-//                   Icon(Icons.search),
-//
-//                 ],
-//               ),
-//
-//               Text('Schedule', style: AppStyle.cardTitle,),
-//               Row(
-//                 children: [
-//                   Text('Routing service', style: AppStyle.cardfooter,),
-//                   SizedBox(width: 10,),
-//                   Text('Custom', style: AppStyle.cardfooter,)
-//                 ],
-//               ),
-//             ],),
-//         ),
-//       ),
-//     );
-//   }
-// }
