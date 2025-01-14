@@ -957,7 +957,7 @@ class _RouteHistoryMapState extends State<RouteHistoryMap> {
                               Text(FormatData.formatTimestamp(widget.resp.data[index].fix_time ??
                                   widget.resp.data[index].updated_at,),
 
-                                style: AppStyle.cardfooter,
+                                style: AppStyle.cardfooter.copyWith(fontSize: 12,),
                               ),
                               const SizedBox(height: 20),
                               Text(addresses.length > index + 1
@@ -966,7 +966,7 @@ class _RouteHistoryMapState extends State<RouteHistoryMap> {
                               Text(FormatData.formatTimestamp(widget.resp.data[index].fix_time ??
                                   widget.resp.data[index].updated_at),
 
-                                style: AppStyle.cardfooter,
+                                style: AppStyle.cardfooter.copyWith(fontSize: 12,),
                               ),
                             ],
                           ),
@@ -1152,7 +1152,10 @@ class _RouteLastLocationState extends State<RouteLastLocation> {
         future: _getAuthUserFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator( strokeWidth: 2.0, color: Colors.green,));
+            return const Padding(
+              padding: EdgeInsets.all(20.0),
+              child: CustomContainerLoadingButton(),
+            );
           } else if (snapshot.hasError) {
             return const Center(child: Text('Failed to fetch user data'));
           } else {
@@ -1160,7 +1163,7 @@ class _RouteLastLocationState extends State<RouteLastLocation> {
             _markers.addAll([
               Marker(
                 icon: _customIcon!,
-                markerId:  MarkerId('id'),
+                markerId:  const MarkerId('id'),
                 position: _center//LatLng(widget.latitude, widget.longitude),
               ),
             ]);

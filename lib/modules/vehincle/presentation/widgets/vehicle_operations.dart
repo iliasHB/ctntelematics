@@ -167,7 +167,7 @@ class _VehicleOperationsState extends State<VehicleOperations> {
 
 
                         Navigator.of(context).push(MaterialPageRoute(
-                          builder: (context) => const VehicleAlertPage(),
+                          builder: (context) => VehicleAlertPage(vin: widget.vin),
                         ));
                       },
                       child: VehicleOperationCard(

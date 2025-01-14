@@ -806,7 +806,7 @@ class _RouteHistoryMapState extends State<RouteHistoryMap> {
                                 addresses.length > index
                                     ? addresses[index]
                                     : "Loading...",
-                                style: AppStyle.cardfooter,
+                                style: AppStyle.cardfooter.copyWith(fontSize: 12,),
                               ),
                               Text(
                                 FormatData.formatTimestamp(
@@ -820,7 +820,7 @@ class _RouteHistoryMapState extends State<RouteHistoryMap> {
                               Text(
                                 FormatData.formatTimestamp(
                                     widget.resp.data[index].fix_time ?? widget.resp.data[index].updated_at),
-                                style: AppStyle.cardfooter,
+                                style: AppStyle.cardfooter.copyWith(fontSize: 12,),
                               ),
                             ],
                           ),

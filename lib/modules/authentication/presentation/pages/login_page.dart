@@ -116,7 +116,7 @@ class _LoginPageState extends State<LoginPage> {
                       cursorColor: Colors.green,
                       decoration: InputDecoration(
                         labelText: 'Password',
-                        hintText: 'abc@gmail.com',
+                        hintText: '******',
                         hintStyle: AppStyle.cardfooter
                             .copyWith(fontSize: 12, color: Colors.grey[600]),
                         labelStyle: AppStyle.cardfooter

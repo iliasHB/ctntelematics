@@ -185,20 +185,7 @@ class VehicleOperation extends StatelessWidget {
               ),
               InkWell(
                 onTap: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (_) =>  const VehicleAlertPage()));
-                  // showModalBottomSheet(
-                  //     context: context,
-                  //     isDismissible: false,
-                  //     isScrollControlled: true,
-                  //     //useSafeArea: true,
-                  //     shape: const RoundedRectangleBorder(
-                  //       borderRadius: BorderRadius.only(
-                  //           topLeft: Radius.circular(20),
-                  //           topRight: Radius.circular(20)),
-                  //     ),
-                  //     builder: (BuildContext context) {
-                  //       return const VehicleAlertPage();
-                  //     });
+                  Navigator.push(context, MaterialPageRoute(builder: (_) =>  VehicleAlertPage(vin: vin)));
                 },
                 child: VehicleOperationCard(
                     status: 'Alert',

@@ -143,7 +143,7 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AnimatedAppBar(firstname: first_name ?? ""),
+      appBar: AnimatedAppBar(firstname: first_name ?? "", pageRoute: "map"),
       body: Shimmer(
         linearGradient: _shimmerGradient,
         child: FutureBuilder(
@@ -342,15 +342,16 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
         // Add offline marker if the vehicle is not moving
         if (vehicle.vehicle!.details?.last_location?.status!.toLowerCase() != 'moving' ) {
 
-          // Remove the polyline associated with this vehicle
-          if (_routes.containsKey(numberPlate)) {
-            _routes.remove(numberPlate);
-
-            // Optionally update the map to reflect the change
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              _updatePolylinesOnMap();
-            });
-          }
+          // // Remove the polyline associated with this vehicle
+          // if (_routes.containsKey(numberPlate)) {
+          //   _routes.remove(numberPlate);
+          //
+          //   // Optionally update the map to reflect the change
+          //   WidgetsBinding.instance.addPostFrameCallback((_) {
+          //     print("-------- _updatePolylinesOnMap --------");
+          //     _updatePolylinesOnMap();
+          //   });
+          // }
 
 
           if (_offlineCustomIcon == null) {
@@ -359,6 +360,8 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
 
           final parkedPosition = _lastMovingPositions[numberPlate] ?? currentPosition;
           final parkedBearing = _lastMovingBearings[numberPlate] ?? 0;
+          print('>>>>>parkedPosition: $parkedPosition');
+          print('>>>>>parkedBearing: $parkedBearing');
 
           updatedMarkers[numberPlate] = Marker(
               icon: _offlineCustomIcon!, // Icon for stationary vehicles
@@ -447,17 +450,18 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
           bearing = _calculateBearing(previousPosition, currentPosition);
           _lastMovingBearings[numberPlate] = bearing; // Update last moving bearing
         }
+        if (_onlineCustomIcon == null) {
+          await _setOnlineCustomMarkerIcon();
+        }
 
         final distance = _calculateDistance(previousPosition, currentPosition);
         // Add or update the marker only if the vehicle has moved significantly
-        if (previousPosition == null || distance >= 1) {
-
-          if (_onlineCustomIcon == null) {
-            await _setOnlineCustomMarkerIcon();
-          }
+        if (previousPosition == null || _calculateDistance(previousPosition, currentPosition) >= 1) {
 
           _lastMovingPositions[numberPlate] = currentPosition; // Update last moving position
-          //_lastMovingBearings[numberPlate] = bearing;
+          // _lastMovingBearings[numberPlate] = bearing;
+          print('_lastMovingPositions::::: $_lastMovingPositions');
+          print('_lastMovingBearings::::: $_lastMovingBearings');
 
           // Ensure significant movement has occurred
           if (!_routes.containsKey(numberPlate)) {
@@ -495,7 +499,6 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
                   CameraUpdate.newLatLngZoom(currentPosition, 15.0),
                 );
                 _showVehicleOnlineToolTip(
-                  // Pass relevant data
                   numberPlate: vehicle.locationInfo.numberPlate,
                   vin: vehicle.locationInfo.vin,
                   address: vehicleDetails.vehicle?.address ?? "N/A",
@@ -1041,7 +1044,7 @@ class _MapPage1State extends State<MapPage1> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AnimatedAppBar(firstname: first_name ?? ""),
+      appBar: AnimatedAppBar(firstname: first_name ?? "", pageRoute: 'map',),
       body: FutureBuilder(
         future: _getAuthUserFuture,
         builder: (context, snapshot) {

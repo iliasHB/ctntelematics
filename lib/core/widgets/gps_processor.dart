@@ -24,8 +24,8 @@ class GpsProcessor {
 
     if (movingData.isEmpty) {
       return {
-        'routeStart': gpsData.first.created_at,
-        'routeEnd': gpsData.last.created_at,
+        'routeStart': gpsData.first.fix_time,
+        'routeEnd': gpsData.last.fix_time,
         'moveDuration': 0,
         'stopDuration': 0,
         'maxSpeed': 0.0,

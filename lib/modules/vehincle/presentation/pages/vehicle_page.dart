@@ -114,6 +114,11 @@ class _VehiclePageState extends State<VehiclePage> {
               v.vehicle?.details?.last_location?.status!.toLowerCase() ==
               "moving")
           .length,
+      'expired': vehicles
+          .where((v) =>
+      v.vehicle?.details?.last_location?.status!.toLowerCase() ==
+          "expired")
+          .length,
       'vehicles': vehicles.length
     };
   }
@@ -152,7 +157,7 @@ class _VehiclePageState extends State<VehiclePage> {
     // lastLocationBloc.refreshLastLocationAPI();
     return Scaffold(
       appBar: AnimatedAppBar(
-        firstname: first_name ?? "",
+        firstname: first_name ?? "", pageRoute: 'vehicle',
       ),
       body: isLoading
           ? const Center(child: CustomContainerLoadingButton())
@@ -217,16 +222,14 @@ class _VehiclePageState extends State<VehiclePage> {
                             );
                           }
                           final vehiclesData = state.resp ?? [];
-                          final vehicleCounts =
-                              _computeVehicleCounts(vehiclesData);
+                          final vehicleCounts = _computeVehicleCounts(vehiclesData);
 
                           return BlocListener<VehicleLocationBloc,
                               List<VehicleEntity>>(
                             listener: (context, vehicles) {
 
                             },
-                            child: BlocBuilder<VehicleLocationBloc,
-                                List<VehicleEntity>>(
+                            child: BlocBuilder<VehicleLocationBloc, List<VehicleEntity>>(
                               builder: (context, vehicles) {
                                 if (vehicles.isEmpty) {
                                   return Expanded(
@@ -237,12 +240,12 @@ class _VehiclePageState extends State<VehiclePage> {
                                         parkedCount: vehicleCounts['parked'] ?? 0,
                                         vehiclesData: vehiclesData,
                                         movingCount: vehicleCounts['moving'] ?? 0,
+                                        expiredCount: vehicleCounts['expired'] ?? 0,
                                         token: token!),
                                   );
                                 }
 
-                                final vehicleWebsocketCounts =
-                                    _computeVehicleSocketCounts(vehicles);
+                                final vehicleWebsocketCounts = _computeVehicleSocketCounts(vehicles);
 
                                 return Expanded(
                                   child: VehicleSubPage(
@@ -254,12 +257,12 @@ class _VehiclePageState extends State<VehiclePage> {
                                               vehicles,
                                               'offline',
                                               vehicleCounts['offline']),
-                                      idlingCount:
-                                          VehicleRealTimeStatus.checkStatusChange(
-                                              vehiclesData,
-                                              vehicles,
-                                              'idling',
-                                              vehicleCounts['idling']),
+                                      idlingCount: vehicleWebsocketCounts['idling'] ?? 0,
+                                      //     VehicleRealTimeStatus.checkStatusChange(
+                                      //         vehiclesData,
+                                      //         vehicles,
+                                      //         'idling',
+                                      //         vehicleCounts['idling']),
                                       parkedCount:
                                           VehicleRealTimeStatus.checkStatusChange(
                                               vehiclesData,
@@ -269,7 +272,9 @@ class _VehiclePageState extends State<VehiclePage> {
                                       vehiclesData: vehiclesData,
                                       movingCount:
                                           vehicleWebsocketCounts['moving'] ?? 0,
-                                      token: token!),
+                                      token: token!,
+                                    expiredCount: vehicleCounts['expired'] ?? 0,
+                                  ),
                                 );
                               },
                             ),
@@ -319,7 +324,7 @@ class _VehiclePageState extends State<VehiclePage> {
 
 
 class VehicleSubPage extends StatefulWidget {
-  final int onlineCount, offlineCount, idlingCount, parkedCount, movingCount;
+  final int onlineCount, offlineCount, idlingCount, parkedCount, movingCount, expiredCount;
   final List<LastLocationRespEntity> vehiclesData;
   final String token;
   const VehicleSubPage(
@@ -330,7 +335,8 @@ class VehicleSubPage extends StatefulWidget {
       required this.parkedCount,
       required this.movingCount,
       required this.token,
-      required this.vehiclesData});
+      required this.vehiclesData,
+        required this.expiredCount});
 
   @override
   State<VehicleSubPage> createState() => _VehicleSubPageState();
@@ -348,10 +354,11 @@ class _VehicleSubPageState extends State<VehicleSubPage> {
   Widget build(BuildContext context) {
     final List<String> tabs = [
       "All (${widget.vehiclesData.length})",
-      "Idle (${widget.idlingCount})",
-      "Parked (${widget.parkedCount})",
       "Moving (${widget.movingCount})",
+      "Parked (${widget.parkedCount})",
       "Offline (${widget.offlineCount})",
+      "Idle (${widget.idlingCount})",
+      "Expired (${widget.expiredCount})",
     ];
 
     return Column(
@@ -404,8 +411,8 @@ class _VehicleSubPageState extends State<VehicleSubPage> {
           token: widget.token,
         );
       case 1:
-        return IdleVehiclesPage(
-          data: widget.vehiclesData,
+        return MovingVehiclesPage(
+          vehicles: widget.vehiclesData,
           token: widget.token,
         );
       case 2:
@@ -414,13 +421,18 @@ class _VehicleSubPageState extends State<VehicleSubPage> {
           token: widget.token,
         );
       case 3:
-        return MovingVehiclesPage(
-          vehicles: widget.vehiclesData,
+        return OfflineVehiclesPage(
+          data: widget.vehiclesData,
           token: widget.token,
         );
       case 4:
-        return OfflineVehiclesPage(
+        return IdleVehiclesPage(
           data: widget.vehiclesData,
+          token: widget.token,
+        );
+      case 5:
+        return AllExpiredVehiclesPage(
+          vehicles: widget.vehiclesData,
           token: widget.token,
         );
       default:
@@ -453,64 +465,101 @@ class AllVehiclesPage extends StatelessWidget {
   }
 }
 
-class IdleVehiclesPage extends StatelessWidget {
+class AllExpiredVehiclesPage extends StatelessWidget {
+  final List<LastLocationRespEntity> vehicles;
+  final String? token;
+
+  const AllExpiredVehiclesPage({
+    super.key,
+    this.token,
+    required this.vehicles,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: ExpiredVehicleList(
+        data: vehicles,
+        token: token,
+      ),
+    );
+  }
+}
+
+class IdleVehiclesPage extends StatefulWidget {
   final List<LastLocationRespEntity> data;
   final String? token;
-  const IdleVehiclesPage({
+  const IdleVehiclesPage({super.key,
     this.token,
     required this.data,
   });
 
   @override
+  State<IdleVehiclesPage> createState() => _IdleVehiclesPageState();
+}
+
+class _IdleVehiclesPageState extends State<IdleVehiclesPage> {
+  @override
   Widget build(BuildContext context) {
-    print("Original vehicle list: ${data.length}");
-    final idleVehicles = data
-        .where((v) =>
-            v.vehicle?.details?.last_location?.status?.toLowerCase() == "idling")
-        .toList();
-    print("Filtered idling vehicles: ${idleVehicles.length}");
-    return idleVehicles.isEmpty
-        ? Padding(
-            padding: const EdgeInsets.all(10.0),
-            child: Text(
-              "No idle vehicle...",
-              style: AppStyle.cardfooter,
-            ))
-        : Expanded(
-            child: VehicleIdle(
-              data: idleVehicles,
-              // vehicles: parkedVehicles,
-              token: token,
+    print("Original vehicle list: ${widget.data.length}");
+    // final idleVehicles = widget.data
+    //     .where((v) =>
+    //         v.vehicle?.details?.last_location?.status?.toLowerCase() == "idling")
+    //     .toList();
+    // print("Filtered idling vehicles: ${idleVehicles.length}");
+    return BlocListener<VehicleLocationBloc, List<VehicleEntity>>(
+      listener: (context, vehicles) {
+        // _updateVehicleCounts(vehicles);
+        setState(() {
+          vehicles;
+        });
+      },
+      child: BlocBuilder<VehicleLocationBloc, List<VehicleEntity>>(
+        builder: (context, vehicles) {
+          if (vehicles.isEmpty) {
+            return Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: Text(
+                "No Idling vehicle",
+                style: AppStyle.cardfooter,
+              ),
+            );
+          }
+          final idlingVehicles = vehicles
+              .where((v) =>
+          v.locationInfo.vehicleStatus.toLowerCase() == "idling" &&
+              v.locationInfo.tracker?.status!.toLowerCase() == "online")
+              .toList();
+
+          //List<VehicleEntity> displayedVehicles = _filterVehicles(vehicles);
+          return Expanded(
+            child: VehicleUpdateListener(
+              vehicles: idlingVehicles,
+              token: widget.token,
             ),
           );
-
-    //   BlocListener<VehicleLocationBloc, List<VehicleEntity>>(
-    //   listener: (context, vehicles) {},
-    //   child: BlocBuilder<VehicleLocationBloc, List<VehicleEntity>>(
-    //     builder: (context, vehicles) {
-    //       if (vehicles.isEmpty) {
-    //         return Text(
-    //           "No Idle vehicle",
-    //           style: AppStyle.cardfooter,
-    //         );
-    //       }
-    //       final idleVehicles = vehicles
-    //           .where((v) =>
-    //       (v.locationInfo.vehicleStatus.toLowerCase() == "idling") &&
-    //               v.locationInfo.tracker?.status.toLowerCase() == "online"))
-    //           .toList();
-    //       return Expanded(
-    //         child: VehicleIdleItem(
-    //           // data: data,
-    //           vehicles: idleVehicles,
+        },
+      ),
+    );
+    // return
+    //   // idleVehicles.isEmpty
+    //   //   ? Padding(
+    //   //       padding: const EdgeInsets.all(10.0),
+    //   //       child: Text(
+    //   //         "No idle vehicle...",
+    //   //         style: AppStyle.cardfooter,
+    //   //       ))
+    //   //   :
+    // Expanded(
+    //         child: VehicleIdle(
+    //           data: idleVehicles,
+    //           // vehicles: parkedVehicles,
     //           token: token,
     //         ),
     //       );
-    //     },
-    //   ),
-    // );
   }
 }
+
 
 //
 // class MovingVehiclesPage extends StatefulWidget {
@@ -647,22 +696,22 @@ class PackedVehiclesPage extends StatelessWidget {
   // // Helper function to compute counts
   @override
   Widget build(BuildContext context) {
-    final packedVehicles = data
+    final parkedVehicles = data
         .where((v) =>
             v.vehicle?.details?.last_location?.status!.toLowerCase() ==
             "parked")
         .toList();
-    return packedVehicles.isEmpty
+    return parkedVehicles.isEmpty
         ? Padding(
             padding: const EdgeInsets.all(10.0),
             child: Text(
               "No parked vehicle",
               style: AppStyle.cardfooter,
             ))
-        : Expanded(
+        :
+      Expanded(
             child: VehicleParked(
-              data: packedVehicles,
-              // vehicles: parkedVehicles,
+              data: parkedVehicles,
               token: token,
             ),
           );
@@ -773,7 +822,7 @@ class _VehicleListItemState extends State<VehicleListItem> {
                       longitude: updatedVehicle
                           .locationInfo.tracker?.position?.longitude!.toStringAsFixed(7),
                       speed: updatedVehicle
-                          .locationInfo.tracker?.position?.speed!.toStringAsFixed(7)
+                          .locationInfo.tracker?.position?.speed!.toStringAsFixed(2)
                           ?? "0.00",
                       speed_unit: "",
                       course: updatedVehicle.locationInfo.tracker?.position?.course,
@@ -1430,6 +1479,7 @@ class VehicleUpdateListener extends StatelessWidget {
         itemBuilder: (context, index) {
           final vehicle = vehicles![index];
           return vehicle.locationInfo.vehicleStatus.toLowerCase() != "moving"
+              || vehicle.locationInfo.vehicleStatus.isEmpty
               ? Padding(
                   padding: const EdgeInsets.all(10.0),
                   child: Text(
@@ -1786,7 +1836,7 @@ class VehicleUpdateListener extends StatelessWidget {
 //   }
 // }
 
-///----offline-----
+///------------offline-------------
 class VehicleOffline extends StatefulWidget {
   final List<LastLocationRespEntity> data;
   final String? token;
@@ -1851,7 +1901,7 @@ class _VehicleOfflineState extends State<VehicleOffline> {
                       longitude: updatedVehicle
                           .locationInfo.tracker?.position?.longitude!.toStringAsFixed(7),
                       speed: updatedVehicle
-                          .locationInfo.tracker?.position?.speed!.toStringAsFixed(7)
+                          .locationInfo.tracker?.position?.speed!.toStringAsFixed(2)
                           ?? "0.00",
                       speed_unit: "",
                       course: updatedVehicle
@@ -2506,15 +2556,307 @@ class _VehicleOfflineState extends State<VehicleOffline> {
 //   }
 // }
 
-///----idle-----
+
+///-------------idle---------------
+// class VehicleIdle extends StatefulWidget {
+//   final List<LastLocationRespEntity> data;
+//   final String? token;
+//
+//   const VehicleIdle({
+//     super.key,
+//     required this.data,
+//     this.token,
+//   });
+//
+//   @override
+//   State<VehicleIdle> createState() => _VehicleIdleState();
+// }
+//
+// class _VehicleIdleState extends State<VehicleIdle> {
+//   late List<LastLocationRespEntity> idlingVehicles;
+//
+//   @override
+//   void initState() {
+//     super.initState();
+//     idlingVehicles = widget.data
+//         .where((data) =>
+//             data.vehicle?.details?.last_location?.status?.toLowerCase() == 'idling')
+//         .toList();
+//   }
+//
+//   void _updateIdlingVehicles(VehicleEntity updatedVehicle) {
+//     setState(() {
+//       // Check if the updated vehicle is in the parked list
+//       final index = idlingVehicles.indexWhere(
+//         (vehicle) =>
+//             vehicle.vehicle?.details?.number_plate ==
+//             updatedVehicle.locationInfo.numberPlate,
+//       );
+//
+//       LastLocationRespModel createVehicleEntity(VehicleEntity updatedVehicle, LastLocationRespEntity? existingVehicle) {
+//         // Populate the entity fields here
+//         return LastLocationRespModel(
+//             vehicle: VehicleModel(
+//                 id: updatedVehicle.locationInfo.id,
+//                 details: DetailsModel(
+//                     id: updatedVehicle.locationInfo.id,
+//                     brand: updatedVehicle.locationInfo.brand,
+//                     model: updatedVehicle.locationInfo.model,
+//                     year: updatedVehicle.locationInfo.year,
+//                     type: updatedVehicle.locationInfo.type,
+//                     vin: updatedVehicle.locationInfo.vin,
+//                     number_plate: updatedVehicle.locationInfo.numberPlate,
+//                     user_id: updatedVehicle.locationInfo.userId,
+//                     vehicle_owner_id: null,
+//                     created_at: updatedVehicle.locationInfo.tracker?.lastUpdate,
+//                     updated_at: "",
+//                     owner: null,
+//                     tracker: null,
+//                     last_location: LastLocationModel(
+//                       vehicle_id: 0,
+//                       tracker_id:
+//                       updatedVehicle.locationInfo.tracker?.positionId,
+//                       latitude: updatedVehicle
+//                           .locationInfo.tracker?.position?.latitude!.toStringAsFixed(7),
+//                       longitude: updatedVehicle
+//                           .locationInfo.tracker?.position?.longitude!.toStringAsFixed(7),
+//                       speed: updatedVehicle
+//                           .locationInfo.tracker?.position?.speed!.toStringAsFixed(2)
+//                           ?? "0.00",
+//                       speed_unit: "",
+//                       course: updatedVehicle
+//                           .locationInfo.tracker?.position?.course,
+//                       fix_time: updatedVehicle
+//                           .locationInfo.tracker?.position?.fixTime,
+//                       satellite_count: 0,
+//                       active_satellite_count: 0,
+//                       real_time_gps: idlingVehicles[index]
+//                           .vehicle
+//                           ?.details
+//                           ?.last_location
+//                           ?.real_time_gps ??
+//                           false,
+//                       gps_positioned: idlingVehicles[index]
+//                           .vehicle
+//                           ?.details
+//                           ?.last_location
+//                           ?.real_time_gps ??
+//                           false,
+//                       east_longitude: false,
+//                       north_latitude: false,
+//                       mcc: 0,
+//                       mnc: 0, lac: 0, cell_id: 0, serial_number: "",
+//                       error_check: 0, event: "",
+//                       parse_time: 0, voltage_level: "",
+//                       gsm_signal_strength: "", response_msg: "",
+//                       status: updatedVehicle.locationInfo.vehicleStatus, //parkedVehicles[index].vehicle?.details?.last_location?.status,
+//                       created_at: updatedVehicle.locationInfo.tracker?.lastUpdate,
+//                       updated_at: idlingVehicles[index]
+//                           .vehicle
+//                           ?.details
+//                           ?.last_location
+//                           ?.updated_at,
+//                     ),
+//                     speed_limit: null),
+//                 driver: DriverModel(
+//                     id: idlingVehicles[index].vehicle?.driver?.id,
+//                     name: idlingVehicles[index].vehicle?.driver?.name ?? "N/A",
+//                     email: idlingVehicles[index].vehicle?.driver?.email ?? "N/A",
+//                     phone: idlingVehicles[index].vehicle?.driver?.phone ?? "N/A",
+//                     vehicle_vin: idlingVehicles[index].vehicle?.details?.vin ?? "N/A",
+//                     vehicle_id: 0,
+//                     pin: "",
+//                     country: "",
+//                     licence_number: "",
+//                     licence_issue_date: "",
+//                     licence_expiry_date: "",
+//                     guarantor_name: "",
+//                     guarantor_phone: "",
+//                     profile_picture_path: "",
+//                     driving_licence_path: "",
+//                     pin_path: "",
+//                     miscellaneous_path: "",
+//                     created_at: "",
+//                     updated_at: ""),
+//                 address: idlingVehicles[index].vehicle?.address ?? "N/A",
+//                 geofence: null,
+//                 connected_status: null));
+//       }
+//
+//       if (updatedVehicle.locationInfo.vehicleStatus.toLowerCase() == 'idling') {
+//         // Update the existing vehicle or add it if not found
+//         if (index != -1) {
+//           print("-----::::::idlingVehicle.locationInfo.numberPlate1: ${updatedVehicle.locationInfo.vehicleStatus.toLowerCase()}::::::------");
+//           idlingVehicles[index] = createVehicleEntity(updatedVehicle, idlingVehicles[index]);
+//         } else {
+//           print("-----::::::idlingVehicle.locationInfo.numberPlate2: ${updatedVehicle.locationInfo.vehicleStatus.toLowerCase()}::::::------");
+//           idlingVehicles.add(createVehicleEntity(updatedVehicle, null));
+//
+//         }
+//       } else if (index != -1) {
+//         // Remove vehicle if status changes from "Parked"
+//         idlingVehicles.removeAt(index);
+//       }
+//     });
+//   }
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     return BlocListener<VehicleLocationBloc, List<VehicleEntity>>(
+//       listener: (context, vehicles) {
+//         for (var vehicle in vehicles) {
+//           print("new idle vehicle numberPlate: ${vehicle.locationInfo.numberPlate}");
+//           print("new idle vehicle type: ${vehicle.locationInfo.model} ${vehicle.locationInfo.type}");
+//           print("new idle vehicle vehicleStatus: ${vehicle.locationInfo.model} ${vehicle.locationInfo.vehicleStatus}");
+//           _updateIdlingVehicles(vehicle);
+//         }
+//       },
+//       child: Expanded(
+//         child: ListView.builder(
+//           padding: EdgeInsets.zero,
+//           itemCount: idlingVehicles.length,
+//           itemBuilder: (context, index) {
+//             final vehicleData = idlingVehicles[index].vehicle;
+//             return Padding(
+//               padding: const EdgeInsets.symmetric(horizontal: 10.0),
+//               child: InkWell(
+//                 onTap: () {
+//                   vehicleData?.details?.last_location?.latitude != null
+//                       ? Navigator.of(context).push(MaterialPageRoute(
+//                     builder: (context) => VehicleRouteLastLocation(
+//                       brand: vehicleData?.details?.brand ?? "N/A",
+//                       model: vehicleData?.details?.model ?? "N/A",
+//                       vin: vehicleData?.details?.vin ?? "N/A",
+//                       latitude:
+//                       vehicleData?.details?.last_location?.latitude !=
+//                           null
+//                           ? double.tryParse(vehicleData!
+//                           .details!.last_location!.latitude!)
+//                           : 0.000000,
+//                       longitude: vehicleData!
+//                           .details!.last_location?.longitude !=
+//                           null
+//                           ? double.tryParse(vehicleData
+//                           .details!.last_location!.longitude!)
+//                           : 0.000000,
+//                       token: widget.token ?? '',
+//                       number_plate:
+//                       vehicleData.details?.number_plate.toString() ??
+//                           "N/A",
+//                       name: vehicleData.driver?.name ?? "N/A",
+//                       email: vehicleData.driver?.email ?? "N/A",
+//                       phone: vehicleData.driver?.phone ?? "N/A",
+//                       status:
+//                       vehicleData.details?.last_location?.status ??
+//                           "N/A",
+//                       updated_at: vehicleData
+//                           .details!.last_location!.created_at ??
+//                           vehicleData.details!.last_location!.fix_time!,
+//                       speed: vehicleData.details?.last_location?.speed !=
+//                           null
+//                           ? double.tryParse(vehicleData
+//                           .details!.last_location!.speed!)!
+//                           .toStringAsFixed(2)
+//                           : '0.00',
+//
+//                       voltage_level: vehicleData
+//                           .details?.last_location?.voltage_level ??
+//                           "N/A",
+//                       gsm_signal_strength: vehicleData.details
+//                           ?.last_location?.gsm_signal_strength ??
+//                           "N/A",
+//                       real_time_gps: vehicleData
+//                           .details?.last_location?.real_time_gps ??
+//                           false,
+//                       // ?? vehicle!.locationInfo.numberPlate,
+//                     ),
+//                   ))
+//                       : ScaffoldMessenger.of(context).showSnackBar(
+//                     const SnackBar(
+//                         content:
+//                         Text('Vehicle coordinate is not found!')),
+//                   );
+//                 },
+//                 child: Row(
+//                   children: [
+//                     Column(
+//                       mainAxisAlignment: MainAxisAlignment.center,
+//                       children: [
+//                         Text(
+//                           vehicleData?.details?.last_location?.speed != null
+//                               ? double.tryParse(vehicleData!
+//                               .details!.last_location!.speed!)
+//                               ?.toStringAsFixed(2) ??
+//                               '0.00'
+//                               : '0.00',
+//                           style: AppStyle.cardTitle,
+//                         ),
+//                         const Text("KM/H",
+//                             style: TextStyle(color: Colors.grey)),
+//                         Icon(
+//                           CupertinoIcons.car_detailed,
+//                           size: 40.0,
+//                           color: Colors.grey.shade600,
+//                         ),
+//                       ],
+//                     ),
+//                     const SizedBox(width: 10.0),
+//                     Expanded(
+//                       child: Card(
+//                         child:
+//                         VehicleDescription(vehicle: idlingVehicles[index]),
+//                       ),
+//                     ),
+//                   ],
+//                 ),
+//               ),
+//             );
+//             // InkWell(
+//             // onTap: () {
+//             //   final latitude = double.tryParse(vehicleData?.details?.last_location?.latitude ?? '0.0') ?? 0.0;
+//             //   final longitude = double.tryParse(vehicleData?.details?.last_location?.longitude ?? '0.0') ?? 0.0;
+//             //   Navigator.of(context).push(MaterialPageRoute(
+//             //     builder: (context) => VehicleRouteLastLocation(
+//             //       brand: vehicleData?.details?.brand ?? 'N/A',
+//             //       model: vehicleData?.details?.model ?? 'N/A',
+//             //       vin: vehicleData?.details?.vin ?? 'N/A',
+//             //       latitude: latitude,
+//             //       longitude: longitude,
+//             //       token: widget.token ?? '',
+//             //       number_plate: vehicleData?.details?.number_plate ?? 'N/A',
+//             //       name: vehicleData?.driver?.name ?? 'N/A',
+//             //       email: vehicleData?.driver?.email ?? 'N/A',
+//             //       phone: vehicleData?.driver?.phone ?? 'N/A',
+//             //       status: vehicleData?.details?.last_location?.status ?? 'N/A',
+//             //       updated_at: vehicleData?.details?.last_location?.created_at ?? '',
+//             //       speed: vehicleData?.details?.last_location?.speed ?? '0.00',
+//             //       voltage_level: vehicleData?.details?.last_location?.voltage_level ?? 'N/A',
+//             //       gsm_signal_strength: vehicleData?.details?.last_location?.gsm_signal_strength ?? 'N/A',
+//             //       real_time_gps: vehicleData?.details?.last_location?.real_time_gps ?? false,
+//             //     ),
+//             //   ));
+//             // },
+//             //   child: Card(
+//             //     child: VehicleDescription(vehicle: parkedVehicles[index]),
+//             //   ),
+//             // );
+//           },
+//         ),
+//       )
+//     );
+//   }
+// }
+
 class VehicleIdle extends StatefulWidget {
+  // final List<DashDatumEntity> data;
   final List<LastLocationRespEntity> data;
   final String? token;
 
   const VehicleIdle({
     super.key,
-    required this.data,
     this.token,
+    required this.data,
+    // required this.data,
   });
 
   @override
@@ -2523,13 +2865,12 @@ class VehicleIdle extends StatefulWidget {
 
 class _VehicleIdleState extends State<VehicleIdle> {
   late List<LastLocationRespEntity> idlingVehicles;
-
   @override
   void initState() {
     super.initState();
     idlingVehicles = widget.data
         .where((data) =>
-            data.vehicle?.details?.last_location?.status?.toLowerCase() == 'idling')
+    data.vehicle?.details?.last_location?.status?.toLowerCase() == 'idling')
         .toList();
   }
 
@@ -2537,8 +2878,8 @@ class _VehicleIdleState extends State<VehicleIdle> {
     setState(() {
       // Check if the updated vehicle is in the parked list
       final index = idlingVehicles.indexWhere(
-        (vehicle) =>
-            vehicle.vehicle?.details?.number_plate ==
+            (vehicle) =>
+        vehicle.vehicle?.details?.number_plate ==
             updatedVehicle.locationInfo.numberPlate,
       );
 
@@ -2570,7 +2911,7 @@ class _VehicleIdleState extends State<VehicleIdle> {
                       longitude: updatedVehicle
                           .locationInfo.tracker?.position?.longitude!.toStringAsFixed(7),
                       speed: updatedVehicle
-                          .locationInfo.tracker?.position?.speed!.toStringAsFixed(7)
+                          .locationInfo.tracker?.position?.speed!.toStringAsFixed(2)
                           ?? "0.00",
                       speed_unit: "",
                       course: updatedVehicle
@@ -2598,8 +2939,7 @@ class _VehicleIdleState extends State<VehicleIdle> {
                       error_check: 0, event: "",
                       parse_time: 0, voltage_level: "",
                       gsm_signal_strength: "", response_msg: "",
-                      status: updatedVehicle.locationInfo
-                          .vehicleStatus, //parkedVehicles[index].vehicle?.details?.last_location?.status,
+                      status: updatedVehicle.locationInfo.vehicleStatus, //parkedVehicles[index].vehicle?.details?.last_location?.status,
                       created_at: updatedVehicle.locationInfo.tracker?.lastUpdate,
                       updated_at: idlingVehicles[index]
                           .vehicle
@@ -2633,7 +2973,6 @@ class _VehicleIdleState extends State<VehicleIdle> {
                 connected_status: null));
       }
 
-
       if (updatedVehicle.locationInfo.vehicleStatus.toLowerCase() == 'idling') {
         // Update the existing vehicle or add it if not found
         if (index != -1) {
@@ -2650,586 +2989,424 @@ class _VehicleIdleState extends State<VehicleIdle> {
       }
     });
   }
-
   @override
   Widget build(BuildContext context) {
-    return BlocListener<VehicleLocationBloc, List<VehicleEntity>>(
-      listener: (context, vehicles) {
-        for (var vehicle in vehicles) {
-          print("new vehicle numberPlate: ${vehicle.locationInfo.numberPlate}");
-          print("new vehicle type: ${vehicle.locationInfo.model} ${vehicle.locationInfo.type}");
-          print("new vehicle vehicleStatus: ${vehicle.locationInfo.model} ${vehicle.locationInfo.vehicleStatus}");
-          _updateIdlingVehicles(vehicle);
-        }
-      },
-      child: Expanded(
-        child: ListView.builder(
-          padding: EdgeInsets.zero,
-          itemCount: idlingVehicles.length,
-          itemBuilder: (context, index) {
-            final vehicleData = idlingVehicles[index].vehicle;
-            return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10.0),
-              child: InkWell(
-                onTap: () {
-                  vehicleData?.details?.last_location?.latitude != null
-                      ? Navigator.of(context).push(MaterialPageRoute(
-                          builder: (context) => VehicleRouteLastLocation(
-                            brand: vehicleData?.details?.brand ?? "N/A",
-                            model: vehicleData?.details?.model ?? "N/A",
-                            vin: vehicleData?.details?.vin ?? "N/A",
-                            latitude:
-                                vehicleData?.details?.last_location?.latitude !=
-                                        null
-                                    ? double.tryParse(vehicleData!
-                                        .details!.last_location!.latitude!)
-                                    : 0.000000,
-                            longitude: vehicleData!
-                                        .details!.last_location?.longitude !=
+    return Expanded(
+      child: ListView.builder(
+        padding: EdgeInsets.zero,
+        itemCount: widget.data.length,
+        itemBuilder: (context, index) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10.0),
+            child: BlocListener<VehicleLocationBloc, List<VehicleEntity>>(
+              listener: (context, vehicles) {
+                for (var vehicle in vehicles) {
+                  print("new idle vehicle numberPlate: ${vehicle.locationInfo.numberPlate}");
+                  print("new idle vehicle type: ${vehicle.locationInfo.model} ${vehicle.locationInfo.type}");
+                  print("new idle vehicle vehicleStatus: ${vehicle.locationInfo.model} ${vehicle.locationInfo.vehicleStatus}");
+                  _updateIdlingVehicles(vehicle);
+                }
+              },
+              child: BlocBuilder<VehicleLocationBloc, List<VehicleEntity>>(
+                builder: (context, vehicles) {
+                  return vehicles.isEmpty ||
+                          widget.data[index].vehicle?.details?.number_plate !=
+                              vehicles[0].locationInfo.numberPlate
+                      ? InkWell(
+                          onTap: () {
+                            widget.data[index].vehicle?.details?.last_location
+                                        ?.latitude !=
                                     null
-                                ? double.tryParse(vehicleData
-                                    .details!.last_location!.longitude!)
-                                : 0.000000,
-                            token: widget.token ?? '',
-                            number_plate:
-                                vehicleData.details?.number_plate.toString() ??
-                                    "N/A",
-                            name: vehicleData.driver?.name ?? "N/A",
-                            email: vehicleData.driver?.email ?? "N/A",
-                            phone: vehicleData.driver?.phone ?? "N/A",
-                            status:
-                                vehicleData.details?.last_location?.status ??
-                                    "N/A",
-                            updated_at: vehicleData
-                                    .details!.last_location!.created_at ??
-                                vehicleData.details!.last_location!.fix_time!,
-                            speed: vehicleData.details?.last_location?.speed !=
-                                    null
-                                ? double.tryParse(vehicleData
-                                        .details!.last_location!.speed!)!
-                                    .toStringAsFixed(2)
-                                : '0.00',
+                                ? Navigator.of(context).push(MaterialPageRoute(
+                                    builder: (context) =>
+                                        VehicleRouteLastLocation(
+                                      brand: widget.data[index].vehicle?.details
+                                              ?.brand ??
+                                          "N/A",
+                                      model: widget.data[index].vehicle?.details
+                                              ?.model ??
+                                          "N/A",
+                                      vin: widget.data[index].vehicle?.details
+                                              ?.vin ??
+                                          "N/A",
+                                      latitude: widget
+                                                  .data[index]
+                                                  .vehicle
+                                                  ?.details
+                                                  ?.last_location
+                                                  ?.latitude !=
+                                              null
+                                          ? double.tryParse(widget
+                                              .data[index]
+                                              .vehicle!
+                                              .details!
+                                              .last_location!
+                                              .latitude!)
+                                          : 0.000000,
+                                      longitude: widget
+                                                  .data[index]
+                                                  .vehicle
+                                                  ?.details
+                                                  ?.last_location
+                                                  ?.longitude !=
+                                              null
+                                          ? double.tryParse(widget
+                                              .data[index]
+                                              .vehicle!
+                                              .details!
+                                              .last_location!
+                                              .longitude!)
+                                          : 0.000000,
+                                      token: widget.token ?? '',
+                                      number_plate: widget.data[index].vehicle
+                                              ?.details?.number_plate
+                                              .toString() ??
+                                          "N/A",
+                                      name: widget.data[index].vehicle?.driver
+                                              ?.name ??
+                                          "N/A",
+                                      email: widget.data[index].vehicle?.driver
+                                              ?.email ??
+                                          "N/A",
+                                      phone: widget.data[index].vehicle?.driver
+                                              ?.phone ??
+                                          "N/A",
+                                      status: widget
+                                              .data[index]
+                                              .vehicle
+                                              ?.details
+                                              ?.last_location!
+                                              .status ??
+                                          "N/A",
+                                      updated_at: widget.data[index].vehicle!
+                                          .details!.last_location!.created_at!,
+                                      speed: widget
+                                                  .data[index]
+                                                  .vehicle!
+                                                  .details!
+                                                  .last_location
+                                                  ?.speed !=
+                                              null
+                                          ? double.tryParse(widget
+                                                      .data[index]
+                                                      .vehicle!
+                                                      .details!
+                                                      .last_location!
+                                                      .speed!)
+                                                  ?.toStringAsFixed(2) ??
+                                              '0.00'
+                                          : '0.00',
 
-                            voltage_level: vehicleData
-                                    .details?.last_location?.voltage_level ??
-                                "N/A",
-                            gsm_signal_strength: vehicleData.details
-                                    ?.last_location?.gsm_signal_strength ??
-                                "N/A",
-                            real_time_gps: vehicleData
-                                    .details?.last_location?.real_time_gps ??
-                                false,
-                            // ?? vehicle!.locationInfo.numberPlate,
+                                      voltage_level: widget
+                                              .data[index]
+                                              .vehicle!
+                                              .details!
+                                              .last_location
+                                              ?.voltage_level ??
+                                          "N/A",
+                                      gsm_signal_strength: widget
+                                              .data[index]
+                                              .vehicle!
+                                              .details!
+                                              .last_location
+                                              ?.gsm_signal_strength ??
+                                          "N/A",
+                                      real_time_gps: widget
+                                              .data[index]
+                                              .vehicle!
+                                              .details!
+                                              .last_location
+                                              ?.real_time_gps ??
+                                          false,
+                                      // ?? vehicle!.locationInfo.numberPlate,
+                                    ),
+                                  ))
+                                : ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                        content: Text(
+                                            'Vehicle coordinate is not found!')),
+                                  );
+                          },
+                          child: Row(
+                            children: [
+                              Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  // Text(
+                                  //   "${(widget.data![index].last_location?.speed ?? 0.0).toStringAsFixed(2)}",
+
+                                  Text(
+                                    widget.data[index].vehicle?.details
+                                                ?.last_location?.speed !=
+                                            null
+                                        ? double.tryParse(widget
+                                                    .data[index]
+                                                    .vehicle!
+                                                    .details!
+                                                    .last_location!
+                                                    .speed!)
+                                                ?.toStringAsFixed(2) ??
+                                            '0.00'
+                                        : '0.00',
+                                    style: AppStyle.cardTitle,
+                                  ),
+                                  const Text("KM/H",
+                                      style: TextStyle(color: Colors.grey)),
+                                  Icon(
+                                    Icons.local_shipping,
+                                    size: 40.0,
+                                    color: Colors.grey.shade600,
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(width: 10.0),
+                              Expanded(
+                                child: Card(
+                                  child: VehicleDescription(
+                                      vehicle: widget.data[index]),
+                                ),
+                              ),
+                            ],
                           ),
-                        ))
-                      : ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                              content:
-                                  Text('Vehicle coordinate is not found!')),
+                        )
+                      : vehicles[0].locationInfo.vehicleStatus.toLowerCase() != "idling"
+                      ? Container()
+                      : InkWell(
+                          onTap: () {
+                            Navigator.of(context).push(MaterialPageRoute(
+                              builder: (context) => VehicleRouteLastLocation(
+                                brand: vehicles[0].locationInfo.brand,
+                                model: vehicles[0].locationInfo.model,
+                                // widget.data![index].model!,
+                                vin: vehicles[0]
+                                    .locationInfo
+                                    .vin, //widget.data![index].vin!,
+                                latitude: vehicles[0]
+                                        .locationInfo
+                                        .tracker
+                                        ?.position
+                                        ?.latitude ??
+                                    0.000000,
+                                longitude: vehicles[0]
+                                        .locationInfo
+                                        .tracker
+                                        ?.position
+                                        ?.longitude ??
+                                    0.0000000,
+                                token: widget.token ?? '',
+                                number_plate: vehicles[0]
+                                    .locationInfo
+                                    .numberPlate
+                                    .toString(),
+                                name:
+                                    widget.data[index].vehicle!.driver!.name ??
+                                        "N/A",
+                                email:
+                                    widget.data[index].vehicle!.driver!.email ??
+                                        "N/A",
+                                phone:
+                                    widget.data[index].vehicle!.driver!.phone ??
+                                        "N/A",
+                                status: widget.data[index].vehicle!.details!
+                                        .last_location?.status ??
+                                    "N/A",
+                                updated_at: widget.data[index].vehicle!.details!
+                                    .last_location!.created_at!,
+                                speed: vehicles[0]
+                                            .locationInfo
+                                            .tracker
+                                            ?.position
+                                            ?.speed !=
+                                        null
+                                    ? vehicles[0]
+                                        .locationInfo
+                                        .tracker!
+                                        .position!
+                                        .speed!
+                                        .toStringAsFixed(2)
+                                    : '0.00',
+                                voltage_level: vehicles[0]
+                                        .locationInfo
+                                        .tracker
+                                        ?.position
+                                        ?.batteryLevel
+                                        .toString() ??
+                                    '0',
+                                // widget.data![index]
+                                //     .last_location?.voltage_level ?? "N/A",
+                                gsm_signal_strength: vehicles[0]
+                                        .locationInfo
+                                        .tracker
+                                        ?.position
+                                        ?.gsmRssi
+                                        .toString() ??
+                                    '0',
+                                // widget.data![index]
+                                //     .last_location?.gsm_signal_strength ?? "N/A",
+                                real_time_gps: widget
+                                        .data[index]
+                                        .vehicle
+                                        ?.details
+                                        ?.last_location
+                                        ?.real_time_gps ??
+                                    false,
+                                // ?? vehicle!.locationInfo.numberPlate,
+                              ),
+                            ));
+                          },
+                          child: Row(
+                            children: [
+                              Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    vehicles[0]
+                                                .locationInfo
+                                                .tracker
+                                                ?.position
+                                                ?.speed !=
+                                            null
+                                        ? vehicles[0]
+                                            .locationInfo
+                                            .tracker!
+                                            .position!
+                                            .speed!
+                                            .toStringAsFixed(2)
+                                        : widget.data[index].vehicle?.details
+                                                ?.last_location?.speed
+                                                ?.toString() ??
+                                            "0.00",
+                                    style: AppStyle.cardTitle,
+                                  ),
+                                  const Text("KM/H",
+                                      style: TextStyle(color: Colors.grey)),
+                                  Icon(
+                                    Icons.local_shipping,
+                                    size: 40.0,
+                                    color: Colors.grey.shade600,
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(width: 10.0),
+                              Expanded(
+                                child: Card(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Container(
+                                        margin: const EdgeInsets.all(8.0),
+                                        padding: const EdgeInsets.all(8.0),
+                                        color: Colors.white,
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Text(
+                                              '${vehicles[0].locationInfo.brand} ${vehicles[0].locationInfo.model}',
+                                              style: AppStyle.cardSubtitle
+                                                  .copyWith(fontSize: 12),
+                                            ),
+                                            Column(
+                                              children: [
+                                                Text(
+                                                  vehicles[0]
+                                                      .locationInfo
+                                                      .vehicleStatus,
+                                                  style: AppStyle.cardfooter,
+                                                ),
+                                                Text(
+                                                    FormatData.formatTimeAgo(
+                                                        vehicles[0]
+                                                            .locationInfo
+                                                            .tracker!
+                                                            .lastUpdate!),
+                                                    style: AppStyle.cardfooter),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      // const SizedBox(height: 5.0),
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 0.0, vertical: 10),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Row(
+                                              children: [
+                                                Column(
+                                                  children: [
+                                                    const Icon(Icons.gps_fixed, color: Colors.green),
+                                                    Text("GPS",
+                                                        style: AppStyle
+                                                            .cardfooter
+                                                            .copyWith(
+                                                                fontSize: 10)),
+                                                  ],
+                                                ),
+                                                const SizedBox(width: 15),
+                                                Column(
+                                                  children: [
+                                                    const Icon(Icons.wifi,
+                                                        color: Colors.green),
+                                                    Text("GSM",
+                                                        // vehicles[0]
+                                                        //             .locationInfo
+                                                        //             .tracker
+                                                        //             ?.position
+                                                        //             ?.gsmRssi !=
+                                                        //         null
+                                                        //     ? vehicles[0]
+                                                        //         .locationInfo
+                                                        //         .tracker!
+                                                        //         .position!
+                                                        //         .gsmRssi
+                                                        //         .toString()
+                                                        //     : 'N/A',
+                                                        style: AppStyle
+                                                            .cardfooter
+                                                            .copyWith(
+                                                                fontSize: 10)),
+                                                  ],
+                                                ),
+                                                const SizedBox(width: 15),
+                                                Column(
+                                                  children: [
+                                                    Icon(Icons.power,
+                                                        color: Colors.green),
+                                                    Text("Ignition",
+                                                        style: AppStyle
+                                                            .cardfooter
+                                                            .copyWith(
+                                                                fontSize: 10)),
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         );
                 },
-                child: Row(
-                  children: [
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          vehicleData?.details?.last_location?.speed != null
-                              ? double.tryParse(vehicleData!
-                                          .details!.last_location!.speed!)
-                                      ?.toStringAsFixed(2) ??
-                                  '0.00'
-                              : '0.00',
-                          style: AppStyle.cardTitle,
-                        ),
-                        const Text("KM/H",
-                            style: TextStyle(color: Colors.grey)),
-                        Icon(
-                          CupertinoIcons.car_detailed,
-                          size: 40.0,
-                          color: Colors.grey.shade600,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(width: 10.0),
-                    Expanded(
-                      child: Card(
-                        child:
-                            VehicleDescription(vehicle: idlingVehicles[index]),
-                      ),
-                    ),
-                  ],
-                ),
               ),
-            );
-            // InkWell(
-            // onTap: () {
-            //   final latitude = double.tryParse(vehicleData?.details?.last_location?.latitude ?? '0.0') ?? 0.0;
-            //   final longitude = double.tryParse(vehicleData?.details?.last_location?.longitude ?? '0.0') ?? 0.0;
-            //   Navigator.of(context).push(MaterialPageRoute(
-            //     builder: (context) => VehicleRouteLastLocation(
-            //       brand: vehicleData?.details?.brand ?? 'N/A',
-            //       model: vehicleData?.details?.model ?? 'N/A',
-            //       vin: vehicleData?.details?.vin ?? 'N/A',
-            //       latitude: latitude,
-            //       longitude: longitude,
-            //       token: widget.token ?? '',
-            //       number_plate: vehicleData?.details?.number_plate ?? 'N/A',
-            //       name: vehicleData?.driver?.name ?? 'N/A',
-            //       email: vehicleData?.driver?.email ?? 'N/A',
-            //       phone: vehicleData?.driver?.phone ?? 'N/A',
-            //       status: vehicleData?.details?.last_location?.status ?? 'N/A',
-            //       updated_at: vehicleData?.details?.last_location?.created_at ?? '',
-            //       speed: vehicleData?.details?.last_location?.speed ?? '0.00',
-            //       voltage_level: vehicleData?.details?.last_location?.voltage_level ?? 'N/A',
-            //       gsm_signal_strength: vehicleData?.details?.last_location?.gsm_signal_strength ?? 'N/A',
-            //       real_time_gps: vehicleData?.details?.last_location?.real_time_gps ?? false,
-            //     ),
-            //   ));
-            // },
-            //   child: Card(
-            //     child: VehicleDescription(vehicle: parkedVehicles[index]),
-            //   ),
-            // );
-          },
-        ),
+            ),
+          );
+        },
       ),
     );
   }
 }
 
-// class VehicleIdle extends StatefulWidget {
-//   // final List<DashDatumEntity> data;
-//   final List<LastLocationRespEntity> data;
-//   final String? token;
-//
-//   const VehicleIdle({
-//     super.key,
-//     this.token,
-//     required this.data,
-//     // required this.data,
-//   });
-//
-//   @override
-//   State<VehicleIdle> createState() => _VehicleIdleState();
-// }
-//
-// class _VehicleIdleState extends State<VehicleIdle> {
-//   @override
-//   Widget build(BuildContext context) {
-//     return Expanded(
-//       child: ListView.builder(
-//         padding: EdgeInsets.zero,
-//         itemCount: widget.data.length,
-//         itemBuilder: (context, index) {
-//           return Padding(
-//             padding: const EdgeInsets.symmetric(horizontal: 10.0),
-//             child: BlocListener<VehicleLocationBloc, List<VehicleEntity>>(
-//               listener: (context, vehicles) {
-//                 setState(() {
-//                   vehicles;
-//                 });
-//               },
-//               child: BlocBuilder<VehicleLocationBloc, List<VehicleEntity>>(
-//                 builder: (context, vehicles) {
-//                   return vehicles.isEmpty ||
-//                           widget.data[index].vehicle?.details?.number_plate !=
-//                               vehicles[0].locationInfo.numberPlate
-//                       ? InkWell(
-//                           onTap: () {
-//                             widget.data[index].vehicle?.details?.last_location
-//                                         ?.latitude !=
-//                                     null
-//                                 ? Navigator.of(context).push(MaterialPageRoute(
-//                                     builder: (context) =>
-//                                         VehicleRouteLastLocation(
-//                                       brand: widget.data[index].vehicle?.details
-//                                               ?.brand ??
-//                                           "N/A",
-//                                       model: widget.data[index].vehicle?.details
-//                                               ?.model ??
-//                                           "N/A",
-//                                       vin: widget.data[index].vehicle?.details
-//                                               ?.vin ??
-//                                           "N/A",
-//                                       latitude: widget
-//                                                   .data[index]
-//                                                   .vehicle
-//                                                   ?.details
-//                                                   ?.last_location
-//                                                   ?.latitude !=
-//                                               null
-//                                           ? double.tryParse(widget
-//                                               .data[index]
-//                                               .vehicle!
-//                                               .details!
-//                                               .last_location!
-//                                               .latitude!)
-//                                           : 0.000000,
-//                                       longitude: widget
-//                                                   .data[index]
-//                                                   .vehicle
-//                                                   ?.details
-//                                                   ?.last_location
-//                                                   ?.longitude !=
-//                                               null
-//                                           ? double.tryParse(widget
-//                                               .data[index]
-//                                               .vehicle!
-//                                               .details!
-//                                               .last_location!
-//                                               .longitude!)
-//                                           : 0.000000,
-//                                       token: widget.token ?? '',
-//                                       number_plate: widget.data[index].vehicle
-//                                               ?.details?.number_plate
-//                                               .toString() ??
-//                                           "N/A",
-//                                       name: widget.data[index].vehicle?.driver
-//                                               ?.name ??
-//                                           "N/A",
-//                                       email: widget.data[index].vehicle?.driver
-//                                               ?.email ??
-//                                           "N/A",
-//                                       phone: widget.data[index].vehicle?.driver
-//                                               ?.phone ??
-//                                           "N/A",
-//                                       status: widget
-//                                               .data[index]
-//                                               .vehicle
-//                                               ?.details
-//                                               ?.last_location!
-//                                               .status ??
-//                                           "N/A",
-//                                       updated_at: widget.data[index].vehicle!
-//                                           .details!.last_location!.created_at!,
-//                                       speed: widget
-//                                                   .data[index]
-//                                                   .vehicle!
-//                                                   .details!
-//                                                   .last_location
-//                                                   ?.speed !=
-//                                               null
-//                                           ? double.tryParse(widget
-//                                                       .data[index]
-//                                                       .vehicle!
-//                                                       .details!
-//                                                       .last_location!
-//                                                       .speed!)
-//                                                   ?.toStringAsFixed(2) ??
-//                                               '0.00'
-//                                           : '0.00',
-//
-//                                       voltage_level: widget
-//                                               .data[index]
-//                                               .vehicle!
-//                                               .details!
-//                                               .last_location
-//                                               ?.voltage_level ??
-//                                           "N/A",
-//                                       gsm_signal_strength: widget
-//                                               .data[index]
-//                                               .vehicle!
-//                                               .details!
-//                                               .last_location
-//                                               ?.gsm_signal_strength ??
-//                                           "N/A",
-//                                       real_time_gps: widget
-//                                               .data[index]
-//                                               .vehicle!
-//                                               .details!
-//                                               .last_location
-//                                               ?.real_time_gps ??
-//                                           false,
-//                                       // ?? vehicle!.locationInfo.numberPlate,
-//                                     ),
-//                                   ))
-//                                 : ScaffoldMessenger.of(context).showSnackBar(
-//                                     const SnackBar(
-//                                         content: Text(
-//                                             'Vehicle coordinate is not found!')),
-//                                   );
-//                           },
-//                           child: Row(
-//                             children: [
-//                               Column(
-//                                 mainAxisAlignment: MainAxisAlignment.center,
-//                                 children: [
-//                                   // Text(
-//                                   //   "${(widget.data![index].last_location?.speed ?? 0.0).toStringAsFixed(2)}",
-//
-//                                   Text(
-//                                     widget.data[index].vehicle?.details
-//                                                 ?.last_location?.speed !=
-//                                             null
-//                                         ? double.tryParse(widget
-//                                                     .data[index]
-//                                                     .vehicle!
-//                                                     .details!
-//                                                     .last_location!
-//                                                     .speed!)
-//                                                 ?.toStringAsFixed(2) ??
-//                                             '0.00'
-//                                         : '0.00',
-//                                     style: AppStyle.cardTitle,
-//                                   ),
-//                                   const Text("KM/H",
-//                                       style: TextStyle(color: Colors.grey)),
-//                                   Icon(
-//                                     Icons.local_shipping,
-//                                     size: 40.0,
-//                                     color: Colors.grey.shade600,
-//                                   ),
-//                                 ],
-//                               ),
-//                               const SizedBox(width: 10.0),
-//                               Expanded(
-//                                 child: Card(
-//                                   child: VehicleDescription(
-//                                       vehicle: widget.data[index]),
-//                                 ),
-//                               ),
-//                             ],
-//                           ),
-//                         )
-//                       : vehicles[0].locationInfo.vehicleStatus.toLowerCase() != "idling"
-//                       ? Container()
-//                       : InkWell(
-//                           onTap: () {
-//                             Navigator.of(context).push(MaterialPageRoute(
-//                               builder: (context) => VehicleRouteLastLocation(
-//                                 brand: vehicles[0].locationInfo.brand,
-//                                 model: vehicles[0].locationInfo.model,
-//                                 // widget.data![index].model!,
-//                                 vin: vehicles[0]
-//                                     .locationInfo
-//                                     .vin, //widget.data![index].vin!,
-//                                 latitude: vehicles[0]
-//                                         .locationInfo
-//                                         .tracker
-//                                         ?.position
-//                                         ?.latitude ??
-//                                     0.000000,
-//                                 longitude: vehicles[0]
-//                                         .locationInfo
-//                                         .tracker
-//                                         ?.position
-//                                         ?.longitude ??
-//                                     0.0000000,
-//                                 token: widget.token ?? '',
-//                                 number_plate: vehicles[0]
-//                                     .locationInfo
-//                                     .numberPlate
-//                                     .toString(),
-//                                 name:
-//                                     widget.data[index].vehicle!.driver!.name ??
-//                                         "N/A",
-//                                 email:
-//                                     widget.data[index].vehicle!.driver!.email ??
-//                                         "N/A",
-//                                 phone:
-//                                     widget.data[index].vehicle!.driver!.phone ??
-//                                         "N/A",
-//                                 status: widget.data[index].vehicle!.details!
-//                                         .last_location?.status ??
-//                                     "N/A",
-//                                 updated_at: widget.data[index].vehicle!.details!
-//                                     .last_location!.created_at!,
-//                                 speed: vehicles[0]
-//                                             .locationInfo
-//                                             .tracker
-//                                             ?.position
-//                                             ?.speed !=
-//                                         null
-//                                     ? vehicles[0]
-//                                         .locationInfo
-//                                         .tracker!
-//                                         .position!
-//                                         .speed!
-//                                         .toStringAsFixed(2)
-//                                     : '0.00',
-//                                 voltage_level: vehicles[0]
-//                                         .locationInfo
-//                                         .tracker
-//                                         ?.position
-//                                         ?.batteryLevel
-//                                         .toString() ??
-//                                     '0',
-//                                 // widget.data![index]
-//                                 //     .last_location?.voltage_level ?? "N/A",
-//                                 gsm_signal_strength: vehicles[0]
-//                                         .locationInfo
-//                                         .tracker
-//                                         ?.position
-//                                         ?.gsmRssi
-//                                         .toString() ??
-//                                     '0',
-//                                 // widget.data![index]
-//                                 //     .last_location?.gsm_signal_strength ?? "N/A",
-//                                 real_time_gps: widget
-//                                         .data[index]
-//                                         .vehicle
-//                                         ?.details
-//                                         ?.last_location
-//                                         ?.real_time_gps ??
-//                                     false,
-//                                 // ?? vehicle!.locationInfo.numberPlate,
-//                               ),
-//                             ));
-//                           },
-//                           child: Row(
-//                             children: [
-//                               Column(
-//                                 mainAxisAlignment: MainAxisAlignment.center,
-//                                 children: [
-//                                   Text(
-//                                     vehicles[0]
-//                                                 .locationInfo
-//                                                 .tracker
-//                                                 ?.position
-//                                                 ?.speed !=
-//                                             null
-//                                         ? vehicles[0]
-//                                             .locationInfo
-//                                             .tracker!
-//                                             .position!
-//                                             .speed!
-//                                             .toStringAsFixed(2)
-//                                         : widget.data[index].vehicle?.details
-//                                                 ?.last_location?.speed
-//                                                 ?.toString() ??
-//                                             "0.00",
-//                                     style: AppStyle.cardTitle,
-//                                   ),
-//                                   const Text("KM/H",
-//                                       style: TextStyle(color: Colors.grey)),
-//                                   Icon(
-//                                     Icons.local_shipping,
-//                                     size: 40.0,
-//                                     color: Colors.grey.shade600,
-//                                   ),
-//                                 ],
-//                               ),
-//                               const SizedBox(width: 10.0),
-//                               Expanded(
-//                                 child: Card(
-//                                   child: Column(
-//                                     crossAxisAlignment:
-//                                         CrossAxisAlignment.start,
-//                                     children: [
-//                                       Container(
-//                                         margin: const EdgeInsets.all(8.0),
-//                                         padding: const EdgeInsets.all(8.0),
-//                                         color: Colors.white,
-//                                         child: Row(
-//                                           mainAxisAlignment:
-//                                               MainAxisAlignment.spaceBetween,
-//                                           children: [
-//                                             Text(
-//                                               '${vehicles[0].locationInfo.brand} ${vehicles[0].locationInfo.model}',
-//                                               style: AppStyle.cardSubtitle
-//                                                   .copyWith(fontSize: 12),
-//                                             ),
-//                                             Column(
-//                                               children: [
-//                                                 Text(
-//                                                   vehicles[0]
-//                                                       .locationInfo
-//                                                       .vehicleStatus,
-//                                                   style: AppStyle.cardfooter,
-//                                                 ),
-//                                                 Text(
-//                                                     FormatData.formatTimeAgo(
-//                                                         vehicles[0]
-//                                                             .locationInfo
-//                                                             .tracker!
-//                                                             .lastUpdate!),
-//                                                     style: AppStyle.cardfooter),
-//                                               ],
-//                                             ),
-//                                           ],
-//                                         ),
-//                                       ),
-//                                       // const SizedBox(height: 5.0),
-//                                       Padding(
-//                                         padding: const EdgeInsets.symmetric(
-//                                             horizontal: 0.0, vertical: 10),
-//                                         child: Row(
-//                                           mainAxisAlignment:
-//                                               MainAxisAlignment.spaceBetween,
-//                                           children: [
-//                                             Row(
-//                                               children: [
-//                                                 Column(
-//                                                   children: [
-//                                                     const Icon(Icons.gps_fixed, color: Colors.green),
-//                                                     Text("GPS",
-//                                                         style: AppStyle
-//                                                             .cardfooter
-//                                                             .copyWith(
-//                                                                 fontSize: 10)),
-//                                                   ],
-//                                                 ),
-//                                                 const SizedBox(width: 15),
-//                                                 Column(
-//                                                   children: [
-//                                                     const Icon(Icons.wifi,
-//                                                         color: Colors.green),
-//                                                     Text("GSM",
-//                                                         // vehicles[0]
-//                                                         //             .locationInfo
-//                                                         //             .tracker
-//                                                         //             ?.position
-//                                                         //             ?.gsmRssi !=
-//                                                         //         null
-//                                                         //     ? vehicles[0]
-//                                                         //         .locationInfo
-//                                                         //         .tracker!
-//                                                         //         .position!
-//                                                         //         .gsmRssi
-//                                                         //         .toString()
-//                                                         //     : 'N/A',
-//                                                         style: AppStyle
-//                                                             .cardfooter
-//                                                             .copyWith(
-//                                                                 fontSize: 10)),
-//                                                   ],
-//                                                 ),
-//                                                 const SizedBox(width: 15),
-//                                                 Column(
-//                                                   children: [
-//                                                     Icon(Icons.power,
-//                                                         color: Colors.green),
-//                                                     Text("Ignition",
-//                                                         style: AppStyle
-//                                                             .cardfooter
-//                                                             .copyWith(
-//                                                                 fontSize: 10)),
-//                                                   ],
-//                                                 ),
-//                                               ],
-//                                             ),
-//                                           ],
-//                                         ),
-//                                       ),
-//                                     ],
-//                                   ),
-//                                 ),
-//                               ),
-//                             ],
-//                           ),
-//                         );
-//                 },
-//               ),
-//             ),
-//           );
-//         },
-//       ),
-//     );
-//   }
-// }
-
-///----parked-----
+///-------------parked--------------
 class VehicleParked extends StatefulWidget {
   final List<LastLocationRespEntity> data;
   final String? token;
@@ -3252,12 +3429,10 @@ class _VehicleParkedState extends State<VehicleParked> {
     super.initState();
     parkedVehicles = widget.data
         .where((data) =>
-            data.vehicle?.details?.last_location?.status?.toLowerCase() ==
-            'parked')
+    data.vehicle?.details?.last_location?.status?.toLowerCase() ==
+        'parked')
         .toList();
   }
-
-
 
 
   void _updateParkedVehicles(VehicleEntity updatedVehicle) {
@@ -3296,7 +3471,7 @@ class _VehicleParkedState extends State<VehicleParked> {
                       longitude: updatedVehicle
                           .locationInfo.tracker?.position?.longitude!.toStringAsFixed(7),
                       speed: updatedVehicle
-                          .locationInfo.tracker?.position?.speed!.toStringAsFixed(7)
+                          .locationInfo.tracker?.position?.speed!.toStringAsFixed(2)
                           ?? "0.00",
                       speed_unit: "",
                       course: updatedVehicle
@@ -3378,6 +3553,7 @@ class _VehicleParkedState extends State<VehicleParked> {
 
   @override
   Widget build(BuildContext context) {
+
     return BlocListener<VehicleLocationBloc, List<VehicleEntity>>(
       listener: (context, vehicles) {
         for (var vehicle in vehicles) {
@@ -3409,8 +3585,7 @@ class _VehicleParkedState extends State<VehicleParked> {
                                     ? double.tryParse(vehicleData!
                                         .details!.last_location!.latitude!)
                                     : 0.000000,
-                            longitude: vehicleData!
-                                        .details!.last_location?.longitude !=
+                            longitude: vehicleData!.details!.last_location?.longitude !=
                                     null
                                 ? double.tryParse(vehicleData
                                     .details!.last_location!.longitude!)
@@ -3948,6 +4123,155 @@ class _VehicleParkedState extends State<VehicleParked> {
 //   }
 // }
 
+
+
+class ExpiredVehicleList extends StatefulWidget {
+  final List<LastLocationRespEntity> data;
+  final String? token;
+
+  const ExpiredVehicleList({
+    super.key,
+    required this.data,
+    this.token,
+  });
+
+  @override
+  State<ExpiredVehicleList> createState() => _ExpiredVehicleListState();
+}
+
+class _ExpiredVehicleListState extends State<ExpiredVehicleList> {
+  late List<LastLocationRespEntity> AllVehicles;
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+        child: Padding(
+          padding: const EdgeInsets.all(10.0),
+          child: Text(
+            "No expired vehicle",
+            style: AppStyle.cardfooter,
+          ),
+        )
+      //   ListView.builder(
+      //     padding: EdgeInsets.zero,
+      //     itemCount: AllVehicles.length,
+      //     itemBuilder: (context, index) {
+      //       final vehicleData = AllVehicles[index].vehicle;
+      //       return AllVehicles == 0 ? Padding(
+      //         padding: const EdgeInsets.all(10.0),
+      //         child: Text(
+      //           "No expired vehicle",
+      //           style: AppStyle.cardfooter,
+      //         ),
+      //       ) :
+      //         Padding(
+      //         padding: const EdgeInsets.symmetric(horizontal: 10.0),
+      //         child: InkWell(
+      //           onTap: () {
+      //             vehicleData?.details?.last_location?.latitude != null
+      //                 ? Navigator.of(context).push(MaterialPageRoute(
+      //               builder: (context) => VehicleRouteLastLocation(
+      //                 brand: vehicleData?.details?.brand ?? "N/A",
+      //                 model: vehicleData?.details?.model ?? "N/A",
+      //                 vin: vehicleData?.details?.vin ?? "N/A",
+      //                 latitude:
+      //                 vehicleData?.details?.last_location?.latitude !=
+      //                     null
+      //                     ? double.tryParse(vehicleData!
+      //                     .details!.last_location!.latitude!)
+      //                     : 0.000000,
+      //                 longitude: vehicleData!
+      //                     .details!.last_location?.longitude !=
+      //                     null
+      //                     ? double.tryParse(vehicleData
+      //                     .details!.last_location!.longitude!)
+      //                     : 0.000000,
+      //                 token: widget.token ?? '',
+      //                 number_plate:
+      //                 vehicleData.details?.number_plate.toString() ??
+      //                     "N/A",
+      //                 name: vehicleData.driver?.name ?? "N/A",
+      //                 email: vehicleData.driver?.email ?? "N/A",
+      //                 phone: vehicleData.driver?.phone ?? "N/A",
+      //                 status:
+      //                 vehicleData.details?.last_location?.status ??
+      //                     "N/A",
+      //                 updated_at: vehicleData
+      //                     .details!.last_location!.created_at ??
+      //                     vehicleData.details!.last_location!.fix_time!,
+      //                 speed: vehicleData.details?.last_location?.speed !=
+      //                     null
+      //                     ? double.tryParse(vehicleData
+      //                     .details!.last_location!.speed!)!
+      //                     .toStringAsFixed(2)
+      //                     : '0.00',
+      //
+      //                 voltage_level: vehicleData
+      //                     .details?.last_location?.voltage_level ??
+      //                     "N/A",
+      //                 gsm_signal_strength: vehicleData.details
+      //                     ?.last_location?.gsm_signal_strength ??
+      //                     "N/A",
+      //                 real_time_gps: vehicleData
+      //                     .details?.last_location?.real_time_gps ??
+      //                     false,
+      //                 // ?? vehicle!.locationInfo.numberPlate,
+      //               ),
+      //             ))
+      //                 : ScaffoldMessenger.of(context).showSnackBar(
+      //               const SnackBar(
+      //                   content:
+      //                   Text('Vehicle coordinate is not found!')),
+      //             );
+      //           },
+      //           child: Row(
+      //             children: [
+      //               Column(
+      //                 mainAxisAlignment: MainAxisAlignment.center,
+      //                 children: [
+      //                   Text(
+      //                     vehicleData?.details?.last_location?.speed != null
+      //                         ? double.tryParse(vehicleData!
+      //                         .details!.last_location!.speed!)
+      //                         ?.toStringAsFixed(2) ??
+      //                         '0.00'
+      //                         : '0.00',
+      //                     style: AppStyle.cardTitle,
+      //                   ),
+      //                   const Text("KM/H",
+      //                       style: TextStyle(color: Colors.grey)),
+      //                   Icon(
+      //                     CupertinoIcons.car_detailed,
+      //                     size: 40.0,
+      //                     color: Colors.grey.shade600,
+      //                   ),
+      //                 ],
+      //               ),
+      //               const SizedBox(width: 10.0),
+      //               Expanded(
+      //                 child: Card(
+      //                   child:
+      //                   VehicleDescription(vehicle: AllVehicles[index]),
+      //                 ),
+      //               ),
+      //             ],
+      //           ),
+      //         ),
+      //       );
+      //     },
+      //   ),
+      // // ),
+    );
+  }
+}
+
+
+
 class VehicleDescription extends StatefulWidget {
   final LastLocationRespEntity vehicle;
   const VehicleDescription({super.key, required this.vehicle});
@@ -4101,6 +4425,9 @@ class _VehicleDescriptionState extends State<VehicleDescription> {
     );
   }
 }
+
+
+
 
 ///-----vehicleStatus------
 

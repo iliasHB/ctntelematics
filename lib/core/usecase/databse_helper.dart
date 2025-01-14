@@ -206,6 +206,7 @@ class DatabaseHelper {
     final db = await database;
     return db.delete('user_carts', where: 'id = ?', whereArgs: [id]);
   }
+
   // Delete notification by ID from the speed limit table
   Future<int> deleteSchedule(int id) async {
     final db = await database;
@@ -222,6 +223,51 @@ class DatabaseHelper {
   Future<void> clearAllSpeedLimitNotifications() async {
     final db = await database;
     await db.delete('speed_limit_notifications');
+  }
+
+  // Check if a geofence notification exists by VIN
+  Future<bool> geofenceNotificationExists(String vin) async {
+    final db = await database;
+    final result = await db.query(
+      'notifications',
+      where: 'vin = ?',
+      whereArgs: [vin],
+    );
+    return result.isNotEmpty;
+  }
+
+  // Update `createdAt` for an existing geofence notification
+  Future<void> updateGeofenceNotificationTime(String vin, String createdAt) async {
+    final db = await database;
+    await db.update(
+      'notifications',
+      {'createdAt': createdAt},
+      where: 'vin = ?',
+      whereArgs: [vin],
+    );
+  }
+
+
+  // Check if a geofence notification exists by VIN
+  Future<bool> speedLimitNotificationExists(String vin) async {
+    final db = await database;
+    final result = await db.query(
+      'speed_limit_notifications',
+      where: 'vin = ?',
+      whereArgs: [vin],
+    );
+    return result.isNotEmpty;
+  }
+
+  // Update `createdAt` for an existing geofence notification
+  Future<void> updateSpeedLimitNotificationTime(String vin, String createdAt) async {
+    final db = await database;
+    await db.update(
+      'speed_limit_notifications',
+      {'createdAt': createdAt},
+      where: 'vin = ?',
+      whereArgs: [vin],
+    );
   }
 
   // Clear all user carts
@@ -301,25 +347,39 @@ class DB_notification {
 
     // Save geofence notifications
     for (var v in geofenceVehicles) {
-      await dbHelper.insertGeofenceNotification({
-        'vin': v.locationInfo.vin,
-        'brand': v.locationInfo.brand,
-        'model': v.locationInfo.model,
-        'numberPlate': v.locationInfo.numberPlate,
-        'createdAt': v.locationInfo.tracker?.lastUpdate,
-      });
+      final vin = v.locationInfo.vin;
+      final createdAt = v.locationInfo.tracker?.lastUpdate ?? DateTime.now().toString();
+
+      if (await dbHelper.geofenceNotificationExists(vin)) {
+        await dbHelper.updateGeofenceNotificationTime(vin, createdAt);
+      } else {
+        await dbHelper.insertGeofenceNotification({
+          'vin': v.locationInfo.vin,
+          'brand': v.locationInfo.brand,
+          'model': v.locationInfo.model,
+          'numberPlate': v.locationInfo.numberPlate,
+          'createdAt': v.locationInfo.tracker?.lastUpdate,
+        });
+      }
     }
 
     // Save speed limit notifications
     for (var v in speedLimitVehicles) {
-      await dbHelper.insertSpeedLimitNotification({
-        'vin': v.locationInfo.vin,
-        'brand': v.locationInfo.brand,
-        'model': v.locationInfo.model,
-        'numberPlate': v.locationInfo.numberPlate,
-        'speedLimit': v.locationInfo.speedLimit,
-        'createdAt':v.locationInfo.tracker?.lastUpdate,
-      });
+      final vin = v.locationInfo.vin;
+      final createdAt = v.locationInfo.tracker?.lastUpdate ?? DateTime.now().toString();
+
+      if (await dbHelper.speedLimitNotificationExists(vin)) {
+        await dbHelper.updateSpeedLimitNotificationTime(vin, createdAt);
+      } else {
+        await dbHelper.insertSpeedLimitNotification({
+          'vin': v.locationInfo.vin,
+          'brand': v.locationInfo.brand,
+          'model': v.locationInfo.model,
+          'numberPlate': v.locationInfo.numberPlate,
+          'speedLimit': v.locationInfo.speedLimit,
+          'createdAt': v.locationInfo.tracker?.lastUpdate,
+        });
+      }
     }
   }
 

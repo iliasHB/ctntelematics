@@ -745,8 +745,17 @@ class _DashboardVehicleRouteDataState extends State<DashboardVehicleRouteData> {
                   ? "${widget.vehicle.routeLength?.toStringAsFixed(2)} km"
                   : "N/A",
               icon: Icon(
-                Icons.route,
+                Icons.mode_of_travel_outlined,
                 color: Colors.green.shade300,
+              ),
+            ),
+            // Stop Count
+            _buildMetricCard(
+              title: "Stops",
+              value: metrics['stopCount']?.toString() ?? "0",
+              icon: Icon(
+                Icons.shutter_speed,
+                color: Colors.red.shade300,
               ),
             ),
 
@@ -782,17 +791,7 @@ class _DashboardVehicleRouteDataState extends State<DashboardVehicleRouteData> {
                   ? "${metrics['maxSpeed'].toStringAsFixed(2)} km/h"
                   : "N/A",
               icon: Icon(
-                Icons.route,
-                color: Colors.green.shade300,
-              ),
-            ),
-
-            // Stop Count
-            _buildMetricCard(
-              title: "Stops",
-              value: metrics['stopCount']?.toString() ?? "0",
-              icon: Icon(
-                Icons.hexagon,
+                Icons.speed,
                 color: Colors.green.shade300,
               ),
             ),
