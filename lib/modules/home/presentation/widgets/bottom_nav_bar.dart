@@ -13,6 +13,8 @@ import '../../../map/presentation/pages/map_page.dart';
 
 import 'package:flutter/material.dart';
 
+import '../../../service/presentation/pages/service_page.dart';
+
 class BottomNavBar extends StatefulWidget {
   @override
   _BottomNavBarState createState() => _BottomNavBarState();
@@ -20,9 +22,9 @@ class BottomNavBar extends StatefulWidget {
 
 class _BottomNavBarState extends State<BottomNavBar> {
   // PageController to handle PageView navigation
-  final PageController _pageController = PageController(initialPage: 2);
+  final PageController _pageController = PageController(initialPage: 0);
 
-  int _currentIndex = 2; // Default page index (for example, Home page)
+  int _currentIndex = 0; // Default page index (for example, Home page)
 
   final int maxCount = 5;
 
@@ -36,11 +38,12 @@ class _BottomNavBarState extends State<BottomNavBar> {
   Widget build(BuildContext context) {
     // List of pages for the BottomNavigationBar
     final List<Widget> bottomBarPages = [
-      MapPage(),
-      const VehiclePage(),
       const DashboardPage(),
-      const EshopPage(),
+      const VehiclePage(),
       const DashCamPage(),
+      const EshopPage(),
+      const ServicePage(),
+      //MapPage(),
     ];
 
     return Scaffold(
@@ -69,31 +72,40 @@ class _BottomNavBarState extends State<BottomNavBar> {
         showSelectedLabels: true,
         showUnselectedLabels: true,
         items: [
-          BottomNavigationBarItem(
-            icon: const Icon(CupertinoIcons.placemark),
-            activeIcon: Icon(CupertinoIcons.placemark_fill, color: Colors.green.shade900,),
-            label: 'Map',
-          ),
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.local_shipping_outlined,),
-            activeIcon: Icon(Icons.local_shipping, color: Colors.green.shade900,),
-            label: 'Vehicle',
-          ),
           const BottomNavigationBarItem(
             icon: Icon(CupertinoIcons.house),
             activeIcon: Icon(CupertinoIcons.house_alt_fill),
             label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: const Icon(CupertinoIcons.shopping_cart),
-            activeIcon: Icon(CupertinoIcons.cart_fill, color: Colors.green.shade900,),
-            label: 'E-shop',
+            icon: const Icon(Icons.local_shipping_outlined,),
+            activeIcon: Icon(Icons.local_shipping, color: Colors.green.shade900,),
+            label: 'Vehicle',
           ),
           BottomNavigationBarItem(
             icon: const Icon(CupertinoIcons.camera),
             activeIcon: Icon(CupertinoIcons.camera_fill, color: Colors.green.shade900,),
             label: 'Dashcam',
           ),
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.shopping_cart_outlined),
+            activeIcon: Icon(Icons.shopping_cart, color: Colors.green.shade900,),
+            label: 'E-shop',
+          ),
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.home_repair_service_outlined,),
+            activeIcon: Icon( Icons.home_repair_service, color: Colors.green.shade900,),
+            label: 'Service',
+          ),
+
+          // BottomNavigationBarItem(
+          //   icon: const Icon(CupertinoIcons.placemark),
+          //   activeIcon: Icon(CupertinoIcons.placemark_fill, color: Colors.green.shade900,),
+          //   label: 'Map',
+          // ),
+          ///-----
+
+
         ],
       )
           : null, // If bottomBarPages count exceeds maxCount, bottom nav won't show

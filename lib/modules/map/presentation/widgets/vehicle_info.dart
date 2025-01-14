@@ -1189,16 +1189,18 @@ class VehicleInfo extends StatelessWidget {
                                     Text(
                                       vehicleStatus[0]
                                               .locationInfo
-                                              .tracker
-                                              ?.status ??
+                                              ?.vehicleStatus ??
                                           status,
                                       style: AppStyle.cardSubtitle
                                           .copyWith(fontSize: 12),
                                     ),
                                     const Spacer(),
-                                    Text(FormatData.formatTimeAgo(updated_at),
-                                        style: AppStyle.cardfooter
-                                            .copyWith(color: Colors.red)),
+                                    Padding(
+                                      padding: const EdgeInsets.only(right: 10.0),
+                                      child: Text(FormatData.formatTimeAgo(updated_at),
+                                          style: AppStyle.cardfooter
+                                              .copyWith(color: Colors.red, fontSize: 12)),
+                                    ),
                                   ],
                                 ),
                               ),
@@ -1220,8 +1222,8 @@ class VehicleInfo extends StatelessWidget {
                                         .copyWith(fontSize: 12),
                                   ),
                                   Text(
-                                    "${vehicleStatus[0].locationInfo.tracker?.position?.latitude.toString() ?? latitude}, "
-                                    "${vehicleStatus[0].locationInfo.tracker?.position?.longitude.toString() ?? longitude}",
+                                    "${vehicleStatus[0].locationInfo.tracker?.position?.latitude!.toStringAsFixed(7) ?? latitude}, "
+                                    "${vehicleStatus[0].locationInfo.tracker?.position?.longitude!.toStringAsFixed(7) ?? longitude}",
                                     // '${latitude}, ${longitude}',
                                     style: AppStyle.cardfooter
                                         .copyWith(fontSize: 12),

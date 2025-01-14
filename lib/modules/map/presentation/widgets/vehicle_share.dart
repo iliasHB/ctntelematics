@@ -44,45 +44,48 @@ class VehicleShare {
               ),
               width: double.infinity,
               child: Padding(
-                padding: const EdgeInsets.all(10.0),
-                child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(vertical: 10.0),
+                child: SingleChildScrollView( // Enable scrolling for overflowing content
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                      Row(
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Expanded(
-                            child: Text(
-                              'Share Location',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  'Share Location',
+                                  style: AppStyle.cardSubtitle,
+                                  softWrap: true,
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 3,
+                                ),
                               ),
-                              softWrap: true,
-                              overflow: TextOverflow.ellipsis,
-                              maxLines: 2,
-                            ),
+                              IconButton(
+                                onPressed: () => Navigator.pop(context),
+                                icon: const Icon(Icons.cancel_outlined),
+                              ),
+                            ],
                           ),
-                          IconButton(
-                            onPressed: () => Navigator.pop(context),
-                            icon: const Icon(Icons.cancel_outlined),
-                          )
+                          Text(
+                            '$brand $model ($vin)',
+                            style: AppStyle.cardSubtitle.copyWith(fontSize: 12),
+                          ),
                         ],
                       ),
                       const SizedBox(height: 10),
                       Text(
-                        '$brand $model ($vin)',
-                        style: TextStyle(fontSize: 12, color: Colors.grey[700]),
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
                         'Share location expiry date',
-                        style: TextStyle(color: Colors.grey[800]),
+                        style: AppStyle.cardfooter.copyWith(color: Colors.grey[800]),
                       ),
                       Text(
-                        '${dateTime.toString()}',
-                        style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                        FormatData.formatTimestamp(dateTime.toString()),
+                        style: AppStyle.cardSubtitle
+                            .copyWith(fontSize: 12, color: Colors.grey[700]),
                       ),
                       const SizedBox(height: 10),
                       Container(
@@ -93,12 +96,10 @@ class VehicleShare {
                         ),
                         child: Row(
                           children: [
-                            Expanded(
+                            Flexible(
                               child: Text(
                                 "https//ctn-frontend.vercel.app/viewCar/?token=$token&lat=$latitude&lon=$longitude",
-                                style: const TextStyle(fontSize: 12),
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 2,
+                                style: AppStyle.cardfooter,
                               ),
                             ),
                             IconButton(
@@ -118,47 +119,157 @@ class VehicleShare {
                                 Icons.file_copy_rounded,
                                 color: Colors.green,
                               ),
-                            )
+                            ),
                           ],
                         ),
                       ),
                       const SizedBox(height: 10),
                       Row(
                         children: [
-                          const Text(
+                          Text(
                             'Enter Email Address ',
-                            style: TextStyle(fontSize: 12),
+                            style: AppStyle.cardSubtitle.copyWith(fontSize: 12),
                           ),
-                          Container(
+                          Badge(
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 10, vertical: 3),
-                            decoration: BoxDecoration(
-                              color: Colors.green[800],
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: const Text(
+                            backgroundColor: Colors.green[800],
+                            label: Text(
                               'OPTIONAL',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.white,
-                              ),
+                              style: AppStyle.cardfooter.copyWith(fontSize: 12),
                             ),
                           ),
                         ],
                       ),
                       const SizedBox(height: 10),
-                      // Assuming EmailWidget is implemented elsewhere
                       EmailWidget(
                         token: token,
-                        latitude: latitude,
-                        longitude: longitude,
+                        latitude: latitude.toString(),
+                        longitude: longitude.toString(),
                         url:
-                        "https://ctn-frontend.vercel.app/viewCar/?token=$token&lat=$latitude&lon=$longitude",
+                        "https//ctn-frontend.vercel.app/viewCar/?token=$token&lat=$latitude&lon=$longitude",
                       ),
+                      const SizedBox(height: 10),
                     ],
                   ),
                 ),
               ),
+              // child: Padding(
+              //   padding: const EdgeInsets.all(10.0),
+              //   child: SingleChildScrollView(
+              //     child: Column(
+              //       mainAxisSize: MainAxisSize.min,
+              //       crossAxisAlignment: CrossAxisAlignment.start,
+              //       children: [
+              //         Row(
+              //           children: [
+              //             const Expanded(
+              //               child: Text(
+              //                 'Share Location',
+              //                 style: TextStyle(
+              //                   fontSize: 16,
+              //                   fontWeight: FontWeight.bold,
+              //                 ),
+              //                 softWrap: true,
+              //                 overflow: TextOverflow.ellipsis,
+              //                 maxLines: 2,
+              //               ),
+              //             ),
+              //             IconButton(
+              //               onPressed: () => Navigator.pop(context),
+              //               icon: const Icon(Icons.cancel_outlined),
+              //             )
+              //           ],
+              //         ),
+              //         const SizedBox(height: 10),
+              //         Text(
+              //           '$brand $model ($vin)',
+              //           style: TextStyle(fontSize: 12, color: Colors.grey[700]),
+              //         ),
+              //         const SizedBox(height: 10),
+              //         Text(
+              //           'Share location expiry date',
+              //           style: TextStyle(color: Colors.grey[800]),
+              //         ),
+              //         Text(
+              //           '${dateTime.toString()}',
+              //           style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+              //         ),
+              //         const SizedBox(height: 10),
+              //         Container(
+              //           padding: const EdgeInsets.all(10.0),
+              //           decoration: BoxDecoration(
+              //             color: Colors.grey[300],
+              //             borderRadius: BorderRadius.circular(10),
+              //           ),
+              //           child: Row(
+              //             children: [
+              //               Expanded(
+              //                 child: Text(
+              //                   "https//ctn-frontend.vercel.app/viewCar/?token=$token&lat=$latitude&lon=$longitude",
+              //                   style: const TextStyle(fontSize: 12),
+              //                   overflow: TextOverflow.ellipsis,
+              //                   maxLines: 2,
+              //                 ),
+              //               ),
+              //               IconButton(
+              //                 onPressed: () {
+              //                   Clipboard.setData(ClipboardData(
+              //                     text:
+              //                     "https://ctn-frontend.vercel.app/viewCar/?token=$token&lat=$latitude&lon=$longitude",
+              //                   ));
+              //                   ScaffoldMessenger.of(context).showSnackBar(
+              //                     const SnackBar(
+              //                       content: Text('Link copied to clipboard'),
+              //                       duration: Duration(seconds: 2),
+              //                     ),
+              //                   );
+              //                 },
+              //                 icon: const Icon(
+              //                   Icons.file_copy_rounded,
+              //                   color: Colors.green,
+              //                 ),
+              //               )
+              //             ],
+              //           ),
+              //         ),
+              //         const SizedBox(height: 10),
+              //         Row(
+              //           children: [
+              //             const Text(
+              //               'Enter Email Address ',
+              //               style: TextStyle(fontSize: 12),
+              //             ),
+              //             Container(
+              //               padding: const EdgeInsets.symmetric(
+              //                   horizontal: 10, vertical: 3),
+              //               decoration: BoxDecoration(
+              //                 color: Colors.green[800],
+              //                 borderRadius: BorderRadius.circular(10),
+              //               ),
+              //               child: const Text(
+              //                 'OPTIONAL',
+              //                 style: TextStyle(
+              //                   fontSize: 12,
+              //                   color: Colors.white,
+              //                 ),
+              //               ),
+              //             ),
+              //           ],
+              //         ),
+              //         const SizedBox(height: 10),
+              //         // Assuming EmailWidget is implemented elsewhere
+              //         EmailWidget(
+              //           token: token,
+              //           latitude: latitude,
+              //           longitude: longitude,
+              //           url:
+              //           "https://ctn-frontend.vercel.app/viewCar/?token=$token&lat=$latitude&lon=$longitude",
+              //         ),
+              //       ],
+              //     ),
+              //   ),
+              // ),
             ),
           ),
         );

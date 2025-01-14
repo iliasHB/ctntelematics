@@ -17,6 +17,7 @@ import '../../modules/eshop/presentation/widgets/payment_method.dart';
 import '../../modules/eshop/presentation/widgets/payment_success.dart';
 import '../../modules/eshop/presentation/widgets/product_review.dart';
 import '../../modules/home/presentation/widgets/bottom_nav_bar.dart';
+import '../../modules/map/presentation/pages/map_page.dart';
 import '../../modules/profile/presentation/widgets/change_pwd_widget.dart';
 import '../../modules/profile/presentation/widgets/response_widget.dart';
 
@@ -27,7 +28,8 @@ final routes = {
   '/login': (BuildContext context) => LoginPage(),
   '/signup': (BuildContext context) => SignupPage(),
   '/home': (BuildContext context) => const Home(),
-  '/service': (BuildContext context) => const ServicePage(),
+  '/map': (BuildContext context) => MapPage(),
+  // '/service': (BuildContext context) => const ServicePage(),
   // '/dashboard': (BuildContext context) => const DashboardPage(),
   '/bottomNav': (BuildContext context) =>  BottomNavBar(),
   '/forgetPassword': (BuildContext context) =>  ForgotPasswordPage(),

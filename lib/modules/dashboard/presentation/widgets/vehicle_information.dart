@@ -5,10 +5,8 @@ import 'package:ctntelematics/modules/dashboard/domain/entitties/resp_entities/d
 import 'package:ctntelematics/modules/vehincle/domain/entities/req_entities/route_history_req_entity.dart';
 import 'package:ctntelematics/modules/vehincle/domain/entities/resp_entities/route_history_resp_entity.dart';
 import 'package:ctntelematics/modules/vehincle/presentation/bloc/vehicle_bloc.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intl/intl.dart';
 
 import '../../../../core/widgets/gps_processor.dart';
 import '../../../../service_locator.dart';
