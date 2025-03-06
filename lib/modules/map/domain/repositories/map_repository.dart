@@ -1,3 +1,4 @@
+import 'package:ctntelematics/core/model/token_req_entity.dart';
 import 'package:ctntelematics/modules/map/data/models/resp_models/route_history_model.dart';
 import 'package:ctntelematics/modules/map/domain/entitties/req_entities/route_history_req_entity.dart';
 import 'package:ctntelematics/modules/map/domain/entitties/req_entities/send_location_resp_entity.dart';

@@ -1,10 +1,9 @@
 import 'dart:async';
 
+import 'package:ctntelematics/core/model/token_req_entity.dart';
 import 'package:ctntelematics/core/utils/app_export_util.dart';
 import 'package:ctntelematics/core/widgets/shimmer_loading.dart';
 import 'package:ctntelematics/modules/dashboard/domain/entitties/req_entities/dash_vehicle_req_entity.dart';
-import 'package:ctntelematics/modules/dashboard/domain/entitties/resp_entities/dash_vehicle_resp_entity.dart';
-import 'package:ctntelematics/modules/map/domain/entitties/req_entities/token_req_entity.dart';
 import 'package:ctntelematics/modules/map/domain/entitties/resp_entities/last_location_resp_entity.dart';
 import 'package:ctntelematics/modules/map/presentation/bloc/map_bloc.dart';
 import 'package:ctntelematics/modules/vehincle/presentation/widgets/vehicle_last_location.dart';
@@ -22,8 +21,6 @@ import '../../../../core/widgets/vehicel_realTime_status.dart';
 import '../../../../service_locator.dart';
 import '../../../dashboard/presentation/bloc/dashboard_bloc.dart';
 import '../../../map/data/models/resp_models/last_location_resp_model.dart';
-import '../../../map/domain/usecases/map_usecase.dart';
-import '../widgets/vehicle_state_update.dart';
 
 
 const _shimmerGradient = LinearGradient(
@@ -263,8 +260,7 @@ class _VehiclePageState extends State<VehiclePage> {
                                       //         vehicles,
                                       //         'idling',
                                       //         vehicleCounts['idling']),
-                                      parkedCount:
-                                          VehicleRealTimeStatus.checkStatusChange(
+                                      parkedCount: VehicleRealTimeStatus.checkStatusChange(
                                               vehiclesData,
                                               vehicles,
                                               'parked',

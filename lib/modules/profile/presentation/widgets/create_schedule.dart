@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../config/theme/app_style.dart';
+import '../../../../core/model/token_req_entity.dart';
 import '../../../../core/usecase/databse_helper.dart';
 import '../../../../core/utils/pref_util.dart';
 import '../../../../core/widgets/alert_message.dart';
@@ -14,7 +15,9 @@ import '../../domain/entitties/req_entities/create_schedule_req_entity.dart';
 import '../bloc/profile_bloc.dart';
 
 final List<String> period = ['days', 'months', 'years'];
-
+final List<String> reminderPeriod = ['days', 'week', 'month'];
+final List<String> data = ['Brake pad', 'Car oil', 'Gear oil', 'Hydraulic', 'Motor coolant', 'Tire', 'Wheel balancing'];
+List<String> selectedItems = [];
 class CreateScheduleWidget extends StatefulWidget {
   final String? token;
   const CreateScheduleWidget({super.key, this.token});
@@ -39,6 +42,7 @@ class _CreateScheduleWidgetState extends State<CreateScheduleWidget> {
 
   String dropdownValue2 = period.first;
   String dropdownValue1 = period[1];
+  String dropdownValue3 = reminderPeriod[0];
   bool isSwitchedByTime = false;
   bool isSwitchedByEngineHr = false;
   bool isSwitchedByMileage = false;
@@ -115,12 +119,10 @@ class _CreateScheduleWidgetState extends State<CreateScheduleWidget> {
                 ),
                 const SizedBox(height: 16),
                 // Choose Vehicle dropdown
-                Text(
-                  'Choose Vehicle',
+                Text('Choose Vehicle',
                   style: AppStyle.cardSubtitle.copyWith(fontSize: 14),
                 ),
                 const SizedBox(height: 8),
-
                 BlocProvider(
                   create: (_) => sl<ProfileVehiclesBloc>()
                     ..add(ProfileVehicleEvent(TokenReqEntity(
@@ -129,7 +131,13 @@ class _CreateScheduleWidgetState extends State<CreateScheduleWidget> {
                   child: BlocConsumer<ProfileVehiclesBloc, ProfileState>(
                     builder: (context, state) {
                       if (state is ProfileLoading) {
-                        return const CustomContainerLoadingButton();
+                        return Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[200],
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const CustomContainerLoadingButton());
                       } else if (state is GetVehicleDone) {
                         // Check if vehicle data is null or empty
                         if (state.resp.data == null ||
@@ -141,36 +149,6 @@ class _CreateScheduleWidgetState extends State<CreateScheduleWidget> {
                             ),
                           );
                         }
-
-                        // // Extract the list of VINs
-                        // final vinList = state.resp.data!
-                        //     .map<String>((vehicle) => vehicle.vin ?? "Unknown VIN")
-                        //     .toList();
-                        //
-                        // return DropdownButtonFormField<String>(
-                        //   value: _selectedVendor ??= vinList.first, // Set default to the first VIN
-                        //   items: vinList
-                        //       .map<DropdownMenuItem<String>>((String vin) {
-                        //     return DropdownMenuItem<String>(
-                        //       value: vin,
-                        //       child: Text(vin, style: AppStyle.cardfooter.copyWith(fontSize: 12),),
-                        //     );
-                        //   }).toList(),
-                        //   onChanged: (value) {
-                        //     setState(() {
-                        //       _selectedVendor = value!;
-                        //     });
-                        //   },
-                        //   decoration: InputDecoration(
-                        //     labelText: 'Choose vehicle',
-                        //     labelStyle: AppStyle.cardfooter,
-                        //     filled: true,
-                        //     fillColor: Colors.grey[200],
-                        //     border: const OutlineInputBorder(borderSide: BorderSide.none),
-                        //   ),
-                        // );
-
-                        // Create the list of DropdownMenuItem with brand as the display and vin as the value
                         return DropdownButtonFormField<String>(
                           value: _selectedVendor ??=
                               state.resp.data!.first.vin ??
@@ -203,32 +181,38 @@ class _CreateScheduleWidgetState extends State<CreateScheduleWidget> {
                       } else {
                         return Center(
                             child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.center,
+                              // mainAxisAlignment: MainAxisAlignment.center,
+                              // crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
-                                Text(
-                                  'Unable to load vehicles',
-                                  style: AppStyle.cardfooter.copyWith(fontSize: 12),
-                                ),
-                                const SizedBox(
-                                  width: 10.0,
-                                ),
-                                IconButton(
-                                    onPressed: () {
-                                      BlocProvider.of<ProfileVehiclesBloc>(context)
-                                          .add(ProfileVehicleEvent(TokenReqEntity(
-                                          token: widget.token ?? "",
-                                          contentType: 'application/json')));
-                                    },
-                                    icon: const Icon(Icons.refresh, color: Colors.green,))
-                                // CustomSecondaryButton(
-                                //     label: 'Refresh',
-                                //     onPressed: () {
-                                //       BlocProvider.of<ProfileVehiclesBloc>(context)
-                                //           .add(ProfileVehicleEvent(TokenReqEntity(
-                                //           token: widget.token ?? "",
-                                //           contentType: 'application/json')));
-                                //     })
+                                Expanded(
+                                  child: Container(
+                                    padding: const EdgeInsets.only(left: 10),
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey[200],
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Text(
+                                          'Unable to load vehicles',
+                                          style: AppStyle.cardfooter.copyWith(fontSize: 12),
+                                        ),
+                                        const SizedBox(
+                                          width: 10.0,
+                                        ),
+                                        IconButton(
+                                            onPressed: () {
+                                              BlocProvider.of<ProfileVehiclesBloc>(context)
+                                                  .add(ProfileVehicleEvent(TokenReqEntity(
+                                                  token: widget.token ?? "",
+                                                  contentType: 'application/json')));
+                                            },
+                                            icon: const Icon(Icons.refresh, color: Colors.green,)
+                                        )
+                                      ],
+                                    ),
+                                  ),
+                                )
                               ],
                             ));
                       }
@@ -247,74 +231,83 @@ class _CreateScheduleWidgetState extends State<CreateScheduleWidget> {
                     },
                   ),
                 ),
-
-                // Row(
-                //   children: [
-                //     Expanded(
-                //       child: DropdownMenu<String>(
-                //         initialSelection: period[1],
-                //         inputDecorationTheme: const InputDecorationTheme(
-                //           border: InputBorder.none, // Removes the border
-                //           filled: true,             // Enables the background color
-                //           fillColor: Colors.white,  // Sets the background color to white
-                //         ),
-                //         onSelected: (String? value) {
-                //           setState(() {
-                //             dropdownValue = value!;
-                //           });
-                //         },
-                //         dropdownMenuEntries: period.map<DropdownMenuEntry<String>>((String value) {
-                //           return DropdownMenuEntry<String>(
-                //             value: value,
-                //             label: value,
-                //           );
-                //         }).toList(),
-                //       ),
-                //     ),
-                //
-                //   ],
-                // ),
                 const SizedBox(height: 16),
                 // Service Tasks section
                 const Text('Service Tasks',
                     style: TextStyle(fontWeight: FontWeight.bold)),
                 const SizedBox(height: 8),
-                TextFormField(
-                  controller: _taskController,
-                  decoration: InputDecoration(
-                    hintText: 'e.g; Oil Change, Oil Filter Replacement',
-                    hintStyle: AppStyle.cardfooter,
-                    border:
-                        const OutlineInputBorder(borderSide: BorderSide.none),
-                    filled: true,
-                    fillColor: Colors.grey[200],
+              Row(
+                children: [
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        _showMultiSelectDialog(context);
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[200],
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          selectedItems.isEmpty
+                              ? "Select Options"
+                              : selectedItems.join(", "),
+                          style: AppStyle.cardfooter,
+                        ),
+                      ),
+                    ),
                   ),
-                  style: AppStyle.cardfooter, // Style for user input text
-                  validator: (value) {
-                    if (value!.isEmpty) {
-                      return "Task can not be empty";
-                    }
-                    return null;
-                  },
-                ),
-                // Wrap(
-                //   spacing: 8.0,
+                ],
+              ),
+                // Row(
                 //   children: [
-                //     Chip(
-                //       label: const Text('Oil Change'),
-                //       onDeleted: () {},
-                //       deleteIcon: const Icon(Icons.close, color: Colors.red),
-                //       backgroundColor: Colors.grey[200],
+                //     Expanded(
+                //       child: DropdownMenu<String>(
+                //         initialSelection: data[1],
+                //         inputDecorationTheme: InputDecorationTheme(
+                //           border: InputBorder.none, // Removes the border
+                //           filled: true,
+                //           fillColor: Colors.grey[200],
+                //         ),
+                //         textStyle:
+                //         AppStyle.cardfooter.copyWith(fontSize: 12),
+                //         onSelected: (String? value) {
+                //           // This is called when the user selects an item.
+                //           setState(() {
+                //             dropdownValue1 = value!;
+                //           });
+                //         },
+                //
+                //         dropdownMenuEntries: data
+                //             .map<DropdownMenuEntry<String>>((String value) {
+                //           return DropdownMenuEntry<String>(
+                //               value: value, label: value);
+                //         }).toList(),
+                //       ),
                 //     ),
-                //     Chip(
-                //       label: const Text('Oil Filter Replacement'),
-                //       onDeleted: () {},
-                //       deleteIcon: const Icon(Icons.close, color: Colors.red),
-                //       backgroundColor: Colors.grey[200],
-                //     ),
-                //     // Add more chips as necessary
                 //   ],
                 // ),
+                ///
+                // TextFormField(
+                //   controller: _taskController,
+                //   decoration: InputDecoration(
+                //     hintText: 'e.g; Oil Change, Oil Filter Replacement',
+                //     hintStyle: AppStyle.cardfooter,
+                //     border:
+                //         const OutlineInputBorder(borderSide: BorderSide.none),
+                //     filled: true,
+                //     fillColor: Colors.grey[200],
+                //   ),
+                //   style: AppStyle.cardfooter, // Style for user input text
+                //   validator: (value) {
+                //     if (value!.isEmpty) {
+                //       return "Task can not be empty";
+                //     }
+                //     return null;
+                //   },
+                // ),
+
                 const SizedBox(height: 16),
                 // Schedule Options
                 Text(
@@ -471,7 +464,7 @@ class _CreateScheduleWidgetState extends State<CreateScheduleWidget> {
                           const SizedBox(width: 10),
                           Expanded(
                               child: DropdownMenu<String>(
-                            initialSelection: period.first,
+                            initialSelection: reminderPeriod.first,
                             inputDecorationTheme: const InputDecorationTheme(
                               border: InputBorder.none, // Removes the border
                               filled: true, // Enables the background color
@@ -484,7 +477,7 @@ class _CreateScheduleWidgetState extends State<CreateScheduleWidget> {
                                 dropdownValue1 = value!;
                               });
                             },
-                            dropdownMenuEntries: period
+                            dropdownMenuEntries: reminderPeriod
                                 .map<DropdownMenuEntry<String>>((String value) {
                               return DropdownMenuEntry<String>(
                                   value: value, label: value);
@@ -685,37 +678,32 @@ class _CreateScheduleWidgetState extends State<CreateScheduleWidget> {
                 BlocConsumer<CreateScheduleBloc, ProfileState>(
                   listener: (context, state) {
                     if (state is CreateScheduleDone) {
-                      // scheduleUpdate(
-                      //                           FormatData.convertDurationToDate(
-                      //                               '${state.resp.schedule.no_time} $dropdownValue1'),
-                      //                           FormatData.convertDurationToDate(
-                      //                               '${state.resp.schedule.reminder_advance_days} $dropdownValue2'),
-                      //                           state.resp.schedule.vehicle_vin,
-                      //                           FormatData.calculateReminderTime(int.parse(
-                      //                               state.resp.schedule.reminder_advance_hr)),
-                      //                           // FormatData.calculateReminderTime(int.parse(
-                      //                           //     state.resp.schedule.reminder_advance_hr)),
-                      //                           state.resp.schedule.no_kilometer,
-                      //                           state.resp.schedule.reminder_advance_km);
-                      ///-----
                       saveScheduleType(
-                          FormatData.convertDurationToDate(
-                              '${state.resp.schedule.no_time} $dropdownValue1'),
-                          FormatData.convertDurationToDate(
-                              '${state.resp.schedule.reminder_advance_days} $dropdownValue2'),
-                          state.resp.schedule.vehicle_vin ?? "",
-                          FormatData.calculateReminderTime(
-                              int.parse(state.resp.schedule.no_hours ?? "0")),
-                          FormatData.calculateReminderTime(int.parse(
-                              state.resp.schedule.reminder_advance_hr ?? "0")),
+                          '${state.resp.schedule.no_time} $dropdownValue1',
+                          '${state.resp.schedule.reminder_advance_days} $dropdownValue2',
+                            state.resp.schedule.vehicle_vin ?? "",
+                          state.resp.schedule.no_hours ?? "0",
+                          state.resp.schedule.reminder_advance_hr ?? "0",
                           state.resp.schedule.no_kilometer ?? "",
                           state.resp.schedule.reminder_advance_km ?? "",
                           state.resp.schedule.start_date ?? "",
                           state.resp.schedule.schedule_type ?? "",
-                          _taskController.text);
+                          selectedItems.join(", "));
+                          // FormatData.convertDurationToDate(
+                          //     '${state.resp.schedule.no_time} $dropdownValue1'),
+                          // FormatData.convertDurationToDate(
+                          //     '${state.resp.schedule.reminder_advance_days} $dropdownValue2'),
+                          // FormatData.calculateReminderTime(
+                          //     int.parse(state.resp.schedule.no_hours ?? "0")),
+                          // FormatData.calculateReminderTime(int.parse(
+                          //     state.resp.schedule.reminder_advance_hr ?? "0")),
+                          // state.resp.schedule.no_kilometer ?? "",
+                          // state.resp.schedule.reminder_advance_km ?? "",
+                          // state.resp.schedule.start_date ?? "",
+                          // state.resp.schedule.schedule_type ?? "",
+                          // selectedItems.join(", "));
 
-                      AlertMessage.showAlertMessageModal(
-                          context, state.resp.message);
+                      AlertMessage.showAlertMessageModal(context, state.resp.message);
 
                       ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(content: Text(state.resp.message)));
@@ -763,7 +751,7 @@ class _CreateScheduleWidgetState extends State<CreateScheduleWidget> {
                             if (_formKey.currentState?.validate() ?? false) {
                               final createScheduleReqEntity =
                                   CreateScheduleReqEntity(
-                                      description: _taskController.text.trim(),
+                                      description: selectedItems.join(", "),
                                       vehicle_vin: _selectedVendor!,
                                       schedule_type: selectedSchedule,
                                       start_date: FormatData.formatTimestampToDate(DateTime.now().toString()),
@@ -771,10 +759,8 @@ class _CreateScheduleWidgetState extends State<CreateScheduleWidget> {
                                           mileageController.text.trim(),
                                       number_time: timeController.text.trim(),
                                       category_time: "",
-                                      number_hour:
-                                          engineHrController.text.trim(),
-                                      reminder_advance_days:
-                                          timeReminderAdvController.text,
+                                      number_hour: engineHrController.text.trim(),
+                                      reminder_advance_days: timeReminderAdvController.text,
                                       reminder_advance_hr:
                                           engineHrReminderAdvController.text
                                               .toString(),
@@ -865,7 +851,8 @@ class _CreateScheduleWidgetState extends State<CreateScheduleWidget> {
         reminder_advance_hr,
         no_kilometer,
         reminder_advance_km,
-        start_date);
+        start_date,
+    );
 
     if (isSaved) {
       // Show success feedback
@@ -887,6 +874,57 @@ class _CreateScheduleWidgetState extends State<CreateScheduleWidget> {
         ),
       );
     }
+  }
+
+  void _showMultiSelectDialog(BuildContext context) async {
+    List<String> tempSelected = List.from(selectedItems);
+    await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Select Options", style: AppStyle.cardSubtitle,),
+          content: StatefulBuilder(
+            builder: (context, setState) {
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                children: data.map((item) {
+                  return CheckboxListTile(
+                    title: Text(item),
+                    value: tempSelected.contains(item),
+                    onChanged: (bool? value) {
+                      setState(() {
+                        if (value == true) {
+                          tempSelected.add(item);
+                        } else {
+                          tempSelected.remove(item);
+                        }
+                      });
+                    },
+                  );
+                }).toList(),
+              );
+            },
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: Text("Cancel"),
+            ),
+            TextButton(
+              onPressed: () {
+                setState(() {
+                  selectedItems = List.from(tempSelected);
+                });
+                Navigator.pop(context);
+              },
+              child: Text("OK"),
+            ),
+          ],
+        );
+      },
+    );
   }
 }
 

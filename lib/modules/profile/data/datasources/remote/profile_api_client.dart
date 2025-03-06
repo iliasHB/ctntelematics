@@ -1,13 +1,16 @@
 
 import 'package:ctntelematics/core/constant/constant.dart';
 import 'package:ctntelematics/modules/profile/data/models/req_models/create_schedule_req_model.dart';
+import 'package:ctntelematics/modules/profile/data/models/resp_models/expenses_resp_model.dart';
 import 'package:ctntelematics/modules/profile/data/models/resp_models/get_schedule_resp_model.dart';
 import 'package:ctntelematics/modules/profile/data/models/resp_models/profile_resp_model.dart';
 import 'package:ctntelematics/modules/profile/data/models/resp_models/profile_vehicles_resp_model.dart';
 import 'package:dio/dio.dart';
 import 'package:retrofit/http.dart';
 
+import '../../models/resp_models/complete_schedule_resp_model.dart';
 import '../../models/resp_models/create_schedule_resp_model.dart';
+import '../../models/resp_models/get_schedule_notice_resp_model.dart';
 
 part 'profile_api_client.g.dart';
 
@@ -66,5 +69,28 @@ abstract class ProfileApiClient {
   Future<ProfileVehicleRespModel> getAllVehicles(
       @Header("Authorization") String token,
       @Header("Accept") String contentType,);
+
+  @GET("/get/notice")
+  Future<List<GetScheduleNoticeRespModel>> getScheduleNotice(
+      @Header("Authorization") String token,
+      @Header("Accept") String contentType,);
+
+  @POST("/schedule/complete")
+  Future<CompleteScheduleRespModel> completeSchedule(
+      @Field("vehicle_vin") String vehicle_vin,
+      @Field("schedule_id") String schedule_id,
+      @Header("Authorization") String token,);
+
+  @GET("/get/notice/single")
+  Future<GetScheduleNoticeRespModel> getSingleScheduleNotice(
+      @Field("vehicle_vin") String vehicle_vin,
+      @Header("Authorization") String token,
+      @Header("Accept") String contentType,);
+
+  @GET("/expenses")
+  Future<ExpensesRespModel> getExpenses(
+      @Query("from") String from,
+      @Query("to") String to,
+      @Header("Authorization") String token,);
 
 }

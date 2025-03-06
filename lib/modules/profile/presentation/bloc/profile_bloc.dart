@@ -1,17 +1,23 @@
 import 'package:ctntelematics/modules/profile/domain/entitties/req_entities/change_pwd_req_entity.dart';
+import 'package:ctntelematics/modules/profile/domain/entitties/req_entities/complete_schedule_req_entity.dart';
 import 'package:ctntelematics/modules/profile/domain/entitties/req_entities/create_schedule_req_entity.dart';
 import 'package:ctntelematics/modules/profile/domain/entitties/req_entities/gen_otp_req_entity.dart';
 import 'package:ctntelematics/modules/profile/domain/entitties/req_entities/token_req_entity.dart';
 import 'package:ctntelematics/modules/profile/domain/entitties/req_entities/verify_email_req_entity.dart';
+import 'package:ctntelematics/modules/profile/domain/entitties/resp_entities/complete_resp_entity.dart';
 import 'package:ctntelematics/modules/profile/domain/entitties/resp_entities/get_schedule_resp_entity.dart';
+import 'package:ctntelematics/modules/profile/domain/entitties/resp_entities/get_schedule_resp_notice_entity.dart';
 import 'package:ctntelematics/modules/profile/domain/entitties/resp_entities/profile_vehicle_resp_entity.dart';
 import 'package:ctntelematics/modules/profile/domain/usecases/profile_usecase.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/model/token_req_entity.dart';
 import '../../../../core/network/network_exception.dart';
 import '../../../../core/resources/profile_data_state.dart';
 import '../../../map/presentation/bloc/map_bloc.dart';
+import '../../domain/entitties/req_entities/expenses_req_entity.dart';
 import '../../domain/entitties/resp_entities/create_schedule_resp_entity.dart';
+import '../../domain/entitties/resp_entities/expenses_resp_entity.dart';
 import '../../domain/entitties/resp_entities/profile_resp_entity.dart';
 
 part 'profile_event.dart';
@@ -157,7 +163,6 @@ class GetScheduleBloc extends Bloc<ProfileEvent, ProfileState> {
       final user = await getScheduleUseCase(event.tokenReqEntity);
       yield GetScheduleDone(user); // Emit success state after getting the user
     } catch (error) {
-      print('rrrrrrr::::: $error');
       if (error is ApiErrorException) {
         yield ProfileFailure(error.message); // Emit API error message
       } else if (error is NetworkException) {
@@ -188,7 +193,6 @@ class CreateScheduleBloc extends Bloc<ProfileEvent, ProfileState> {
       final user = await createScheduleUseCase(event.createScheduleReqEntity);
       yield CreateScheduleDone(user); // Emit success state after getting the user
     } catch (error) {
-      print('rrrrrrr::::: $error');
       if (error is ApiErrorException) {
         yield ProfileFailure(error.message); // Emit API error message
       } else if (error is NetworkException) {
@@ -229,6 +233,154 @@ class ProfileVehiclesBloc extends Bloc<ProfileEvent, ProfileState> {
 
     } catch (error) {
       print("error:: $error");
+      if (error is ApiErrorException) {
+        yield ProfileFailure(error.message); // Emit API error message
+      } else if (error is NetworkException) {
+        yield ProfileFailure(error.message); // Emit network failure message
+      }
+      else {
+        yield const ProfileFailure(
+            "An unexpected error occurred. Please try again."); // Emit generic error message
+      }
+    }
+  }
+}
+
+class GetScheduleNoticeBloc extends Bloc<ProfileEvent, ProfileState> {
+  final ScheduleNoticeUseCase scheduleNoticeUseCase;
+
+  GetScheduleNoticeBloc(this.scheduleNoticeUseCase) : super(ProfileInitial()) {
+    on<ScheduleNoticeEvent>((event, emit) =>
+        emit.forEach<ProfileState>(
+          mapEventToState(event),
+          onData: (state) => state,
+          onError: (error, stackTrace) =>
+              ProfileFailure(error.toString()), // Handle error cases
+        ));
+  }
+
+
+  Stream<ProfileState> mapEventToState(ScheduleNoticeEvent event) async* {
+    yield ProfileLoading(); // Emit loading state
+    try {
+      // Use yield* to delegate stream handling to vehicleUseCase
+      final resp = await scheduleNoticeUseCase(TokenReqEntity(
+        token: event.tokenReqEntity.token,
+        contentType: event.tokenReqEntity.contentType,
+      ));
+
+      yield GetScheduleNoticeDone(resp); // Emit success state after getting the user
+
+    } catch (error) {
+      if (error is ApiErrorException) {
+        yield ProfileFailure(error.message); // Emit API error message
+      } else if (error is NetworkException) {
+        yield ProfileFailure(error.message); // Emit network failure message
+      }
+      else {
+        yield const ProfileFailure(
+            "An unexpected error occurred. Please try again."); // Emit generic error message
+      }
+    }
+  }
+}
+
+class CompleteScheduleBloc extends Bloc<ProfileEvent, ProfileState> {
+  final CompleteScheduleUseCase completeScheduleUseCase;
+
+  CompleteScheduleBloc(this.completeScheduleUseCase) : super(ProfileInitial()) {
+    on<CompleteScheduleEvent>((event, emit) => emit.forEach<ProfileState>(
+      mapEventToState(event),
+      onData: (state) => state,
+      onError: (error, stackTrace) =>
+          ProfileFailure(error.toString()), // Handle error cases
+    ));
+  }
+
+  Stream<ProfileState> mapEventToState(CompleteScheduleEvent event) async* {
+    yield ProfileLoading(); // Emit loading state
+    try {
+      final user = await completeScheduleUseCase(event.completeScheduleReqEntity);
+      yield CompleteScheduleDone(user); // Emit success state after getting the user
+    } catch (error) {
+      if (error is ApiErrorException) {
+        yield ProfileFailure(error.message); // Emit API error message
+      } else if (error is NetworkException) {
+        yield ProfileFailure(error.message); // Emit network failure message
+      }
+      else {
+        yield const ProfileFailure("An unexpected error occurred. Please try again."); // Emit generic error message
+      }
+    }
+  }
+}
+
+class GetSingleScheduleNoticeBloc extends Bloc<ProfileEvent, ProfileState> {
+  final SingleScheduleNoticeUseCase singleScheduleNoticeUseCase;
+
+  GetSingleScheduleNoticeBloc(this.singleScheduleNoticeUseCase) : super(ProfileInitial()) {
+    on<SingleScheduleNoticeEvent>((event, emit) =>
+        emit.forEach<ProfileState>(
+          mapEventToState(event),
+          onData: (state) => state,
+          onError: (error, stackTrace) =>
+              ProfileFailure(error.toString()), // Handle error cases
+        ));
+  }
+
+  Stream<ProfileState> mapEventToState(SingleScheduleNoticeEvent event) async* {
+    yield ProfileLoading(); // Emit loading state
+    try {
+      // Use yield* to delegate stream handling to vehicleUseCase
+      final resp = await singleScheduleNoticeUseCase(TokenReqEntity(
+        token: event.tokenReqEntity.token,
+        contentType: event.tokenReqEntity.contentType,
+        vehicle_vin: event.tokenReqEntity.vehicle_vin
+      ));
+
+      yield GetSingleScheduleNoticeDone(resp); // Emit success state after getting the user
+
+    } catch (error) {
+      if (error is ApiErrorException) {
+        yield ProfileFailure(error.message); // Emit API error message
+      } else if (error is NetworkException) {
+        yield ProfileFailure(error.message); // Emit network failure message
+      }
+      else {
+        yield const ProfileFailure(
+            "An unexpected error occurred. Please try again."); // Emit generic error message
+      }
+    }
+  }
+}
+
+
+class GetExpensesBloc extends Bloc<ProfileEvent, ProfileState> {
+  final ExpensesUseCase expensesUseCase;
+
+  GetExpensesBloc(this.expensesUseCase) : super(ProfileInitial()) {
+    on<ExpensesEvent>((event, emit) =>
+        emit.forEach<ProfileState>(
+          mapEventToState(event),
+          onData: (state) => state,
+          onError: (error, stackTrace) =>
+              ProfileFailure(error.toString()), // Handle error cases
+        ));
+  }
+
+  Stream<ProfileState> mapEventToState(ExpensesEvent event) async* {
+    yield ProfileLoading(); // Emit loading state
+    try {
+      // Use yield* to delegate stream handling to vehicleUseCase
+      final resp = await expensesUseCase(ExpensesReqEntity(
+          from: event.expensesReqEntity.from,
+          to: event.expensesReqEntity.to,
+          token: event.expensesReqEntity.token
+      ));
+
+      yield ExpensesDone(resp); // Emit success state after getting the user
+
+    } catch (error) {
       if (error is ApiErrorException) {
         yield ProfileFailure(error.message); // Emit API error message
       } else if (error is NetworkException) {

@@ -1,21 +1,30 @@
 import 'package:ctntelematics/modules/profile/data/models/req_models/change_pwd_req_model.dart';
 import 'package:ctntelematics/modules/profile/data/models/req_models/create_schedule_req_model.dart';
+import 'package:ctntelematics/modules/profile/data/models/req_models/expeneses_req_model.dart';
 import 'package:ctntelematics/modules/profile/data/models/req_models/gen_otp_req_model.dart';
 import 'package:ctntelematics/modules/profile/data/models/req_models/token_req_model.dart';
+import 'package:ctntelematics/modules/profile/data/models/resp_models/expenses_resp_model.dart';
 import 'package:ctntelematics/modules/profile/data/models/resp_models/profile_vehicles_resp_model.dart';
 import 'package:ctntelematics/modules/profile/domain/entitties/req_entities/change_pwd_req_entity.dart';
+import 'package:ctntelematics/modules/profile/domain/entitties/req_entities/complete_schedule_req_entity.dart';
 import 'package:ctntelematics/modules/profile/domain/entitties/req_entities/create_schedule_req_entity.dart';
+import 'package:ctntelematics/modules/profile/domain/entitties/req_entities/expenses_req_entity.dart';
 import 'package:ctntelematics/modules/profile/domain/entitties/req_entities/gen_otp_req_entity.dart';
 import 'package:ctntelematics/modules/profile/domain/entitties/req_entities/token_req_entity.dart';
 import 'package:ctntelematics/modules/profile/domain/entitties/req_entities/verify_email_req_entity.dart';
 import 'package:ctntelematics/modules/profile/domain/entitties/resp_entities/create_schedule_resp_entity.dart';
 
+import '../../../../core/model/token_req_entity.dart';
+import '../../../../core/model/token_req_model.dart';
 import '../../../../core/network/network_exception.dart';
 import '../../../../core/resources/profile_data_state.dart';
 // import '../../domain/entitties/req_entities/token_req_entity.dart';
 import '../../domain/repositories/profile_repository.dart';
 import '../datasources/remote/profile_api_client.dart';
+import '../models/req_models/complete_schedule_req_model.dart';
+import '../models/resp_models/complete_schedule_resp_model.dart';
 import '../models/resp_models/create_schedule_resp_model.dart';
+import '../models/resp_models/get_schedule_notice_resp_model.dart';
 import '../models/resp_models/get_schedule_resp_model.dart';
 import '../models/resp_models/profile_resp_model.dart';
 
@@ -179,9 +188,6 @@ class ProfileRepositoryImpl implements ProfileRepository {
     TokenReqModel vehicleReqModel = TokenReqModel(
         token: vehicleReqEntity.token,
         contentType: vehicleReqEntity.contentType);
-
-    print("token: ${vehicleReqModel.token}");
-    print("contentType: ${vehicleReqModel.contentType}");
     try {
       return await handleProfileVehicleErrorHandling(
         apiClient.getAllVehicles(vehicleReqModel.token, vehicleReqModel.contentType!)
@@ -194,7 +200,105 @@ class ProfileRepositoryImpl implements ProfileRepository {
       throw NetworkException(); // Propagate network-specific errors
     }
     catch (e) {
+      throw Exception("An error occurred while logging in: $e");
+    }
+  }
+
+
+  @override
+  Future<List<GetScheduleNoticeRespModel>> onGetScheduleNotice(TokenReqEntity param) async {
+
+    TokenReqModel vehicleReqModel = TokenReqModel(
+        token: param.token,
+        contentType: param.contentType);
+
+    print("token: ${vehicleReqModel.token}");
+    print("contentType: ${vehicleReqModel.contentType}");
+    try {
+      return await handleScheduleNoticeErrorHandling(
+           apiClient.getScheduleNotice(vehicleReqModel.token, vehicleReqModel.contentType!)
+      );
+
+    }
+    on ApiErrorException catch (e) {
+      throw ApiErrorException(e.message); // Propagate the error with the API message
+    } on NetworkException catch (e) {
+      throw NetworkException(); // Propagate network-specific errors
+    }
+    catch (e) {
       print("error:- $e");
+      throw Exception("An error occurred while logging in: $e");
+    }
+  }
+
+  @override
+  Future<CompleteScheduleRespModel> onCompleteSchedule(CompleteScheduleReqEntity completeScheduleReqEntity) async {
+    CompleteScheduleReqModel completeScheduleReqModel = CompleteScheduleReqModel(
+        vehicle_vin: completeScheduleReqEntity.vehicle_vin,
+        schedule_id: completeScheduleReqEntity.schedule_id,
+        token: completeScheduleReqEntity.token);
+    try {
+      return await handleCompleteScheduleErrorHandling(
+          apiClient.completeSchedule(
+              completeScheduleReqModel.vehicle_vin,
+              completeScheduleReqModel.schedule_id,
+              completeScheduleReqModel.token));
+    } on ApiErrorException catch (e) {
+      throw ApiErrorException(e.message); // Propagate the error with the API message
+    } on NetworkException catch (e) {
+      throw NetworkException(); // Propagate network-specific errors
+    } catch (e) {
+      throw Exception("An error occurred while creating schedule.");
+    }
+  }
+
+  @override
+  Future<GetScheduleNoticeRespModel> onGetSingleScheduleNotice(TokenReqEntity param) async {
+
+    TokenReqModel vehicleReqModel = TokenReqModel(
+        token: param.token,
+        contentType: param.contentType,
+        vehicle_vin: param.vehicle_vin
+    );
+
+    print("token: ${vehicleReqModel.token}");
+    print("vehicle_vin: ${vehicleReqModel.vehicle_vin}");
+    try {
+      // return await handleScheduleNoticeErrorHandling(
+      return apiClient.getSingleScheduleNotice(vehicleReqModel.vehicle_vin!, vehicleReqModel.token, vehicleReqModel.contentType!);
+      // );
+
+    }
+    on ApiErrorException catch (e) {
+      throw ApiErrorException(e.message); // Propagate the error with the API message
+    } on NetworkException catch (e) {
+      throw NetworkException(); // Propagate network-specific errors
+    }
+    catch (e) {
+      throw Exception("An error occurred while logging in: $e");
+    }
+  }
+
+  @override
+  Future<ExpensesRespModel> onGetExpenses(ExpensesReqEntity param) async {
+
+    ExpensesReqModel expensesReqModel = ExpensesReqModel(
+        from: param.from,
+        to: param.to,
+        token: param.token
+    );
+    try {
+      // return await handleScheduleNoticeErrorHandling(
+      return apiClient.getExpenses(expensesReqModel.from, expensesReqModel.to, expensesReqModel.token);
+      // );
+
+    }
+    // on ApiErrorException catch (e) {
+    //   throw ApiErrorException(e.message); // Propagate the error with the API message
+    // } on NetworkException catch (e) {
+    //   throw NetworkException(); // Propagate network-specific errors
+    // }
+    catch (e) {
       throw Exception("An error occurred while logging in: $e");
     }
   }
