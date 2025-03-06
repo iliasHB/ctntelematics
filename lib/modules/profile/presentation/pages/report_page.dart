@@ -19,7 +19,7 @@ class ReportPage extends StatelessWidget {
       body: Column(
         children: [
           Container(
-            margin: EdgeInsets.symmetric(horizontal: 10.0),
+            margin: const EdgeInsets.symmetric(horizontal: 10.0),
             padding: const EdgeInsets.all(8.0),
             decoration: BoxDecoration(
               color: Colors.green.shade200,

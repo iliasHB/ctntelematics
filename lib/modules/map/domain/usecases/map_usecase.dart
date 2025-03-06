@@ -8,6 +8,7 @@ import 'package:ctntelematics/modules/map/domain/entitties/resp_entities/resp_en
 import 'package:ctntelematics/modules/map/domain/entitties/resp_entities/route_history_resp_entity.dart';
 import 'package:ctntelematics/modules/map/domain/repositories/map_repository.dart';
 
+import '../../../../core/model/token_req_entity.dart';
 import '../entitties/req_entities/route_history_req_entity.dart';
 
 class GetLastLocationUseCase extends UseCase<void, TokenReqEntity> {

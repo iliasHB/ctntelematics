@@ -15,6 +15,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
+import '../../../../core/model/token_req_entity.dart';
 import '../../../../core/usecase/provider_usecase.dart';
 import '../../../../core/widgets/shimmer_loading.dart';
 import '../../../../service_locator.dart';

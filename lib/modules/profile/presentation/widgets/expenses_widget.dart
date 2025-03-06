@@ -8,19 +8,19 @@ class VehicleExpensesWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Vehicle Expenses', style: AppStyle.pageTitle,),
+        title: Text('Vehicle Expenses', style: AppStyle.cardTitle.copyWith(fontSize: 16)),
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.green),
-          onPressed: () => Navigator.pop(context),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add, color: Colors.green),
-            onPressed: () {},
-          ),
-        ],
+        // leading: IconButton(
+        //   icon: const Icon(Icons.arrow_back, color: Colors.green),
+        //   onPressed: () => Navigator.pop(context),
+        // ),
+        // actions: [
+        //   IconButton(
+        //     icon: const Icon(Icons.add, color: Colors.green),
+        //     onPressed: () {},
+        //   ),
+        // ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),

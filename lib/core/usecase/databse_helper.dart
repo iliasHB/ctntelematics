@@ -1,9 +1,13 @@
 import 'dart:ui';
 
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
+import '../../main.dart';
 import '../../modules/websocket/domain/entitties/resp_entities/vehicle_entity.dart';
+
+import 'package:timezone/timezone.dart' as tz;
 
 class DatabaseHelper {
   static final DatabaseHelper _instance = DatabaseHelper._();
@@ -471,16 +475,16 @@ class DB_schedule {
       String vehicle_vin,
       String service_task,
       String schedule_type,
-      String byTime,
-      String byTimeReminder,
-      String byHour,
-      String byHourReminder,
+      String byTime, // e.g., "1 month", "1 year"
+      String byTimeReminder, // e.g., "2 days", "1 week"
+      String byHour, // e.g., "100 hours"
+      String byHourReminder, // e.g., "10 hours"
       String no_kilometer,
       String reminder_advance_km,
-      String createdAt,) async {
+      String createdAt
+      ) async {
     final dbHelper = DatabaseHelper();
 
-// Insert the item into the user_cart table
     int result = await dbHelper.insertSchedule({
       'vehicle_vin': vehicle_vin,
       'service_task': service_task,
@@ -493,10 +497,23 @@ class DB_schedule {
       'reminder_advance_km': reminder_advance_km,
       'createdAt': createdAt,
     });
-    // Check the result
-    return result > 0; // Returns true if successfully inserted
-  }
 
+    if (result > 0) {
+      DateTime firstReminder = DateTime.now(); // Default to now
+      Duration repeatInterval = parseReminderInterval(
+          byTimeReminder, byHourReminder);
+      // Schedule notification
+      scheduleRecurringNotification(
+        id: result,
+        title: "Service Reminder",
+        body: "Reminder for $service_task on $schedule_type",
+        firstScheduledDate: firstReminder,
+        repeatInterval: repeatInterval,
+      );
+      return true;
+    }
+    return false;
+  }
   Future<List<VehicleSchedule>> fetchSchedule() async {
     final dbHelper = DatabaseHelper();
 
@@ -524,6 +541,70 @@ class DB_schedule {
     }
   }
 }
+
+Duration parseReminderInterval(String byTimeReminder, String byHourReminder) {
+  if (byTimeReminder.isNotEmpty) {
+    if (byTimeReminder.contains("day")) {
+      int days = int.tryParse(byTimeReminder.split(" ")[0]) ?? 1;
+      return Duration(days: days);
+    } else if (byTimeReminder.contains("week")) {
+      int weeks = int.tryParse(byTimeReminder.split(" ")[0]) ?? 1;
+      return Duration(days: weeks * 7);
+    } else if (byTimeReminder.contains("month")) {
+      int months = int.tryParse(byTimeReminder.split(" ")[0]) ?? 1;
+      return Duration(days: months * 30); // Approximate
+    }
+  }
+
+  if (byHourReminder.isNotEmpty) {
+    int hours = int.tryParse(byHourReminder) ?? 24; // Default to 24 hours
+    // int hours = int.tryParse(byHourReminder.split(" ")[0]) ?? 24; // Default to 24 hours
+    return Duration(hours: hours);
+  }
+
+  return const Duration(days: 1); // Default to daily if nothing is set
+}
+
+
+Future<void> scheduleRecurringNotification({
+  required int id,
+  required String title,
+  required String body,
+  required DateTime firstScheduledDate,
+  required Duration repeatInterval,
+}) async {
+  final now = DateTime.now();
+  DateTime nextReminder = firstScheduledDate;
+
+  // Ensure first notification is in the future
+  if (nextReminder.isBefore(now)) {
+    nextReminder = now.add(repeatInterval);
+  }
+
+  for (int i = 0; i < 10; i++) { // Schedule 10 future reminders
+    await flutterLocalNotificationsPlugin.zonedSchedule(
+      id + i, // Unique ID for each reminder
+      title,
+      body,
+      tz.TZDateTime.from(nextReminder, tz.local),
+      const NotificationDetails(
+        android: AndroidNotificationDetails(
+          'reminder_channel',
+          'Recurring Reminders',
+          importance: Importance.high,
+          priority: Priority.high,
+        ),
+      ),
+      uiLocalNotificationDateInterpretation:
+      UILocalNotificationDateInterpretation.absoluteTime,
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+    );
+
+    // Schedule next reminder
+    nextReminder = nextReminder.add(repeatInterval);
+  }
+}
+
 
 abstract class NotificationItem {
   String? get vin;
@@ -691,7 +772,6 @@ class CartProducts {
     );
   }
 }
-
 
 
 class VehicleSchedule {

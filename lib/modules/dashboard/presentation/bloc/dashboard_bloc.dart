@@ -78,7 +78,6 @@ class VehicleTripBloc extends Bloc<DashboardEvent, DashboardState> {
       yield VehicleTripDone(resp); // Emit success state after getting the user
 
     } catch (error) {
-      print('errorr1::::: $error');
       if (error is ApiErrorException) {
         yield DashboardFailure(error.message); // Emit API error message
       } else if (error is NetworkException) {

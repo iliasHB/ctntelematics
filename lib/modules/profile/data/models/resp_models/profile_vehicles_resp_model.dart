@@ -9,7 +9,7 @@ class ProfileVehicleRespModel extends ProfileVehicleRespEntity {
     required super.from,
     required super.last_page,
     required super.last_page_url,
-    required super.links,
+    // required super.links,
     required super.next_page_url,
     required super.path,
     required super.per_page,
@@ -26,10 +26,10 @@ class ProfileVehicleRespModel extends ProfileVehicleRespEntity {
         from: json["from"] ?? 0,
         last_page: json["last_page"] ?? 0,
         last_page_url: json['last_page_url'] ?? "",
-        links: json["links"] is List<Map<String, dynamic>>
-            ? List<Link>.from(json['links'].map((e) => Link.fromJson(e)))
-            : null,
-        // (json['links'] as List).map((data) => Link.fromJson(data)).toList(),
+        // links: json["links"] is List<Map<String, dynamic>>
+        //     ? List<Link>.from(json['links'].map((e) => Link.fromJson(e)))
+        //     : null,
+        // // (json['links'] as List).map((data) => Link.fromJson(data)).toList(),
         next_page_url: json["next_page_url"] ?? "",
         path: json["path"] ?? "",
         per_page: json['per_page'] ?? 0,
@@ -45,7 +45,7 @@ class ProfileVehicleRespModel extends ProfileVehicleRespEntity {
     "from": from,
     "last_page": last_page,
     "last_page_url": last_page_url,
-    "links": links,
+    // "links": links,
     "next_page_url": next_page_url,
     "path": path,
     "per_page": per_page,
@@ -68,10 +68,10 @@ class Datum extends DatumEntity {
     required super.vehicle_owner_id,
     required super.created_at,
     required super.updated_at,
-    required super.driver,
-    required super.owner,
-    required super.tracker,
-    required super.last_location,
+    // required super.driver,
+    // required super.owner,
+    // required super.tracker,
+    // required super.last_location,
   });
 
   factory Datum.fromJson(Map<String, dynamic> json) => Datum(
@@ -86,18 +86,18 @@ class Datum extends DatumEntity {
     vehicle_owner_id: json["vehicle_owner_id"] ?? 0,
     created_at: json['created_at'] ?? "",
     updated_at: json["updated_at"] ?? "",
-    driver: json["driver"] is Map<String, dynamic>
-        ? Driver.fromJson(json["driver"])
-        : null,
-    owner: json["owner"] is Map<String, dynamic>
-        ? Owner.fromJson(json["owner"])
-        : null,
-    tracker: json["tracker"] is Map<String, dynamic>
-        ? Tracker.fromJson(json["tracker"])
-        : null,
-    last_location: json["tracker"] is Map<String, dynamic>
-        ? LastLocation.fromJson(json["last_location"])
-        : null,
+    // driver: json["driver"] is Map<String, dynamic>
+    //     ? Driver.fromJson(json["driver"])
+    //     : null,
+    // owner: json["owner"] is Map<String, dynamic>
+    //     ? Owner.fromJson(json["owner"])
+    //     : null,
+    // tracker: json["tracker"] is Map<String, dynamic>
+    //     ? Tracker.fromJson(json["tracker"])
+    //     : null,
+    // last_location: json["tracker"] is Map<String, dynamic>
+    //     ? LastLocation.fromJson(json["last_location"])
+    //     : null,
   );
 
   Map<String, dynamic> toJson() => {
@@ -112,10 +112,10 @@ class Datum extends DatumEntity {
     "vehicle_owner_id": vehicle_owner_id,
     "created_at": created_at,
     "updated_at": updated_at,
-    "driver": driver,
-    "owner": owner,
-    "tracker": tracker,
-    "lastLocation": last_location,
+    // "driver": driver,
+    // "owner": owner,
+    // "tracker": tracker,
+    // "lastLocation": last_location,
   };
 }
 

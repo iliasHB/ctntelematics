@@ -63,3 +63,35 @@ class ProfileVehicleEvent extends ProfileEvent {
   @override
   List<Object?> get props => [tokenReqEntity];
 }
+
+class ScheduleNoticeEvent extends ProfileEvent {
+  final TokenReqEntity tokenReqEntity;
+  const ScheduleNoticeEvent(this.tokenReqEntity);
+
+  @override
+  List<Object?> get props => [tokenReqEntity];
+}
+
+class SingleScheduleNoticeEvent extends ProfileEvent {
+  final TokenReqEntity tokenReqEntity;
+  const SingleScheduleNoticeEvent(this.tokenReqEntity);
+
+  @override
+  List<Object?> get props => [tokenReqEntity];
+}
+
+class CompleteScheduleEvent extends ProfileEvent {
+  final CompleteScheduleReqEntity completeScheduleReqEntity;
+  const CompleteScheduleEvent(this.completeScheduleReqEntity);
+
+  @override
+  List<Object?> get props => [completeScheduleReqEntity];
+}
+
+class ExpensesEvent extends ProfileEvent {
+  final ExpensesReqEntity expensesReqEntity;
+  const ExpensesEvent(this.expensesReqEntity);
+
+  @override
+  List<Object?> get props => [expensesReqEntity];
+}

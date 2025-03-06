@@ -57,3 +57,41 @@ class GetVehicleDone extends ProfileState {
   List<Object?> get props => [resp];
 }
 
+class GetScheduleNoticeDone extends ProfileState {
+  final List<GetScheduleNoticeRespEntity> resp;
+
+  const GetScheduleNoticeDone(this.resp);
+
+  @override
+  List<Object?> get props => [resp];
+}
+
+class GetSingleScheduleNoticeDone extends ProfileState {
+  final GetScheduleNoticeRespEntity resp;
+
+  const GetSingleScheduleNoticeDone(this.resp);
+
+  @override
+  List<Object?> get props => [resp];
+}
+
+class CompleteScheduleDone extends ProfileState {
+  final CompleteScheduleRespEntity resp;
+
+  const CompleteScheduleDone(this.resp);
+
+  @override
+  List<Object?> get props => [resp];
+}
+
+
+class ExpensesDone extends ProfileState {
+  final ExpensesRespEntity resp;
+
+  const ExpensesDone(this.resp);
+
+  @override
+  List<Object?> get props => [resp];
+}
+
+

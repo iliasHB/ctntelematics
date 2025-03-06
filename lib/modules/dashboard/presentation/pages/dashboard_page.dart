@@ -18,6 +18,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/model/token_req_entity.dart';
 import '../../../../core/usecase/databse_helper.dart';
 import '../../../../core/usecase/provider_usecase.dart';
 import '../../../../core/widgets/advert.dart';
@@ -28,6 +29,7 @@ import '../../../eshop/domain/entitties/req_entities/token_req_entity.dart';
 import '../../../eshop/presentation/bloc/eshop_bloc.dart';
 import '../../../eshop/presentation/widgets/product_review.dart';
 import '../../../map/presentation/bloc/map_bloc.dart';
+import '../../../profile/presentation/bloc/profile_bloc.dart';
 import '../../../websocket/data/datasources/pusher_service.dart';
 import '../../../websocket/presentation/bloc/vehicle_location_bloc.dart';
 import '../../domain/entitties/req_entities/dash_vehicle_req_entity.dart';
@@ -128,8 +130,8 @@ class _DashboardPageState extends State<DashboardPage> {
           .length,
       'expired': vehicles
           .where((v) =>
-      v.vehicle?.details?.last_location?.status!.toLowerCase() ==
-          "expired")
+              v.vehicle?.details?.last_location?.status!.toLowerCase() ==
+              "expired")
           .length,
       'vehicles': vehicles.length
     };
@@ -144,7 +146,8 @@ class _DashboardPageState extends State<DashboardPage> {
       'online': vehicles
           .where((v) =>
               v.locationInfo.tracker!.status?.toLowerCase() == "online" &&
-                  v.locationInfo.vehicleStatus.toLowerCase() == "moving").length,
+              v.locationInfo.vehicleStatus.toLowerCase() == "moving")
+          .length,
       // 'offline': vehicles
       //     .where((v) => v.locationInfo.vehicleStatus.toLowerCase() == "offline")
       //     .length,
@@ -177,7 +180,8 @@ class _DashboardPageState extends State<DashboardPage> {
         TokenReqEntity(token: token ?? "", contentType: 'application/json');
     return Scaffold(
       appBar: AnimatedAppBar(
-        firstname: first_name ?? "", pageRoute: 'dashboard',
+        firstname: first_name ?? "",
+        pageRoute: 'dashboard',
       ),
       body: isLoading
           ? const Center(
@@ -269,7 +273,6 @@ class _DashboardPageState extends State<DashboardPage> {
                               child: DashboardComponentTitle(
                                 logo: CircleAvatar(
                                     backgroundColor: Colors.white,
-                                    // backgroundImage: AssetImage("assets/images/traffic_light.jpg",),
                                     child: ClipOval(
                                       child: Image.asset(
                                         "assets/images/traffic_light.jpg",
@@ -283,7 +286,6 @@ class _DashboardPageState extends State<DashboardPage> {
                           const SizedBox(
                             height: 10,
                           ),
-
                           SizedBox(
                             //height: getVerticalSize(280),
                             child: BlocProvider(
@@ -297,8 +299,8 @@ class _DashboardPageState extends State<DashboardPage> {
                                     child: CustomContainerLoadingButton(),
                                   );
                                 } else if (state is GetLastLocationDone) {
-
-                                  if(state.resp.isEmpty || state.resp == null){
+                                  if (state.resp.isEmpty ||
+                                      state.resp == null) {
                                     return Center(
                                       child: Text(
                                         'No data available',
@@ -308,24 +310,34 @@ class _DashboardPageState extends State<DashboardPage> {
                                   }
 
                                   final vehiclesData = state.resp;
-                                  final vehicleCounts = _computeVehicleCounts(vehiclesData);
+                                  final vehicleCounts =
+                                      _computeVehicleCounts(vehiclesData);
 
                                   return Column(
                                     children: [
                                       BlocListener<VehicleLocationBloc,
                                           List<VehicleEntity>>(
-                                        listener: (context, vehicles) {
-                                        },
+                                        listener: (context, vehicles) {},
                                         child: BlocBuilder<VehicleLocationBloc,
                                             List<VehicleEntity>>(
                                           builder: (context, vehicles) {
                                             if (vehicles.isEmpty) {
                                               return VehicleStatusPieChart(
-                                                onlineCount: vehicleCounts['online'] ?? 0,
-                                                offlineCount: vehicleCounts['offline'] ?? 0,
-                                                idlingCount: vehicleCounts['idling'] ?? 0,
-                                                parkedCount: vehicleCounts['parked'] ?? 0,
-                                                expiredCount: vehicleCounts['expired'] ?? 0,
+                                                onlineCount:
+                                                    vehicleCounts['online'] ??
+                                                        0,
+                                                offlineCount:
+                                                    vehicleCounts['offline'] ??
+                                                        0,
+                                                idlingCount:
+                                                    vehicleCounts['idling'] ??
+                                                        0,
+                                                parkedCount:
+                                                    vehicleCounts['parked'] ??
+                                                        0,
+                                                expiredCount:
+                                                    vehicleCounts['expired'] ??
+                                                        0,
                                               );
                                             }
 
@@ -335,7 +347,8 @@ class _DashboardPageState extends State<DashboardPage> {
 
                                             return VehicleStatusPieChart(
                                               onlineCount:
-                                                  vehicleWebsocketCounts['online'] ?? 0,
+                                                  vehicleWebsocketCounts[
+                                                          'online'] ?? 0,
                                               offlineCount:
                                                   VehicleRealTimeStatus
                                                       .checkStatusChange(
@@ -344,14 +357,18 @@ class _DashboardPageState extends State<DashboardPage> {
                                                           'offline',
                                                           vehicleCounts[
                                                               'offline']),
-                                              idlingCount: vehicleWebsocketCounts['idling'] ?? 0,
+                                              idlingCount:
+                                                  vehicleWebsocketCounts[
+                                                          'idling'] ??
+                                                      0,
                                               parkedCount: VehicleRealTimeStatus
                                                   .checkStatusChange(
                                                       vehiclesData,
                                                       vehicles,
                                                       'parked',
                                                       vehicleCounts['parked']),
-                                              expiredCount: vehicleCounts['expired'] ?? 0,
+                                              expiredCount:
+                                                  vehicleCounts['expired'] ?? 0,
                                             );
                                           },
                                         ),
@@ -398,7 +415,9 @@ class _DashboardPageState extends State<DashboardPage> {
                                                                         FontWeight
                                                                             .w300),
                                                             maxLines: 1, // Restrict to a single line for count as well
-                                                            overflow: TextOverflow.ellipsis,
+                                                            overflow:
+                                                                TextOverflow
+                                                                    .ellipsis,
                                                           );
                                                         }
                                                         final vehicleWebsocketCounts =
@@ -412,7 +431,8 @@ class _DashboardPageState extends State<DashboardPage> {
                                                                   fontWeight:
                                                                       FontWeight
                                                                           .w300),
-                                                          maxLines: 1, // Restrict to a single line for count as well
+                                                          maxLines:
+                                                              1, // Restrict to a single line for count as well
                                                           overflow: TextOverflow
                                                               .ellipsis,
                                                         );
@@ -427,17 +447,17 @@ class _DashboardPageState extends State<DashboardPage> {
                                               _BuildVehicleStatus(
                                                   title: "Parked",
                                                   count: BlocListener<
-                                                      VehicleLocationBloc,
-                                                      List<VehicleEntity>>(
+                                                          VehicleLocationBloc,
+                                                          List<VehicleEntity>>(
                                                       listener:
                                                           (context, vehicles) {
-                                                        // _updateVehicleCounts(vehicles);
-                                                        // setState(() {
-                                                        //   vehicles;
-                                                        // });
-                                                      }, child: BlocBuilder<
-                                                      VehicleLocationBloc,
-                                                      List<VehicleEntity>>(
+                                                    // _updateVehicleCounts(vehicles);
+                                                    // setState(() {
+                                                    //   vehicles;
+                                                    // });
+                                                  }, child: BlocBuilder<
+                                                          VehicleLocationBloc,
+                                                          List<VehicleEntity>>(
                                                     builder:
                                                         (context, vehicles) {
                                                       if (vehicles.isEmpty) {
@@ -446,11 +466,11 @@ class _DashboardPageState extends State<DashboardPage> {
                                                           style: AppStyle
                                                               .cardfooter
                                                               .copyWith(
-                                                              fontWeight:
-                                                              FontWeight
-                                                                  .w300),
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w300),
                                                           maxLines:
-                                                          1, // Restrict to a single line for count as well
+                                                              1, // Restrict to a single line for count as well
                                                           overflow: TextOverflow
                                                               .ellipsis,
                                                         );
@@ -460,19 +480,18 @@ class _DashboardPageState extends State<DashboardPage> {
                                                         style: AppStyle
                                                             .cardfooter
                                                             .copyWith(
-                                                            fontWeight:
-                                                            FontWeight
-                                                                .w300),
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w300),
                                                         maxLines:
-                                                        1, // Restrict to a single line for count as well
+                                                            1, // Restrict to a single line for count as well
                                                         overflow: TextOverflow
                                                             .ellipsis,
                                                       );
                                                     },
                                                   )),
                                                   symbol: const CircleAvatar(
-                                                    backgroundColor:
-                                                    Colors.red,
+                                                    backgroundColor: Colors.red,
                                                     radius: 8,
                                                   )),
                                               _BuildVehicleStatus(
@@ -525,7 +544,8 @@ class _DashboardPageState extends State<DashboardPage> {
                                                     ),
                                                   ),
                                                   symbol: const CircleAvatar(
-                                                    backgroundColor: Colors.black,
+                                                    backgroundColor:
+                                                        Colors.black,
                                                     radius: 8,
                                                   )),
                                               _BuildVehicleStatus(
@@ -566,7 +586,8 @@ class _DashboardPageState extends State<DashboardPage> {
                                                                 fontWeight:
                                                                     FontWeight
                                                                         .w300),
-                                                        maxLines: 1, // Restrict to a single line for count as well
+                                                        maxLines:
+                                                            1, // Restrict to a single line for count as well
                                                         overflow: TextOverflow
                                                             .ellipsis,
                                                       );
@@ -580,21 +601,20 @@ class _DashboardPageState extends State<DashboardPage> {
                                               _BuildVehicleStatus(
                                                   title: "Expired",
                                                   count: Text(
-                                                          '${vehicleCounts['expired'] ?? 0}',
-                                                          style: AppStyle
-                                                              .cardfooter
-                                                              .copyWith(
-                                                              fontWeight:
-                                                              FontWeight
-                                                                  .w300),
-                                                          maxLines:
-                                                          1, // Restrict to a single line for count as well
-                                                          overflow: TextOverflow
-                                                              .ellipsis,
-                                                        ),
+                                                    '${vehicleCounts['expired'] ?? 0}',
+                                                    style: AppStyle.cardfooter
+                                                        .copyWith(
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .w300),
+                                                    maxLines:
+                                                        1, // Restrict to a single line for count as well
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                  ),
                                                   symbol: const CircleAvatar(
                                                     backgroundColor:
-                                                    Colors.grey,
+                                                        Colors.grey,
                                                     radius: 8,
                                                   ))
                                             ],
@@ -733,12 +753,15 @@ class _DashboardPageState extends State<DashboardPage> {
                                 BlocProvider(
                                   create: (_) => sl<EshopGetAllProductBloc>()
                                     ..add(EshopGetProductsEvent(
-                                        EshopTokenReqEntity(token: token ?? ""))),
-                                  child: BlocConsumer<EshopGetAllProductBloc, EshopState>(
+                                        EshopTokenReqEntity(
+                                            token: token ?? ""))),
+                                  child: BlocConsumer<EshopGetAllProductBloc,
+                                      EshopState>(
                                     builder: (context, state) {
                                       if (state is EshopLoading) {
                                         return const CustomContainerLoadingButton();
-                                      } else if (state is EshopGetProductsDone) {
+                                      } else if (state
+                                          is EshopGetProductsDone) {
                                         // Check if the schedule data is empty
                                         if (state.resp.products.data == null ||
                                             state.resp.products.data.isEmpty) {
@@ -966,26 +989,31 @@ class _DashboardPageState extends State<DashboardPage> {
                                       } else {
                                         return Center(
                                             child: Column(
-                                              mainAxisAlignment: MainAxisAlignment.center,
-                                              crossAxisAlignment: CrossAxisAlignment.center,
-                                              children: [
-                                                Text(
-                                                  'Unable to load Product',
-                                                  style: AppStyle.cardfooter,
-                                                ),
-                                                const SizedBox(
-                                                  height: 10.0,
-                                                ),
-                                                CustomSecondaryButton(
-                                                    label: 'Refresh',
-                                                    onPressed: () {
-                                                      BlocProvider.of<EshopGetAllProductBloc>(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.center,
+                                          children: [
+                                            Text(
+                                              'Unable to load Product',
+                                              style: AppStyle.cardfooter,
+                                            ),
+                                            const SizedBox(
+                                              height: 10.0,
+                                            ),
+                                            CustomSecondaryButton(
+                                                label: 'Refresh',
+                                                onPressed: () {
+                                                  BlocProvider.of<
+                                                              EshopGetAllProductBloc>(
                                                           context)
-                                                          .add(EshopGetProductsEvent(
-                                                          EshopTokenReqEntity(token: token ?? "")));
-                                                    })
-                                              ],
-                                            ));
+                                                      .add(EshopGetProductsEvent(
+                                                          EshopTokenReqEntity(
+                                                              token: token ??
+                                                                  "")));
+                                                })
+                                          ],
+                                        ));
                                       }
                                     },
                                     listener: (context, state) {
@@ -1047,16 +1075,161 @@ class _DashboardPageState extends State<DashboardPage> {
                                 Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    InkWell(
-                                        onTap: () {
-                                          Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                  builder: (_) => Maintenance(
-                                                        token: token,
-                                                      )));
-                                        },
-                                        child: _buildReminderCard()),
+                                    SizedBox(
+                                      // height: getVerticalSize(220),
+                                      child: BlocProvider(
+                                        create: (_) => sl<GetScheduleNoticeBloc>()..add(ScheduleNoticeEvent(
+                                              dashVehicleReqEntity)),
+                                        child: BlocConsumer<GetScheduleNoticeBloc,
+                                                ProfileState>(
+                                            builder: (context, state) {
+                                          if (state is ProfileLoading) {
+                                            return const Padding(
+                                              padding: EdgeInsets.all(20.0),
+                                              child: CustomContainerLoadingButton(),
+                                            );
+                                          } else if (state
+                                              is GetScheduleNoticeDone) {
+                                            if (state.resp.isEmpty || state.resp == null) {
+                                              return Container(
+                                                padding:
+                                                    const EdgeInsets.all(10.0),
+                                                decoration: BoxDecoration(
+                                                  borderRadius:
+                                                      BorderRadius.circular(12.0),
+                                                ),
+                                                child: const Row(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Expanded(
+                                                      child: VehicleStatusCard1(
+                                                          status: 'Due',
+                                                          count: '0',
+                                                          color: Colors.white,
+                                                          icon: Icon(
+                                                            Icons.warning,
+                                                            color: Colors.yellow,
+                                                            size: 30,
+                                                          )),
+                                                    ),
+                                                    Expanded(
+                                                      child: VehicleStatusCard1(
+                                                          status: 'Overdue',
+                                                          count: '0',
+                                                          color: Colors.white,
+                                                          icon: Icon(
+                                                            Icons.warning,
+                                                            color: Colors.red,
+                                                            size: 30,
+                                                          )),
+                                                    ),
+                                                  ],
+                                                ),
+                                              );
+                                            }
+                                            int dueCount = state.resp
+                                                .where((v) => v.maintenance_due == true && (v.over_due_days == 0 || v.over_due_km == 0) )
+                                                .length;
+                                            int overdueCount = state.resp
+                                                .where((v) => v.maintenance_due == true && (v.over_due_days > 0 || v.over_due_km > 0))
+                                                .length;
+                                            return InkWell(
+                                              onTap: (){
+                                                      Navigator.push(
+                                                          context,
+                                                          MaterialPageRoute(
+                                                              builder: (_) => Maintenance(
+                                                                    token: token,
+                                                                  )));
+                                              },
+                                              child: Container(
+                                                padding: const EdgeInsets.all(10.0),
+                                                decoration: BoxDecoration(
+                                                  borderRadius: BorderRadius.circular(12.0),
+                                                ),
+                                                child: Row(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Expanded(
+                                                      child: VehicleStatusCard1(
+                                                          status: 'Due',
+                                                          count: dueCount.toString(),
+                                                          color: Colors.white,
+                                                          icon: const Icon(
+                                                            Icons.warning,
+                                                            color: Colors.yellow,
+                                                            size: 30,
+                                                          )),
+                                                    ),
+                                                    Expanded(
+                                                      child: VehicleStatusCard1(
+                                                          status: 'Overdue',
+                                                          count: overdueCount.toString(),
+                                                          color: Colors.white,
+                                                          icon: const Icon(
+                                                            Icons.warning,
+                                                            color: Colors.red,
+                                                            size: 30,
+                                                          )),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            );
+                                          } else {
+                                            return Center(
+                                                child: Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.center,
+                                              children: [
+                                                Text(
+                                                  'No records found',
+                                                  style: AppStyle.cardfooter,
+                                                ),
+                                                const SizedBox(
+                                                  height: 10.0,
+                                                ),
+                                                CustomSecondaryButton(
+                                                    label: 'Refresh',
+                                                    onPressed: () {
+                                                      BlocProvider.of<GetScheduleNoticeBloc>(context)
+                                                          .add(ScheduleNoticeEvent(dashVehicleReqEntity));
+                                                    })
+                                              ],
+                                            ));
+                                          }
+                                        }, listener: (context, state) {
+                                          if (state is ProfileFailure) {
+                                            if (state.message
+                                                .contains("Unauthenticated")) {
+                                              Navigator.pushNamedAndRemoveUntil(
+                                                  context,
+                                                  "/login",
+                                                  (route) => false);
+                                            }
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              SnackBar(
+                                                  content: Text(state.message)),
+                                            );
+                                          }
+                                        }),
+                                      ),
+                                    )
+                                    // InkWell(
+                                    //     onTap: () {
+                                    //       Navigator.push(
+                                    //           context,
+                                    //           MaterialPageRoute(
+                                    //               builder: (_) => Maintenance(
+                                    //                     token: token,
+                                    //                   )));
+                                    //     },
+                                    //     child: _buildReminderCard(dashVehicleReqEntity)),
                                   ],
                                 ),
                               ],
@@ -1108,7 +1281,6 @@ class _DashboardPageState extends State<DashboardPage> {
                               ],
                             ),
                           ),
-
                     const SizedBox(
                       height: 20,
                     ),
@@ -1155,7 +1327,6 @@ class _DashboardPageState extends State<DashboardPage> {
                     const SizedBox(
                       height: 50,
                     ),
-
                   ],
                 ),
               ),
@@ -1200,30 +1371,73 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-
-  Widget _buildReminderCard() {
-    return FutureBuilder<List<VehicleSchedule>>(
-      future: _fetchSchedule(), // Fetch cart items from the database
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CustomContainerLoadingButton());
-        } else if (snapshot.hasError) {
-          return Center(child: Text('Error: ${snapshot.error}'));
-        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+  _buildReminderCard(TokenReqEntity dashVehicleReqEntity) {
+    BlocProvider(
+      create: (_) => sl<GetScheduleNoticeBloc>()
+        ..add(ScheduleNoticeEvent(dashVehicleReqEntity)),
+      child: BlocConsumer<GetScheduleNoticeBloc, ProfileState>(
+          builder: (context, state) {
+        if (state is ProfileLoading) {
+          return const Padding(
+            padding: EdgeInsets.all(20.0),
+            child: CustomContainerLoadingButton(),
+          );
+        } else if (state is GetScheduleNoticeDone) {
+          if (state.resp.isEmpty || state.resp == null) {
+            return Container(
+              padding: const EdgeInsets.all(10.0),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12.0),
+              ),
+              child: const Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: VehicleStatusCard1(
+                        status: 'Due',
+                        count: '0',
+                        color: Colors.white,
+                        icon: Icon(
+                          Icons.warning,
+                          color: Colors.yellow,
+                          size: 30,
+                        )),
+                  ),
+                  Expanded(
+                    child: VehicleStatusCard1(
+                        status: 'Overdue',
+                        count: '0',
+                        color: Colors.white,
+                        icon: Icon(
+                          Icons.warning,
+                          color: Colors.red,
+                          size: 30,
+                        )),
+                  ),
+                ],
+              ),
+            );
+          }
+          // Count vehicles with due and overdue maintenance
+          int dueCount = state.resp.where((v) => v.maintenance_due).length;
+          int overdueCount = state.resp
+              .where((v) => v.over_due_days > 0 || v.over_due_km > 0)
+              .length;
+          // int overdueKm = state.resp.where((v) => v.over_due_km > 0).length;
           return Container(
             padding: const EdgeInsets.all(10.0),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12.0),
             ),
-            child: const Row(
+            child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
                   child: VehicleStatusCard1(
                       status: 'Due',
-                      count: '0',
+                      count: dueCount.toString(),
                       color: Colors.white,
-                      icon: Icon(
+                      icon: const Icon(
                         Icons.warning,
                         color: Colors.yellow,
                         size: 30,
@@ -1232,9 +1446,9 @@ class _DashboardPageState extends State<DashboardPage> {
                 Expanded(
                   child: VehicleStatusCard1(
                       status: 'Overdue',
-                      count: '0',
+                      count: overdueCount.toString(),
                       color: Colors.white,
-                      icon: Icon(
+                      icon: const Icon(
                         Icons.warning,
                         color: Colors.red,
                         size: 30,
@@ -1244,71 +1458,113 @@ class _DashboardPageState extends State<DashboardPage> {
             ),
           );
         } else {
-          final maintenance = snapshot.data!;
-          // Define thresholds
-          const int dueThreshold = 50; // Hours before due date
-          final due = maintenance.where((schedule) {
-            final now = DateTime.now();
-            // final currentEngineHours = FormatData.calculateReminderTime(int.parse(now ?? "0"));
-            final DateTime? scheduledDate = DateTime.tryParse(schedule.byTime!);
-            // final DateTime? scheduledEngineHours = DateTime.tryParse(schedule.byHour!);
-            return (scheduledDate!.isBefore(now) && scheduledDate.isAfter(now.subtract(const Duration(days: 1))));
-            //     ||
-            // (scheduledEngineHours - currentEngineHours <= dueThreshold && currentEngineHours < scheduledEngineHours);
-          }).length;
-
-          final overdue = maintenance.where((schedule) {
-            final now = DateTime.now();
-            final DateTime? scheduledDate = DateTime.tryParse(schedule.byTime!);
-            return (scheduledDate!.isBefore(now.subtract(const Duration(days: 1))));
-                // || (currentEngineHours > scheduledEngineHours);
-          }).length;
-          return _buildReminderCardContent(due, overdue);
-          // return Container(
-          //   padding: const EdgeInsets.all(10.0),
-          //   decoration: BoxDecoration(
-          //     borderRadius: BorderRadius.circular(12.0),
-          //   ),
-          //   child: Row(
-          //     crossAxisAlignment: CrossAxisAlignment.start,
-          //     children: [
-          //       Expanded(
-          //         child: VehicleStatusCard1(
-          //             status: 'Due',
-          //             count: maintenance.length,
-          //             color: Colors.white,
-          //             icon: const Icon(
-          //               Icons.warning,
-          //               color: Colors.yellow,
-          //               size: 30,
-          //             )),
-          //       ),
-          //       Expanded(
-          //         child: VehicleStatusCard1(
-          //             status: 'Overdue',
-          //             count: maintenance.length,
-          //             color: Colors.white,
-          //             icon: const Icon(
-          //               Icons.warning,
-          //               color: Colors.red,
-          //               size: 30,
-          //             )),
-          //       ),
-          //     ],
-          //   ),
-          // );
+          return Center(
+              child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text(
+                'No records found',
+                style: AppStyle.cardfooter,
+              ),
+              const SizedBox(
+                height: 10.0,
+              ),
+              CustomSecondaryButton(
+                  label: 'Refresh',
+                  onPressed: () {
+                    BlocProvider.of<GetScheduleNoticeBloc>(context)
+                        .add(ScheduleNoticeEvent(dashVehicleReqEntity));
+                  })
+            ],
+          ));
         }
-      },
+      }, listener: (context, state) {
+        if (state is ProfileFailure) {
+          if (state.message.contains("Unauthenticated")) {
+            Navigator.pushNamedAndRemoveUntil(
+                context, "/login", (route) => false);
+          }
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(state.message)),
+          );
+        }
+      }),
     );
   }
 
-
+  // Widget _buildReminderCard() {
+  //   return FutureBuilder<List<VehicleSchedule>>(
+  //     future: _fetchSchedule(), // Fetch cart items from the database
+  //     builder: (context, snapshot) {
+  //       if (snapshot.connectionState == ConnectionState.waiting) {
+  //         return const Center(child: CustomContainerLoadingButton());
+  //       } else if (snapshot.hasError) {
+  //         return Center(child: Text('Error: ${snapshot.error}'));
+  //       } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+  //         return Container(
+  //           padding: const EdgeInsets.all(10.0),
+  //           decoration: BoxDecoration(
+  //             borderRadius: BorderRadius.circular(12.0),
+  //           ),
+  //           child: const Row(
+  //             crossAxisAlignment: CrossAxisAlignment.start,
+  //             children: [
+  //               Expanded(
+  //                 child: VehicleStatusCard1(
+  //                     status: 'Due',
+  //                     count: '0',
+  //                     color: Colors.white,
+  //                     icon: Icon(
+  //                       Icons.warning,
+  //                       color: Colors.yellow,
+  //                       size: 30,
+  //                     )),
+  //               ),
+  //               Expanded(
+  //                 child: VehicleStatusCard1(
+  //                     status: 'Overdue',
+  //                     count: '0',
+  //                     color: Colors.white,
+  //                     icon: Icon(
+  //                       Icons.warning,
+  //                       color: Colors.red,
+  //                       size: 30,
+  //                     )),
+  //               ),
+  //             ],
+  //           ),
+  //         );
+  //       } else {
+  //         final maintenance = snapshot.data!;
+  //         // Define thresholds
+  //         const int dueThreshold = 50; // Hours before due date
+  //         final due = maintenance.where((schedule) {
+  //           final now = DateTime.now();
+  //           // final currentEngineHours = FormatData.calculateReminderTime(int.parse(now ?? "0"));
+  //           final DateTime? scheduledDate = DateTime.tryParse(schedule.byTime!);
+  //           // final DateTime? scheduledEngineHours = DateTime.tryParse(schedule.byHour!);
+  //           return (scheduledDate!.isBefore(now) && scheduledDate.isAfter(now.subtract(const Duration(days: 1))));
+  //           //     ||
+  //           // (scheduledEngineHours - currentEngineHours <= dueThreshold && currentEngineHours < scheduledEngineHours);
+  //         }).length;
+  //
+  //         final overdue = maintenance.where((schedule) {
+  //           final now = DateTime.now();
+  //           final DateTime? scheduledDate = DateTime.tryParse(schedule.byTime!);
+  //           return (scheduledDate!.isBefore(now.subtract(const Duration(days: 1))));
+  //               // || (currentEngineHours > scheduledEngineHours);
+  //         }).length;
+  //         return _buildReminderCardContent(due, overdue);
+  //       }
+  //     },
+  //   );
+  // }
 
   Future<List<VehicleSchedule>> _fetchSchedule() async {
     final dbCart = DB_schedule();
     return await dbCart.fetchSchedule();
   }
-
 
   Widget _buildReminderCardContent(int due, int overdue) {
     return Container(
@@ -1555,26 +1811,25 @@ class MotorShieldCard extends StatelessWidget {
           } else {
             return Center(
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Text(
-                      'Unable to load trip',
-                      style: AppStyle.cardfooter,
-                    ),
-                    const SizedBox(
-                      height: 10.0,
-                    ),
-                    CustomSecondaryButton(
-                        label: 'Refresh',
-                        onPressed: () {
-                          BlocProvider.of<EshopGetAllProductBloc>(
-                              context)
-                              .add(EshopGetProductsEvent(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  'Unable to load trip',
+                  style: AppStyle.cardfooter,
+                ),
+                const SizedBox(
+                  height: 10.0,
+                ),
+                CustomSecondaryButton(
+                    label: 'Refresh',
+                    onPressed: () {
+                      BlocProvider.of<EshopGetAllProductBloc>(context).add(
+                          EshopGetProductsEvent(
                               EshopTokenReqEntity(token: token ?? "")));
-                        })
-                  ],
-                ));
+                    })
+              ],
+            ));
           }
         },
         listener: (context, state) {
@@ -1625,14 +1880,14 @@ class VehicleStatusPieChart extends StatelessWidget {
   final int parkedCount;
   final int expiredCount;
 
-  const VehicleStatusPieChart({
-    Key? key,
-    required this.onlineCount,
-    required this.offlineCount,
-    required this.idlingCount,
-    required this.parkedCount,
-    required this.expiredCount
-  }) : super(key: key);
+  const VehicleStatusPieChart(
+      {Key? key,
+      required this.onlineCount,
+      required this.offlineCount,
+      required this.idlingCount,
+      required this.parkedCount,
+      required this.expiredCount})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {

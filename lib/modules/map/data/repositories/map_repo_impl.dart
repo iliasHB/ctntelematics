@@ -1,3 +1,4 @@
+
 import 'package:ctntelematics/modules/map/data/models/req_models/send_location_req_model.dart';
 import 'package:ctntelematics/modules/map/data/models/req_models/token_req_model.dart';
 import 'package:ctntelematics/modules/map/data/models/resp_models/resp_model.dart';
@@ -5,6 +6,8 @@ import 'package:ctntelematics/modules/map/data/models/resp_models/route_history_
 import 'package:ctntelematics/modules/map/domain/entitties/req_entities/route_history_req_entity.dart';
 import 'package:ctntelematics/modules/map/domain/entitties/req_entities/send_location_resp_entity.dart';
 import 'package:ctntelematics/modules/map/domain/entitties/req_entities/token_req_entity.dart';
+import '../../../../core/model/token_req_entity.dart';
+import '../../../../core/model/token_req_model.dart';
 import '../../../../core/network/network_exception.dart';
 import '../../../../core/resources/map_data_state.dart';
 import '../../domain/repositories/map_repository.dart';
@@ -24,7 +27,7 @@ class MapRepositoryImpl extends MapRepository {
     try {
       return await handleLastLocationError(
           apiClient.getLastLocation(
-          tokenReqModel.token, tokenReqModel.contentType)
+          tokenReqModel.token, tokenReqModel.contentType!)
     );
     } on ApiErrorException catch (e) {
       throw ApiErrorException(e.message); // Propagate the error with the API message

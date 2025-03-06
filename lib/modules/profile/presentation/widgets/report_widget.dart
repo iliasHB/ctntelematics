@@ -8,6 +8,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_datetime_picker_plus/flutter_datetime_picker_plus.dart';
 
 import '../../../../config/theme/app_style.dart';
+import '../../../../core/model/token_req_entity.dart';
 import '../../../../core/utils/math_util.dart';
 import '../../../../core/utils/pref_util.dart';
 import '../../../../core/widgets/alert_message.dart';
@@ -311,7 +312,7 @@ class _ReportState extends State<Report> {
                             },
                             builder: (context, state) {
                               if (state is ProfileLoading) {
-                                return Center(child: const CustomLoadingButton());
+                                return const Center(child: CustomLoadingButton());
                               }
                               return Align(
                                 alignment: Alignment.center,

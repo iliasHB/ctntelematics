@@ -5,19 +5,19 @@ import 'package:equatable/equatable.dart';
 import 'package:equatable/equatable.dart';
 
 class ProfileVehicleRespEntity extends Equatable{
-  int? current_page;
+  dynamic current_page; //int?
   List<DatumEntity>? data;
-  String? first_page_url;
-  int? from;
-  int? last_page;
-  String? last_page_url;
-  List<LinkEntity>? links;
-  String? next_page_url;
-  String? path;
-  int? per_page;
-  String? prev_page_url;
-  int? to;
-  int? total;
+  dynamic first_page_url; // String?
+  dynamic from; //int?
+  dynamic last_page; //int?
+  dynamic last_page_url; //String?
+  // List<LinkEntity>? links;
+  dynamic next_page_url; //String?
+  dynamic path; //String?
+  dynamic per_page; //int?
+  dynamic prev_page_url; //String?
+  dynamic to; //int?
+  dynamic total; //int?
 
   ProfileVehicleRespEntity({
     required this.current_page,
@@ -26,7 +26,7 @@ class ProfileVehicleRespEntity extends Equatable{
     required this.from,
     required this.last_page,
     required this.last_page_url,
-    required this.links,
+    // required this.links,
     required this.next_page_url,
     required this.path,
     required this.per_page,
@@ -44,7 +44,7 @@ class ProfileVehicleRespEntity extends Equatable{
     from,
     last_page,
     last_page_url,
-    links,
+    // links,
     next_page_url,
     path,
     per_page,
@@ -56,21 +56,21 @@ class ProfileVehicleRespEntity extends Equatable{
 }
 
 class DatumEntity extends Equatable{
-  int? id;
-  String? brand;
-  String? model;
-  String? year;
-  String? type;
-  String? vin;
-  String? number_plate;
-  int? user_id;
-  int? vehicle_owner_id;
-  String? created_at;
-  String? updated_at;
-  DriverEntity? driver;
-  OwnerEntity? owner;
-  TrackerEntity? tracker;
-  LastLocationEntity? last_location;
+  dynamic id; // int?
+  dynamic brand; //String?
+  dynamic model; //String?
+  dynamic year; //String?
+  dynamic type; //String?
+  dynamic vin; //String?
+  dynamic number_plate; //String?
+  dynamic user_id; //int?
+  dynamic vehicle_owner_id; //int?
+  dynamic created_at; //String?
+  dynamic updated_at; //String?
+  // DriverEntity? driver;
+  // OwnerEntity? owner;
+  // TrackerEntity? tracker;
+  // LastLocationEntity? last_location;
 
   DatumEntity({
     required this.id,
@@ -84,10 +84,10 @@ class DatumEntity extends Equatable{
     required this.vehicle_owner_id,
     required this.created_at,
     required this.updated_at,
-    required this.driver,
-    required this.owner,
-    required this.tracker,
-    required this.last_location,
+    // required this.driver,
+    // required this.owner,
+    // required this.tracker,
+    // required this.last_location,
   });
 
   @override
@@ -104,34 +104,34 @@ class DatumEntity extends Equatable{
     vehicle_owner_id,
     created_at,
     updated_at,
-    driver,
-    owner,
-    tracker,
-    last_location,
+    // driver,
+    // owner,
+    // tracker,
+    // last_location,
   ];
 
 }
 
 class DriverEntity extends Equatable{
-  int? id;
-  String? name;
-  String? email;
-  String? phone;
-  String? vehicle_vin;
-  int? vehicle_id;
-  String? pin;
-  String? country;
-  String? licence_number;
-  String? licence_issue_date;
-  String? licence_expiry_date;
-  String? guarantor_name;
-  String? guarantor_phone;
-  String? profile_picture_path;
-  String? driving_licence_path;
-  String? pin_path;
-  String? miscellaneous_path;
-  String? created_at;
-  String? updated_at;
+  dynamic id; //int?
+  dynamic name; //String?
+  dynamic email; //String?
+  dynamic phone; //String?
+  dynamic vehicle_vin; //String?
+  dynamic vehicle_id; //int?
+  dynamic pin; //String?
+  dynamic country; //String?
+  dynamic licence_number; //String?
+  dynamic licence_issue_date; //String?
+  dynamic licence_expiry_date; //String?
+  dynamic guarantor_name; //String?
+  dynamic guarantor_phone; //String?
+  dynamic profile_picture_path; //String?
+  dynamic driving_licence_path; //String?
+  dynamic pin_path; //String?
+  dynamic miscellaneous_path; // String?
+  dynamic created_at; //String?
+  dynamic updated_at; //String?
 
   DriverEntity({
     required this.id,
@@ -182,35 +182,35 @@ class DriverEntity extends Equatable{
 }
 
 class LastLocationEntity extends Equatable {
-  int? vehicle_id;
-  int? tracker_id;
-  String? latitude;
-  String? longitude;
-  String? speed;
-  String? speed_unit;
-  int? course;
-  String? fix_time;
-  int? satellite_count;
-  int? active_satellite_count;
-  bool? real_time_gps;
-  bool? gps_positioned;
-  bool? east_longitude;
-  bool? north_latitude;
-  int? mcc;
-  int? mnc;
-  int? lac;
-  int? cell_id;
-  String? serial_number;
-  int? error_check;
-  String? event;
-  int? parse_time;
+  dynamic vehicle_id; //int?
+  dynamic tracker_id; //int?
+  dynamic latitude; //String?
+  dynamic longitude; //String
+  dynamic speed; //String
+  dynamic speed_unit; //String
+  dynamic course; //int?
+  dynamic fix_time; //String
+  dynamic satellite_count; //int?
+  dynamic active_satellite_count; //int?
+  dynamic real_time_gps; //bool?
+  dynamic gps_positioned; //bool?
+  dynamic east_longitude; //bool?
+  dynamic north_latitude; //bool?
+  dynamic mcc; //int?
+  dynamic mnc; //int?
+  dynamic lac; //int?
+  dynamic cell_id; //int?
+  dynamic serial_number; //String
+  dynamic error_check; //int?
+  dynamic event; //String
+  dynamic parse_time; //int?
   // String? terminal_info;
-  String? voltage_level;
-  String? gsm_signal_strength;
-  String? response_msg;
-  String? status;
-  String? created_at;
-  String? updated_at;
+  dynamic voltage_level; //String?
+  dynamic gsm_signal_strength; //String?
+  dynamic response_msg; //String?
+  dynamic status;  //String?
+  dynamic created_at; //String?
+  dynamic updated_at; //String?
 
   LastLocationEntity({
     required this.vehicle_id,
@@ -281,14 +281,14 @@ class LastLocationEntity extends Equatable {
 }
 
 class OwnerEntity extends Equatable{
-  int? id;
-  String? first_name;
-  String? last_name;
-  String? email;
-  String? phone;
-  int? user_id;
-  String? created_at;
-  String? updated_at;
+  dynamic id; //int?
+  dynamic first_name; //String?
+  dynamic last_name; //String?
+  dynamic email; //String?
+  dynamic phone; //String?
+  dynamic user_id; //int?
+  dynamic created_at; //String?
+  dynamic updated_at; //String?
 
   OwnerEntity({
     required this.id,
@@ -317,14 +317,14 @@ class OwnerEntity extends Equatable{
 }
 
 class TrackerEntity extends Equatable {
-  String? device_id;
-  String? protocol;
-  String? ip;
-  String? sim_no;
-  String? params;
-  String? port;
-  String? network_protocol;
-  int? vehicle_id;
+  dynamic device_id; //String?
+  dynamic protocol;// String?
+  dynamic ip; //String?
+  dynamic sim_no;//String?
+  dynamic params;//String?
+  dynamic port;//String?
+  dynamic network_protocol;//String?
+  dynamic vehicle_id;//int?
 
   TrackerEntity({
     required this.device_id,
@@ -353,9 +353,9 @@ class TrackerEntity extends Equatable {
 }
 
 class LinkEntity extends Equatable{
-  String? url;
-  String? label;
-  bool? active;
+  dynamic url;//String?
+  dynamic label;//String?
+  dynamic active; //bool?
 
   LinkEntity({
     required this.url,

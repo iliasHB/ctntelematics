@@ -23,5 +23,10 @@ abstract class DashboardApiClient {
       @Header("Authorization") String token,
       @Header("Content-Type") String contentType,);
 
+  // @GET("/get/notice")
+  // Future<List<GetScheduleNoticeRespModel>> getScheduleNotice(
+  //     @Header("Authorization") String token,
+  //     @Header("Accept") String contentType,);
+
 }
 

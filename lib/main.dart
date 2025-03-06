@@ -16,9 +16,50 @@ import 'modules/map/presentation/bloc/map_bloc.dart';
 import 'modules/profile/presentation/bloc/profile_bloc.dart';
 import 'modules/websocket/presentation/bloc/vehicle_location_bloc.dart';
 
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:timezone/data/latest_all.dart' as tz;
+//
+// final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+// FlutterLocalNotificationsPlugin();
+//
+// Future<void> initNotifications() async {
+//   const AndroidInitializationSettings initializationSettingsAndroid =
+//   AndroidInitializationSettings('@mipmap/ic_launcher');
+//
+//   final InitializationSettings initializationSettings =
+//   InitializationSettings(android: initializationSettingsAndroid);
+//
+//   await flutterLocalNotificationsPlugin.initialize(initializationSettings);
+// }
+///
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+FlutterLocalNotificationsPlugin();
+
+Future<void> initializeNotification() async {
+const AndroidInitializationSettings initializationSettingsAndroid =
+AndroidInitializationSettings('@mipmap/ic_launcher');
+
+const DarwinInitializationSettings initializationSettingsIOS =
+DarwinInitializationSettings(
+  requestAlertPermission: true,
+  requestBadgePermission: true,
+  requestSoundPermission: true,
+);
+
+const InitializationSettings initializationSettings =
+InitializationSettings(
+  android: initializationSettingsAndroid,
+  iOS: initializationSettingsIOS,
+);
+
+await flutterLocalNotificationsPlugin.initialize(initializationSettings);
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
+  tz.initializeTimeZones();
+  await initializeNotification();
+  await checkAndRescheduleReminders(); // Reschedule on restart
   // Force database creation and initialize tables
   final dbHelper = DatabaseHelper();
   await dbHelper.database; // Ensure database is initialized
@@ -49,6 +90,53 @@ void main() async {
     ),
   );
 }
+
+Future<void> checkAndRescheduleReminders() async {
+  final dbCart = DB_schedule();
+  List<VehicleSchedule> schedules = await dbCart.fetchSchedule();
+
+  for (var schedule in schedules) {
+    if (schedule.byTimeReminder == null || schedule.byHourReminder == null) {
+      print("Skipping schedule ${schedule.id} due to missing reminder fields.");
+      continue; // Skip invalid entries
+    }
+
+    try {
+      DateTime firstReminder = DateTime.now();
+      Duration repeatInterval = parseReminderInterval(schedule.byTimeReminder!, schedule.byHourReminder!);
+
+      scheduleRecurringNotification(
+        id: schedule.id!,
+        title: "Scheduled Service Reminder",
+        body: "Reminder for ${schedule.service_task} on ${schedule.schedule_type}",
+        firstScheduledDate: firstReminder,
+        repeatInterval: repeatInterval,
+      );
+    } catch (e) {
+      print("Error processing schedule ${schedule.id}: $e");
+    }
+  }
+}
+
+
+// Future<void> checkAndRescheduleReminders() async {
+//   final dbCart = DB_schedule();
+//   List<VehicleSchedule> schedules = await dbCart.fetchSchedule();
+//
+//   for (var schedule in schedules) {
+//     DateTime reminderTime = DateTime.parse(schedule.byTimeReminder!);
+//     int repeatHours = int.tryParse(schedule.byHourReminder!) ?? 24;
+//
+//     scheduleRecurringNotification(
+//       id: schedule.id!,
+//       title: "Scheduled Service Reminder",
+//       body: "Reminder for ${schedule.service_task} on ${schedule.schedule_type}",
+//       firstScheduledDate: reminderTime,
+//       repeatIntervalInHours: repeatHours,
+//     );
+//   }
+// }
+
 
 
 Future<void> checkDatabaseFile() async {
@@ -81,15 +169,12 @@ class MyApp extends StatelessWidget {
         Provider<LoginBloc>(create: (_) => sl<LoginBloc>()),
         Provider<GenerateOtpBloc>(create: (_) => sl<GenerateOtpBloc>()),
         Provider<ChangePwdBloc>(create: (_) => sl<ChangePwdBloc>()),
-        // Provider<EmailVerifyBloc>(create: (_) => sl<EmailVerifyBloc>()),
         Provider<DashVehiclesBloc>(create: (_) => sl<DashVehiclesBloc>()),
-        // Provider<VehiclesBloc>(create: (_) => sl<VehiclesBloc>()),
         Provider<ProfileGenerateOtpBloc>(create: (_) => sl<ProfileGenerateOtpBloc>()),
         Provider<ProfileChangePwdBloc>(create: (_) => sl<ProfileChangePwdBloc>()),
         Provider<ProfileEmailVerifyBloc>(create: (_) => sl<ProfileEmailVerifyBloc>()),
         Provider<LogoutBloc>(create: (_) => sl<LogoutBloc>()),
         Provider<LastLocationBloc>(create: (_) => sl<LastLocationBloc>()),
-        // Provider<RouteHistoryBloc>(create: (_) => sl<RouteHistoryBloc>()),
         Provider<VehicleLocationBloc>(create: (_) => sl<VehicleLocationBloc>()),
         Provider<VehicleRouteHistoryBloc>(create: (_) => sl<VehicleRouteHistoryBloc>()),
         Provider<GetScheduleBloc>(create: (_) => sl<GetScheduleBloc>()),
@@ -103,6 +188,9 @@ class MyApp extends StatelessWidget {
         Provider<InitiatePaymentBloc>(create: (_) => sl<InitiatePaymentBloc>()),
         Provider<DeliveryLocationBloc>(create: (_) => sl<DeliveryLocationBloc>()),
         Provider<ConfirmPaymentBloc>(create: (_) => sl<ConfirmPaymentBloc>()),
+        Provider<GetScheduleNoticeBloc>(create: (_) => sl<GetScheduleNoticeBloc>()),
+        Provider<CompleteScheduleBloc>(create: (_) => sl<CompleteScheduleBloc>()),
+        Provider<GetSingleScheduleNoticeBloc>(create: (_) => sl<GetSingleScheduleNoticeBloc>()),
       ],
       child: MaterialApp(
         title: 'CTN Telematics',

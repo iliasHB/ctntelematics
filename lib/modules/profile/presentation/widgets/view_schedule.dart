@@ -1,16 +1,24 @@
+import 'package:ctntelematics/core/model/token_req_entity.dart';
+import 'package:ctntelematics/core/utils/app_export_util.dart';
 import 'package:ctntelematics/core/widgets/custom_button.dart';
 import 'package:ctntelematics/modules/profile/domain/entitties/resp_entities/get_schedule_resp_entity.dart';
 import 'package:ctntelematics/modules/profile/presentation/bloc/profile_bloc.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../config/theme/app_style.dart';
+import '../../../../service_locator.dart';
+import '../../domain/entitties/req_entities/complete_schedule_req_entity.dart';
+import '../../domain/entitties/resp_entities/get_schedule_resp_notice_entity.dart';
 
 class ViewSchedule extends StatelessWidget {
   // final GetScheduleRespEntity state;
   final DatumEntity state;
-  const ViewSchedule({super.key, required this.state, /*required this.state*/});
+  final MaintenanceEntity maintenance;
+  final String token;
+  const ViewSchedule({super.key, required this.state, required this.maintenance, required this.token, });
 
   @override
   Widget build(BuildContext context) {
@@ -36,16 +44,14 @@ class ViewSchedule extends StatelessWidget {
               style: AppStyle.cardSubtitle,
             ),
             Text(
-              state.maintenance!.isNotEmpty
-                  ? state.maintenance![0].schedule_type ?? "N/A"
-                  : "N/A",
+              maintenance.schedule_type ?? "N/A",
               style: AppStyle.cardSubtitle.copyWith(color: Colors.green.shade800, fontSize: 14),
             ),
             const SizedBox(
               height: 20,
             ),
             Text(
-              state.number_plate.isEmpty ? "" : state.number_plate,
+              state.number_plate.isEmpty ? "" : state.number_plate ?? "N/A",
               style: AppStyle.cardSubtitle
                   .copyWith(color: Colors.green, fontSize: 20),
             ),
@@ -56,9 +62,6 @@ class ViewSchedule extends StatelessWidget {
               'Service Tasks:',
               style: AppStyle.cardSubtitle,
             ),
-            const SizedBox(
-              height: 10,
-            ),
             Row(
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
@@ -68,7 +71,7 @@ class ViewSchedule extends StatelessWidget {
                       borderRadius: BorderRadius.circular(50),
                       color: Colors.green.shade50),
                   child: Text(
-                    state.maintenance!.isNotEmpty ? state.maintenance[0].description ?? "" : "",
+                    maintenance.description ?? "No service tasks",
                     style: AppStyle.cardfooter.copyWith(color: Colors.green[900]),
                   ),
                 ),
@@ -129,8 +132,9 @@ class ViewSchedule extends StatelessWidget {
                               child: Text(
                                 'Date',
                                 style: AppStyle.cardSubtitle,
-                              ))),
-
+                              )
+                          )
+                      ),
                     ],
                   ),
                   Row(
@@ -139,74 +143,64 @@ class ViewSchedule extends StatelessWidget {
                           child: Container(
                               padding: const EdgeInsets.all(10.0),
                               child: Text(
-                                state.maintenance!.isNotEmpty ? state.maintenance![0].description ?? "" : "",
+                                maintenance.description ?? "N/A",
                                 style: AppStyle.cardfooter,
                               ))),
                       Expanded(
                           child: Container(
                               padding: const EdgeInsets.all(10.0),
-                              child: Text(
-                                state.maintenance!.isNotEmpty ? "upcoming" : "",
-                                style: AppStyle.cardfooter,
-                              ))),
+                              child: _fetchMaintenanceStatus(vin: state.vin, scheduleId: maintenance.id.toString(),)
+                          )),
                       Expanded(
                           child: Container(
                               padding: const EdgeInsets.all(10.0),
                               child: Text(
                                 state.maintenance.isNotEmpty ? state.maintenance[0].start_date ?? "" : "",
                                 style: AppStyle.cardfooter,
-                              ))),
-
+                              )
+                          )
+                      ),
                     ],
                   ),
-                  // Row(
-                  //   children: [
-                  //     Expanded(
-                  //         child: Container(
-                  //             padding: const EdgeInsets.all(10.0),
-                  //             child: Text(
-                  //               'Task; Oil change',
-                  //               style: AppStyle.cardfooter,
-                  //             ))),
-                  //     Expanded(
-                  //         child: Container(
-                  //             padding: const EdgeInsets.all(10.0),
-                  //             child: Text(
-                  //               'Overdue',
-                  //               style: AppStyle.cardfooter,
-                  //             ))),
-                  //     Expanded(
-                  //         child: Container(
-                  //             padding: const EdgeInsets.all(10.0),
-                  //             child: Text(
-                  //               'September 26, 2024',
-                  //               style: AppStyle.cardfooter,
-                  //             ))),
-                  //
-                  //   ],
-                  // ),
                 ],
               ),
             ),
-             const Spacer(),
-            Row(
-              children: [
-                Expanded(
-                  child: CustomSecondaryButton(
-                      label: 'Done',
-                      onPressed: ()=>Navigator.pop(context)),
-                ),
-              ],
+            const Spacer(),
+
+            BlocConsumer<CompleteScheduleBloc, ProfileState>(
+              listener: (context, state) {
+                if (state is CompleteScheduleDone) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(state.resp.message)));
+                } else if (state is ProfileFailure) {
+                  if (state.message.contains("Unauthenticated")) {
+                  Navigator.pushNamed(context, "/login");
+                  }
+                  ScaffoldMessenger.of(context)
+                      .showSnackBar(SnackBar(content: Text(state.message)));
+                }
+              },
+              builder: (context, state) {
+                if (state is ProfileLoading) {
+                  return const Center(child: CustomLoadingButton());
+                }
+                return Row(
+                  children: [
+                    Expanded(
+                      child: CustomSecondaryButton(
+                        label: 'Completed',
+                        onPressed: () {
+                            final loginReqEntity = CompleteScheduleReqEntity(
+                                vehicle_vin: maintenance.vehicle_vin, schedule_id: maintenance.id.toString(), token: token
+                            );
+                            context.read<CompleteScheduleBloc>().add(CompleteScheduleEvent(loginReqEntity));
+                        },
+                      ),
+                    ),
+                  ],
+                );
+              },
             ),
-            // Row(
-            //   children: [
-            //     Expanded(
-            //       child: OutlinedButton(
-            //           onPressed: (){},
-            //           child: Text('Done', style: AppStyle.cardSubtitle.copyWith(fontSize: 14),)),
-            //     ),
-            //   ],
-            // ),
             const SizedBox(
               height: 50,
             ),
@@ -215,4 +209,195 @@ class ViewSchedule extends StatelessWidget {
       ),
     );
   }
+
+  Widget _fetchMaintenanceStatus({required String vin, required String scheduleId}) {
+    debugPrint("Checking Maintenance Status for VIN: $vin, Schedule ID: $scheduleId");
+    debugPrint("ScheduleNoticeEvent Dispatched: Token - ${token ?? "No token"}");
+    return BlocProvider(
+      create: (_) => sl<GetSingleScheduleNoticeBloc>()
+        ..add(SingleScheduleNoticeEvent(TokenReqEntity(
+            token: token ?? "", contentType: 'application/json', vehicle_vin: vin))),
+      child: BlocConsumer<GetSingleScheduleNoticeBloc, ProfileState>(
+        builder: (context, state) {
+          if (state is ProfileLoading) {
+            return const CustomContainerLoadingButton();
+          } else if (state is GetSingleScheduleNoticeDone) {
+            if (state.resp == null || state.resp == "") {
+
+              return Text(
+                "No notices available",
+                style: AppStyle.cardfooter,
+              );
+            }
+            final vehicle = state.resp;
+            //
+            // // Debugging: Print received data
+            // debugPrint("Received resp: ${state.resp}");
+            //
+            // // Get the first matching vehicle
+            // GetScheduleNoticeRespEntity? vehicle;
+            // try {
+            //   vehicle = state.resp.firstWhere(
+            //         (v) {
+            //       debugPrint("Checking: VIN(${v.vin}) == VIN($vin), ScheduleID(${v.schedule_id}) == ScheduleID($scheduleId)");
+            //       return v.vin == vin && (v.schedule_id ?? "N/A") == scheduleId;
+            //     },
+            //   );
+            // } catch (e) {
+            //   vehicle = null; // If no matching record is found
+            // }
+
+            // Determine the maintenance status
+            String statusText = vehicle.maintenance_due == true &&
+                (vehicle.over_due_days == 0 || vehicle.over_due_km == 0)
+                ? "Due"
+                : vehicle.maintenance_due == true &&
+                (vehicle.over_due_days > 0 || vehicle.over_due_km > 0)
+                ? "Overdue"
+                : "Not Due";
+
+            return Text(
+              statusText,
+              style: AppStyle.cardfooter,
+            );
+          } else {
+            return Center(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Unable to load status',
+                    style: AppStyle.cardfooter.copyWith(fontSize: 12),
+                  ),
+                  const SizedBox(width: 5.0),
+                  InkWell(
+                    onTap: () {
+                      BlocProvider.of<ProfileVehiclesBloc>(context).add(
+                          ProfileVehicleEvent(
+                              TokenReqEntity(token: token)));
+                    },
+                    child: const Icon(Icons.refresh, color: Colors.blue),
+                  ),
+                ],
+              ),
+            );
+          }
+        },
+        listener: (context, state) {
+          if (state is ProfileFailure) {
+            if (state.message.contains("401")) {
+              Navigator.pushNamed(context, "/login");
+            }
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(state.message)),
+            );
+          }
+        },
+      ),
+    );
+  }
+
+
+  Color _getStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case "Due":
+        return Colors.yellow;
+      case "Overdue":
+        return Colors.redAccent;
+      case "Completed":
+        return Colors.greenAccent;
+      default:
+        return Colors.grey;
+    }
+  }
 }
+
+// Widget _fetchMaintenanceStatus({required String vin, required String scheduleId}) {
+//   debugPrint("Checking Maintenance Status for VIN: $vin, Schedule ID: $scheduleId");
+//   return BlocProvider(
+//     create: (_) => sl<GetScheduleNoticeBloc>()
+//       ..add(ScheduleNoticeEvent(TokenReqEntity(
+//           token: token ?? "", contentType: 'application/json'))),
+//     child: BlocConsumer<GetScheduleNoticeBloc, ProfileState>(
+//       builder: (context, state) {
+//         if (state is ProfileLoading) {
+//           return const CustomContainerLoadingButton();
+//         } else if (state is GetScheduleNoticeDone) {
+//           if (state.resp == null || state.resp.isEmpty) {
+//             return Text(
+//               "No notices available",
+//               style: AppStyle.cardfooter,
+//             );
+//           }
+//
+//           // Debugging: Print received data
+//           debugPrint("Received resp: ${state.resp}");
+//
+//           final vehicle = state.resp.where((v) {
+//             debugPrint("Checking: VIN(${v.vin}) == VIN($vin), ScheduleID(${v.schedule_id}) == ScheduleID($scheduleId)");
+//             return v.vin == vin && (v.schedule_id ?? "N/A") == scheduleId;
+//           }).toList();
+//
+//           if (vehicle.isEmpty) {
+//             return Text(
+//               "Status not found",
+//               style: AppStyle.cardfooter,
+//             );
+//           }
+//
+//           // Iterate over the filtered list
+//           return Column(
+//             children: vehicle.map((v) {
+//               String statusText = v.maintenance_due == true &&
+//                   (v.over_due_days == 0 || v.over_due_km == 0)
+//                   ? "Due"
+//                   : v.maintenance_due == true &&
+//                   (v.over_due_days > 0 || v.over_due_km > 0)
+//                   ? "Overdue"
+//                   : "Completed";
+//
+//               Color statusColor = _getStatusColor(statusText);
+//
+//               return Text(
+//                 statusText,
+//                 style: AppStyle.cardSubtitle.copyWith(
+//                     fontSize: 12, color: statusColor),
+//               );
+//             }).toList(),
+//           );
+//         } else {
+//           return Center(
+//             child: Row(
+//               mainAxisAlignment: MainAxisAlignment.center,
+//               children: [
+//                 Text(
+//                   'Unable to load status',
+//                   style: AppStyle.cardfooter.copyWith(fontSize: 12),
+//                 ),
+//                 const SizedBox(width: 5.0),
+//                 InkWell(
+//                   onTap: () {
+//                     BlocProvider.of<ProfileVehiclesBloc>(context).add(
+//                         ProfileVehicleEvent(
+//                             TokenReqEntity(token: token)));
+//                   },
+//                   child: const Icon(Icons.refresh, color: Colors.blue),
+//                 ),
+//               ],
+//             ),
+//           );
+//         }
+//       },
+//       listener: (context, state) {
+//         if (state is ProfileFailure) {
+//           if (state.message.contains("401")) {
+//             Navigator.pushNamed(context, "/login");
+//           }
+//           ScaffoldMessenger.of(context).showSnackBar(
+//             SnackBar(content: Text(state.message)),
+//           );
+//         }
+//       },
+//     ),
+//   );
+// }

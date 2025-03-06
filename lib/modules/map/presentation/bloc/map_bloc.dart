@@ -8,6 +8,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/bloc_manager.dart';
+import '../../../../core/model/token_req_entity.dart';
 import '../../../../core/network/network_exception.dart';
 import '../../../../core/resources/map_data_state.dart';
 import '../../domain/entitties/req_entities/send_location_resp_entity.dart';
@@ -62,7 +63,7 @@ class LastLocationBloc extends BaseBloc<MapEvent, MapState>{
   }
   // Ensure fresh data after user login
   void refreshLastLocationAPI() {
-    add(const LastLocationEvent(TokenReqEntity(token: '', contentType: ''))); // Trigger fetching fresh data after login
+    add(LastLocationEvent(TokenReqEntity(token: '', contentType: ''))); // Trigger fetching fresh data after login
   }
 }
 
