@@ -381,15 +381,15 @@ class GetExpensesBloc extends Bloc<ProfileEvent, ProfileState> {
       yield ExpensesDone(resp); // Emit success state after getting the user
 
     } catch (error) {
-      if (error is ApiErrorException) {
-        yield ProfileFailure(error.message); // Emit API error message
-      } else if (error is NetworkException) {
-        yield ProfileFailure(error.message); // Emit network failure message
-      }
-      else {
+      // if (error is ApiErrorException) {
+      //   yield ProfileFailure(error.message); // Emit API error message
+      // } else if (error is NetworkException) {
+      //   yield ProfileFailure(error.message); // Emit network failure message
+      // }
+      // else {
         yield const ProfileFailure(
             "An unexpected error occurred. Please try again."); // Emit generic error message
-      }
+      // }
     }
   }
 }

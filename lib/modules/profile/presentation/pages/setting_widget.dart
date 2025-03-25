@@ -171,10 +171,10 @@ class _SettingState extends State<Setting> {
                         builder: (context, snapshot) {
                           if (snapshot.connectionState ==
                               ConnectionState.waiting) {
-                            return SizedBox(
+                            return const SizedBox(
                               height: 20.0,
                               width: 20.0,
-                              child: const CircularProgressIndicator(
+                              child: CircularProgressIndicator(
                                 strokeWidth: 2.0,
                               ),
                             ); // Loading indicator
@@ -650,7 +650,7 @@ class _SettingState extends State<Setting> {
                               context,
                               (MaterialPageRoute(
                                   builder: (context) =>
-                                      VehicleExpensesWidget())));
+                                      VehicleExpensesWidget(token: token!))));
                         },
                         child: Container(
                           padding: const EdgeInsets.symmetric(vertical: 10),
@@ -666,7 +666,7 @@ class _SettingState extends State<Setting> {
                               ),
                               Text("Expenses", style: AppStyle.cardfooter),
                               const Spacer(),
-                              Icon(
+                              const Icon(
                                 Icons.arrow_forward_ios_sharp,
                                 size: 15,
                               )

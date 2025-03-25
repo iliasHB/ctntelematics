@@ -24,7 +24,7 @@ class _LoginPageState extends State<LoginPage> {
 
   bool isPasswordVisible = true;
 
-  // late final LastLocationBloc lastLocationBloc;
+  bool isRememberMe = false;
 
   @override
   void dispose() {
@@ -32,6 +32,34 @@ class _LoginPageState extends State<LoginPage> {
     _emailController.dispose();
     super.dispose();
   }
+  void _loadRememberMe() async {
+    String? rememberedEmail = await prefUtils.getDashStr("rememberMe");
+    if (rememberedEmail != null && rememberedEmail.isNotEmpty) {
+      setState(() {
+        _emailController.text = rememberedEmail;
+        isRememberMe = true;
+      });
+    }
+  }
+
+  void _toggleRememberMe(bool? value) {
+    setState(() {
+      isRememberMe = value ?? false;
+    });
+
+    if (isRememberMe) {
+      prefUtils.setDashStr("rememberMe", _emailController.text.trim());
+    } else {
+      prefUtils.setDashStr("rememberMe", ""); // Clear saved email
+    }
+  }
+  @override
+  void initState() {
+    super.initState();
+    _loadRememberMe();
+  }
+
+
 
   // Function to save auth_user into SharedPreferences
   Future<void> _saveAuthUser(
@@ -59,8 +87,6 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    // // Trigger refreshing data after login
-    // lastLocationBloc.refreshStateAfterLogin();
     return Scaffold(
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -91,20 +117,6 @@ class _LoginPageState extends State<LoginPage> {
                         }
                         return null;
                       },
-
-                      // InputDecoration(
-                      //   labelText: 'Username or email',
-                      //   hintText: 'francisjoe@gmail.com',
-                      //   hintStyle: AppStyle.cardfooter,
-                      //   prefixIcon: const Icon(Icons.email_outlined,
-                      //       color: Colors.green),
-                      //   filled: true,
-                      //   fillColor: Colors.grey[200],
-                      //   border: OutlineInputBorder(
-                      //     borderRadius: BorderRadius.circular(10),
-                      //     borderSide: BorderSide.none,
-                      //   ),
-                      // ),
                     ),
 
                     const SizedBox(height: 16),
@@ -168,8 +180,8 @@ class _LoginPageState extends State<LoginPage> {
                 Row(
                   children: [
                     Checkbox(
-                      value: true,
-                      onChanged: (bool? value) {},
+                      value: isRememberMe,
+                      onChanged: _toggleRememberMe,
                       activeColor: Colors.green,
                     ),
                     const Text('Remember me'),
@@ -190,10 +202,6 @@ class _LoginPageState extends State<LoginPage> {
             BlocConsumer<LoginBloc, AuthState>(
               listener: (context, state) {
                 if (state is LoginDone) {
-                  // print("token::::::${state.resp.token}");
-                  // print("token::::::${state.resp.user.first_name}");
-                  // print("userId::::::${state.resp.user.id}");
-                  // print("user_type::::::${state.resp.user.user_type}");
                   _saveAuthUser(
                     state.resp.user.first_name,
                     state.resp.user.last_name,
@@ -205,7 +213,6 @@ class _LoginPageState extends State<LoginPage> {
                     state.resp.user.user_type,
                     state.resp.user.id,
                   );
-                  //lastLocationBloc.refreshStateAfterLogin();
                   Navigator.pushNamedAndRemoveUntil(
                     context,
                     '/bottomNav',
@@ -214,9 +221,6 @@ class _LoginPageState extends State<LoginPage> {
                   ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text(state.resp.message)));
                 } else if (state is AuthFailure) {
-                  // if (state.message.contains("Unauthenticated")) {
-                  // Navigator.pushNamed(context, "/login");
-                  // }
                   ScaffoldMessenger.of(context)
                       .showSnackBar(SnackBar(content: Text(state.message)));
                 }
@@ -224,18 +228,6 @@ class _LoginPageState extends State<LoginPage> {
               builder: (context, state) {
                 if (state is AuthLoading) {
                   return const CustomLoadingButton();
-
-                  //   const Center(
-                  //   child: SizedBox(
-                  //     height: 30, // Adjust the height
-                  //     width: 30, // Adjust the width
-                  //     child: CircularProgressIndicator(
-                  //       strokeWidth: 3, // Adjust the thickness
-                  //       color: Colors
-                  //           .green, // Optional: Change the color to match your theme
-                  //     ),
-                  //   ),
-                  // );
                 }
                 return CustomPrimaryButton(
                   label: 'Login',
@@ -248,30 +240,6 @@ class _LoginPageState extends State<LoginPage> {
                     }
                   },
                 );
-
-                //   ElevatedButton(
-                //   onPressed: () {
-                //     if (_formKey.currentState?.validate() ?? false) {
-                //       final loginReqEntity = LoginReqEntity(
-                //           email: _emailController.text.trim(),
-                //           password: _passwordController.text.trim());
-                //       context.read<LoginBloc>().add(LoginEvent(loginReqEntity));
-                //     }
-                //   },
-                //   style: ElevatedButton.styleFrom(
-                //     backgroundColor: Colors.green,
-                //     shape: RoundedRectangleBorder(
-                //       borderRadius: BorderRadius.circular(10),
-                //     ),
-                //   ),
-                //   child: Padding(
-                //     padding: EdgeInsets.symmetric(vertical: 16.0),
-                //     child: Text(
-                //       'Login',
-                //       style: AppStyle.cardfooter.copyWith(fontSize: 16),
-                //     ),
-                //   ),
-                // );
               },
             ),
             // Login Button

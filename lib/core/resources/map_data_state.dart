@@ -28,7 +28,7 @@ Future<List<LastLocationRespModel>> handleLastLocationError(Future<List<LastLoca
         error.type == error.message!.contains('SocketException')) {
 
       throw NetworkException(); // Handle network-related exceptions
-    } else if (error.response?.statusCode == 401) {
+    } else if (error.response?.statusCode == 401 || error.response?.statusCode == 404) {
       // Parse the error response and throw a custom exception with the API message
       final errorResponse = error.response?.data;
 
@@ -84,7 +84,6 @@ Future<RouteHistoryRespModel> handleRouteHistoryError(Future<RouteHistoryRespMod
 
       throw ApiErrorException(errorResponse['message'] ?? "Access token expired");
     } else if (error.response?.statusCode == 422) {
-      print(":::::::::::::::--here--::::::::::::::");
       // Parse the error response for a 422 Unprocessable Entity error
       final errorResponse = error.response?.data;
       if (errorResponse != null && errorResponse['errors'] != null) {
@@ -92,9 +91,6 @@ Future<RouteHistoryRespModel> handleRouteHistoryError(Future<RouteHistoryRespMod
         final vehicleVinErrors = errorResponse['errors']['vehicle_vin'];
         final timeFromErrors = errorResponse['errors']['time_from'];
         final timeToErrors = errorResponse['errors']['time_to'];
-        print("vehicleVinErrors::: $vehicleVinErrors");
-        print("timeFromErrors::: $timeFromErrors");
-        print("timeToErrors::: $timeToErrors");
         if (vehicleVinErrors != null && vehicleVinErrors.isNotEmpty) {
           throw ApiErrorException(vehicleVinErrors.first);
         }

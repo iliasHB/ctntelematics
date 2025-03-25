@@ -138,26 +138,6 @@ class _ProductReviewState extends State<ProductReview> {
               const SizedBox(
                 height: 10,
               ),
-
-              Align(
-                  alignment: Alignment.topLeft,
-                  child: Row(
-                    children: [
-                      Text(
-                        "Description: ",
-                        style: AppStyle.cardSubtitle.copyWith(fontSize: 14),
-                        textAlign: TextAlign.start,
-                      ),
-                      Text(
-                        "$description",
-                        style: AppStyle.cardfooter,
-                        textAlign: TextAlign.start,
-                      ),
-                    ],
-                  )),
-              const SizedBox(
-                height: 5,
-              ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -191,7 +171,25 @@ class _ProductReviewState extends State<ProductReview> {
                   ],
                 ),
               ),
-
+              const SizedBox(
+                height: 5,
+              ),
+              Align(
+                  alignment: Alignment.topLeft,
+                  child: Row(
+                    children: [
+                      Text(
+                        "Description: ",
+                        style: AppStyle.cardSubtitle.copyWith(fontSize: 14),
+                        textAlign: TextAlign.start,
+                      ),
+                      Text(
+                        "$description",
+                        style: AppStyle.cardfooter,
+                        textAlign: TextAlign.start,
+                      ),
+                    ],
+                  )),
               const SizedBox(
                 height: 20,
               ),
@@ -290,8 +288,7 @@ class _ProductReviewState extends State<ProductReview> {
                               builder: (_) => Checkout(
                                     productName: productName!,
                                     productImage: productImage!,
-                                    price: getTotalPrice()
-                                        .toString(), //priceValue.toString(),
+                                    price: getTotalPrice().toString(), //priceValue.toString(),
                                     categoryId: categoryId!,
                                     description: description!,
                                     token: widget.token,
@@ -341,8 +338,7 @@ class _ProductReviewState extends State<ProductReview> {
                             gridDelegate:
                                 const SliverGridDelegateWithFixedCrossAxisCount(
                               crossAxisCount: 2, // Number of columns
-                              childAspectRatio:
-                                  1.11, // Adjust for width-to-height ratio
+                              childAspectRatio: 1.05, // Adjust for width-to-height ratio
                               mainAxisSpacing: 0, // Removes vertical spacing
                               crossAxisSpacing: 0, // Removes horizontal spacing
                             ),

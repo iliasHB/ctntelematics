@@ -97,6 +97,7 @@ Future<void> initializeDependencies() async {
   sl.registerFactory<ScheduleNoticeUseCase>(() => ScheduleNoticeUseCase(sl()));
   sl.registerFactory<CompleteScheduleUseCase>(() => CompleteScheduleUseCase(sl()));
   sl.registerFactory<SingleScheduleNoticeUseCase>(() => SingleScheduleNoticeUseCase(sl()));
+  sl.registerFactory<ExpensesUseCase>(() => ExpensesUseCase(sl()));
 
   // Register Bloc
   sl.registerFactory(() => LoginBloc(sl()));
@@ -127,6 +128,7 @@ Future<void> initializeDependencies() async {
   sl.registerFactory(() => GetScheduleNoticeBloc(sl()));
   sl.registerFactory(() => CompleteScheduleBloc(sl()));
   sl.registerFactory(() => GetSingleScheduleNoticeBloc(sl()));
+  sl.registerFactory(() => GetExpensesBloc(sl()));
 }
 
 void resetApp() async {

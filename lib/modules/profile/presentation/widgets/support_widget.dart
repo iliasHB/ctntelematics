@@ -4,6 +4,7 @@ import 'package:ctntelematics/core/utils/app_export_util.dart';
 import 'package:ctntelematics/core/widgets/advert.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
 // import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
 
 
@@ -97,7 +98,7 @@ class _SupportState extends State<Support> {
          ),
           InkWell(
             onTap: () async {
-              // await FlutterPhoneDirectCaller.callNumber(hotline);
+              await FlutterPhoneDirectCaller.callNumber(hotline);
             },
             child: const SupportCard(
                 icon: Icon(Icons.call),

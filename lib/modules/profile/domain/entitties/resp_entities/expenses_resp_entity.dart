@@ -2,9 +2,9 @@ import 'package:equatable/equatable.dart';
 
 class ExpensesRespEntity extends Equatable{
   final ExpensesEntity expenses;
-  final int total_expenses;
+  final dynamic total_expenses;
 
-  ExpensesRespEntity({
+  const ExpensesRespEntity({
     required this.expenses,
     required this.total_expenses,
   });
@@ -18,21 +18,21 @@ class ExpensesRespEntity extends Equatable{
 }
 
 class ExpensesEntity extends Equatable{
-  final int current_page;
+  final dynamic current_page;
   final List<DatumEntity> data;
-  final String first_page_url;
-  final int from;
-  final int last_page;
-  final String last_page_url;
+  final dynamic first_page_url;
+  final dynamic from;
+  final dynamic last_page;
+  final dynamic last_page_url;
   final List<LinkEntity> links;
   final dynamic next_page_url;
-  final String path;
-  final int per_page;
+  final dynamic path;
+  final dynamic per_page;
   final dynamic prev_page_url;
-  final int to;
-  final int total;
+  final dynamic to;
+  final dynamic total;
 
-  ExpensesEntity({
+  const ExpensesEntity({
     required this.current_page,
     required this.data,
     required this.first_page_url,
@@ -68,18 +68,18 @@ class ExpensesEntity extends Equatable{
 }
 
 class DatumEntity extends Equatable {
-  final int id;
-  final int veh_id;
-  final String expense_name;
-  final String expense_amount;
-  final String expense_date;
-  final String expense_location;
-  final String recipient_type;
-  final String recipient_name;
+  final dynamic id;
+  final dynamic veh_id;
+  final dynamic expense_name;
+  final dynamic expense_amount;
+  final dynamic expense_date;
+  final dynamic expense_location;
+  final dynamic recipient_type;
+  final dynamic recipient_name;
   final dynamic receipt;
-  final String remarks;
-  final DateTime created_at;
-  final DateTime updated_at;
+  final dynamic remarks;
+  final dynamic created_at;
+  final dynamic updated_at;
 
   DatumEntity({
     required this.id,
@@ -115,8 +115,8 @@ class DatumEntity extends Equatable {
 }
 
 class LinkEntity extends Equatable {
-  final String url;
-  final String label;
+  final dynamic url;
+  final dynamic label;
   final bool active;
 
   LinkEntity({

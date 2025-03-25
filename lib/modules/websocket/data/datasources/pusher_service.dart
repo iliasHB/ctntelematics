@@ -53,13 +53,14 @@ class PusherService {
   Future<String> _getAuthToken(String channelName, String socketId) async {
     const int maxRetries = 5; // Maximum number of retries
     int attempt = 0;
-    print("token::::::${token}");
+    print("token>>+::::::${token}");
 
     while (attempt < maxRetries) {
       try {
         // Make a request to your Laravel server for an auth token
         final response = await http.post(
-          Uri.parse('https://cti.maypaseducation.com/api/broadcasting/auth'),
+          Uri.parse('http://196.3.101.150:8080/api/broadcasting/auth'),
+          // Uri.parse('https://cti.maypaseducation.com/api/broadcasting/auth'),
           headers: {
             'Authorization': token,
             'Accept': 'application/json',

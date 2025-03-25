@@ -191,6 +191,7 @@ class MyApp extends StatelessWidget {
         Provider<GetScheduleNoticeBloc>(create: (_) => sl<GetScheduleNoticeBloc>()),
         Provider<CompleteScheduleBloc>(create: (_) => sl<CompleteScheduleBloc>()),
         Provider<GetSingleScheduleNoticeBloc>(create: (_) => sl<GetSingleScheduleNoticeBloc>()),
+        Provider<GetExpensesBloc>(create: (_) => sl<GetExpensesBloc>()),
       ],
       child: MaterialApp(
         title: 'CTN Telematics',

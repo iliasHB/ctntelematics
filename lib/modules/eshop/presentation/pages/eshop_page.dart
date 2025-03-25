@@ -352,7 +352,7 @@ class _EshopPageState extends State<EshopPage> {
                   itemCount: state.resp.products.data.length,
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2, // Number of columns
-                    childAspectRatio: 1.1, // Adjust for width-to-height ratio
+                    childAspectRatio: 1.05, // Adjust for width-to-height ratio
                     mainAxisSpacing: 0, // Removes vertical spacing
                     crossAxisSpacing: 0, // Removes horizontal spacing
                   ),
@@ -715,15 +715,6 @@ class _AllProductState extends State<AllProduct> {
                               description: widget.description,
                               token: widget.token,
                               productId: widget.productId)));
-
-                  // Navigator.pushNamed(context, "/productReview", arguments: {
-                  //   'productName': productName,
-                  //   'productImage': productImage,
-                  //   'price': price,
-                  //   'categoryId': categoryId,
-                  //   'description': description,
-                  //   'token': token
-                  // });
                 },
                 child: Container(
                   margin:
@@ -776,11 +767,6 @@ class _AllProductState extends State<AllProduct> {
                             },
                           ),
                         ),
-                        // Image.asset(
-                        //   productImage,
-                        //   height: 100,
-                        //   width: 100,
-                        // ),
                         Center(
                           child: Text(
                             widget.productName,

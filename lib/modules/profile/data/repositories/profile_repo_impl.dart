@@ -281,12 +281,15 @@ class ProfileRepositoryImpl implements ProfileRepository {
 
   @override
   Future<ExpensesRespModel> onGetExpenses(ExpensesReqEntity param) async {
-
+    print("from:::::"+param.from);
+    print("to:::::"+param.to);
+    print("token:::::"+param.token);
     ExpensesReqModel expensesReqModel = ExpensesReqModel(
         from: param.from,
         to: param.to,
         token: param.token
     );
+
     try {
       // return await handleScheduleNoticeErrorHandling(
       return apiClient.getExpenses(expensesReqModel.from, expensesReqModel.to, expensesReqModel.token);
@@ -299,6 +302,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
     //   throw NetworkException(); // Propagate network-specific errors
     // }
     catch (e) {
+      print("error::::>> "+e.toString());
       throw Exception("An error occurred while logging in: $e");
     }
   }

@@ -36,7 +36,7 @@ class MapVehicleEntity extends Equatable {
         details,
         driver,
         address,
-        // geofence,
+        geofence,
         connected_status];
 }
 
