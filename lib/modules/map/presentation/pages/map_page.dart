@@ -144,7 +144,7 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AnimatedAppBar(firstname: first_name ?? "", pageRoute: "map"),
+      appBar: AnimatedAppBar(firstname: first_name ?? "", pageRoute: "Vehicle Tracking"),
       body: Shimmer(
         linearGradient: _shimmerGradient,
         child: FutureBuilder(

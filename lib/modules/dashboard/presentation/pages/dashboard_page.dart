@@ -181,7 +181,7 @@ class _DashboardPageState extends State<DashboardPage> {
     return Scaffold(
       appBar: AnimatedAppBar(
         firstname: first_name ?? "",
-        pageRoute: 'dashboard',
+        pageRoute: 'Dashboard',
       ),
       body: isLoading
           ? const Center(

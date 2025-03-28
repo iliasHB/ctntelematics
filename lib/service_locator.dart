@@ -31,6 +31,11 @@ import 'modules/profile/data/repositories/profile_repo_impl.dart';
 import 'modules/profile/domain/repositories/profile_repository.dart';
 import 'modules/profile/domain/usecases/profile_usecase.dart';
 import 'modules/profile/presentation/bloc/profile_bloc.dart';
+import 'modules/service/data/datasources/remote/service_api_client.dart';
+import 'modules/service/data/repositories/service_repo_impl.dart';
+import 'modules/service/domain/repositories/service_repository.dart';
+import 'modules/service/domain/usecases/service_usecases.dart';
+import 'modules/service/presentation/bloc/service_bloc.dart';
 import 'modules/vehincle/data/datasources/remote/vehicle_api_client.dart';
 import 'modules/vehincle/data/repositories/vehicle_repo_impl.dart';
 import 'modules/vehincle/domain/repositories/vehicle_repo.dart';
@@ -55,6 +60,7 @@ Future<void> initializeDependencies() async {
   sl.registerSingleton<ProfileApiClient>(ProfileApiClient(sl()));
   sl.registerSingleton<MapApiClient>(MapApiClient(sl()));
   sl.registerSingleton<EshopApiClient>(EshopApiClient(sl()));
+  sl.registerSingleton<ServiceApiClient>(ServiceApiClient(sl()));
   // sl.registerSingleton<PusherService>(PusherService(token, userId));
 
   // Register Repository
@@ -65,6 +71,7 @@ Future<void> initializeDependencies() async {
   sl.registerSingleton<MapRepository>(MapRepositoryImpl(sl()));
   sl.registerFactory<PusherRepository>(() => PusherRepositoryImpl(sl<PusherService>()));
   sl.registerSingleton<EshopRepository>(EshopRepositoryImpl(sl()));
+  sl.registerSingleton<ServiceRepository>(ServiceRepositoryImpl(sl()));
   // sl.registerSingleton<PusherRepository>(PusherRepositoryImpl(sl<PusherService>()));
 
   // Register UseCase
@@ -98,6 +105,11 @@ Future<void> initializeDependencies() async {
   sl.registerFactory<CompleteScheduleUseCase>(() => CompleteScheduleUseCase(sl()));
   sl.registerFactory<SingleScheduleNoticeUseCase>(() => SingleScheduleNoticeUseCase(sl()));
   sl.registerFactory<ExpensesUseCase>(() => ExpensesUseCase(sl()));
+  sl.registerFactory<GetServicesUseCase>(() => GetServicesUseCase(sl()));
+  sl.registerFactory<GetCountryStatesUseCase>(() => GetCountryStatesUseCase(sl()));
+  sl.registerFactory<InitializeServicePaymentUseCase>(() => InitializeServicePaymentUseCase(sl()));
+  sl.registerFactory<RequestServiceUseCase>(() => RequestServiceUseCase(sl()));
+
 
   // Register Bloc
   sl.registerFactory(() => LoginBloc(sl()));
@@ -129,6 +141,11 @@ Future<void> initializeDependencies() async {
   sl.registerFactory(() => CompleteScheduleBloc(sl()));
   sl.registerFactory(() => GetSingleScheduleNoticeBloc(sl()));
   sl.registerFactory(() => GetExpensesBloc(sl()));
+  sl.registerFactory(() => GetServicesBloc(sl()));
+  sl.registerFactory(() => GetCountryStateBloc(sl()));
+  sl.registerFactory(() => InitiateServicePaymentBloc(sl()));
+  sl.registerFactory(() => RequestServiceBloc(sl()));
+
 }
 
 void resetApp() async {

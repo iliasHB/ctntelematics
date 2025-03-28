@@ -13,7 +13,7 @@ class _DashboardApiClient implements DashboardApiClient {
     this._dio, {
     this.baseUrl,
   }) {
-    baseUrl ??= 'http://196.3.101.150:8080/api';//'http://196.3.101.150:8080/api';//'https://cti.maypaseducation.com/api';
+    baseUrl ??= 'https://cti.maypaseducation.com/api';
   }
 
   final Dio _dio;
@@ -52,7 +52,7 @@ class _DashboardApiClient implements DashboardApiClient {
         )));
     final _result = await _dio.fetch<Map<String, dynamic>>(_options);
     late DashVehicleRespModel _value;
-      _value = DashVehicleRespModel.fromJson(_result.data!);
+    _value = DashVehicleRespModel.fromJson(_result.data!);
     return _value;
   }
 
@@ -88,7 +88,7 @@ class _DashboardApiClient implements DashboardApiClient {
         )));
     final _result = await _dio.fetch<List<dynamic>>(_options);
     late List<GetTripRespModel> _value;
-      _value = _result.data!
+    _value = _result.data!
           .map((dynamic i) =>
               GetTripRespModel.fromJson(i as Map<String, dynamic>))
           .toList();

@@ -94,7 +94,7 @@ class _EshopPageState extends State<EshopPage> {
     ];
     return Scaffold(
       appBar: AnimatedAppBar(
-        firstname: first_name ?? "", pageRoute: 'eshop',
+        firstname: first_name ?? "", pageRoute: 'Eshop',
       ),
       body: Padding(
         padding: const EdgeInsets.all(10.0),

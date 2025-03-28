@@ -42,7 +42,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
       const VehiclePage(),
       const DashCamPage(),
       const EshopPage(),
-      const ServicePage(),
+      ServicePage(),
       //MapPage(),
     ];
 

@@ -13,7 +13,7 @@ class _AuthApiClient implements AuthApiClient {
     this._dio, {
     this.baseUrl,
   }) {
-    baseUrl ??= 'http://196.3.101.150:8080/api';//'http://196.3.101.150:8080/api';//'https://cti.maypaseducation.com/api';
+    baseUrl ??= 'https://cti.maypaseducation.com/api';
   }
 
   final Dio _dio;
@@ -53,7 +53,7 @@ class _AuthApiClient implements AuthApiClient {
         )));
     final _result = await _dio.fetch<Map<String, dynamic>>(_options);
     late LoginRespModel _value;
-      _value = LoginRespModel.fromJson(_result.data!);
+    _value = LoginRespModel.fromJson(_result.data!);
     return _value;
   }
 
@@ -86,44 +86,7 @@ class _AuthApiClient implements AuthApiClient {
         )));
     final _result = await _dio.fetch<Map<String, dynamic>>(_options);
     late AuthRespModel _value;
-      _value = AuthRespModel.fromJson(_result.data!);
-    return _value;
-  }
-
-  @override
-  Future<AuthRespModel> verifyEmail(
-    String email,
-    String otp,
-    String sourceCode,
-  ) async {
-    final _extra = <String, dynamic>{};
-    final queryParameters = <String, dynamic>{};
-    final _headers = <String, dynamic>{r'source_code': sourceCode};
-    _headers.removeWhere((k, v) => v == null);
-    final _data = {
-      'email': email,
-      'otp': otp,
-    };
-    final _options = _setStreamType<AuthRespModel>(Options(
-      method: 'POST',
-      headers: _headers,
-      extra: _extra,
-      contentType: 'application/x-www-form-urlencoded',
-    )
-        .compose(
-          _dio.options,
-          '/user/verify/email',
-          queryParameters: queryParameters,
-          data: _data,
-        )
-        .copyWith(
-            baseUrl: _combineBaseUrls(
-          _dio.options.baseUrl,
-          baseUrl,
-        )));
-    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
-    late AuthRespModel _value;
-      _value = AuthRespModel.fromJson(_result.data!);
+    _value = AuthRespModel.fromJson(_result.data!);
     return _value;
   }
 
@@ -164,7 +127,7 @@ class _AuthApiClient implements AuthApiClient {
         )));
     final _result = await _dio.fetch<Map<String, dynamic>>(_options);
     late AuthRespModel _value;
-      _value = AuthRespModel.fromJson(_result.data!);
+    _value = AuthRespModel.fromJson(_result.data!);
     return _value;
   }
 

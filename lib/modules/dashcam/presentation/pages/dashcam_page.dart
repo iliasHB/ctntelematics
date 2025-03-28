@@ -44,7 +44,7 @@ class _DashCamPageState extends State<DashCamPage> {
   Widget build(BuildContext context) {
     // final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>;
     return Scaffold(
-        appBar: AnimatedAppBar(firstname: first_name ?? "", pageRoute: 'dashcam',),
+        appBar: AnimatedAppBar(firstname: first_name ?? "", pageRoute: 'Dashcam',),
         body: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20.0),
           child: Column(

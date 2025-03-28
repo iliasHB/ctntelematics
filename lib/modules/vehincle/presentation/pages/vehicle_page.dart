@@ -154,7 +154,7 @@ class _VehiclePageState extends State<VehiclePage> {
     // lastLocationBloc.refreshLastLocationAPI();
     return Scaffold(
       appBar: AnimatedAppBar(
-        firstname: first_name ?? "", pageRoute: 'vehicle',
+        firstname: first_name ?? "", pageRoute: 'Vehicle',
       ),
       body: isLoading
           ? const Center(child: CustomContainerLoadingButton())

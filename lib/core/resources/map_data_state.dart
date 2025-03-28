@@ -42,9 +42,6 @@ Future<List<LastLocationRespModel>> handleLastLocationError(Future<List<LastLoca
         final vehicleVinErrors = errorResponse['errors']['vehicle_vin'];
         final timeFromErrors = errorResponse['errors']['time_from'];
         final timeToErrors = errorResponse['errors']['time_to'];
-        print("vehicleVinErrors::: $vehicleVinErrors");
-        print("timeFromErrors::: $timeFromErrors");
-        print("timeToErrors::: $timeToErrors");
         if (vehicleVinErrors != null && vehicleVinErrors.isNotEmpty) {
           throw ApiErrorException(vehicleVinErrors.first);
         }

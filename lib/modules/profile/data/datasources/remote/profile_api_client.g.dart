@@ -13,7 +13,7 @@ class _ProfileApiClient implements ProfileApiClient {
     this._dio, {
     this.baseUrl,
   }) {
-    baseUrl ??= 'http://196.3.101.150:8080/api'; //http://196.3.101.150:8080/api';//'https://cti.maypaseducation.com/api';
+    baseUrl ??= 'https://cti.maypaseducation.com/api';
   }
 
   final Dio _dio;
@@ -244,45 +244,6 @@ class _ProfileApiClient implements ProfileApiClient {
     return _value;
   }
 
-
-  @override
-  Future<List<GetScheduleNoticeRespModel>> getScheduleNotice(
-      String token,
-      String contentType,
-      ) async {
-    final _extra = <String, dynamic>{};
-    final queryParameters = <String, dynamic>{};
-    final _headers = <String, dynamic>{
-      r'Authorization': token,
-      r'Accept': contentType,
-    };
-    _headers.removeWhere((k, v) => v == null);
-    const Map<String, dynamic>? _data = null;
-    final _options = _setStreamType<List<GetScheduleNoticeRespModel>>(Options(
-      method: 'GET',
-      headers: _headers,
-      extra: _extra,
-    )
-        .compose(
-      _dio.options,
-      '/get/notice',
-      queryParameters: queryParameters,
-      data: _data,
-    )
-        .copyWith(
-        baseUrl: _combineBaseUrls(
-          _dio.options.baseUrl,
-          baseUrl,
-        )));
-    final _result = await _dio.fetch<List<dynamic>>(_options);
-    late List<GetScheduleNoticeRespModel> _value;
-    _value = _result.data!
-        .map((dynamic i) =>
-        GetScheduleNoticeRespModel.fromJson(i as Map<String, dynamic>))
-        .toList();
-    return _value;
-  }
-
   @override
   Future<ProfileVehicleRespModel> getAllVehicles(
     String token,
@@ -318,13 +279,50 @@ class _ProfileApiClient implements ProfileApiClient {
     return _value;
   }
 
+  @override
+  Future<List<GetScheduleNoticeRespModel>> getScheduleNotice(
+    String token,
+    String contentType,
+  ) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{};
+    final _headers = <String, dynamic>{
+      r'Authorization': token,
+      r'Accept': contentType,
+    };
+    _headers.removeWhere((k, v) => v == null);
+    const Map<String, dynamic>? _data = null;
+    final _options = _setStreamType<List<GetScheduleNoticeRespModel>>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+        .compose(
+          _dio.options,
+          '/get/notice',
+          queryParameters: queryParameters,
+          data: _data,
+        )
+        .copyWith(
+            baseUrl: _combineBaseUrls(
+          _dio.options.baseUrl,
+          baseUrl,
+        )));
+    final _result = await _dio.fetch<List<dynamic>>(_options);
+    late List<GetScheduleNoticeRespModel> _value;
+      _value = _result.data!
+          .map((dynamic i) =>
+              GetScheduleNoticeRespModel.fromJson(i as Map<String, dynamic>))
+          .toList();
+    return _value;
+  }
 
   @override
   Future<CompleteScheduleRespModel> completeSchedule(
-      String vehicle_vin,
-      String schedule_id,
-      String token,
-      ) async {
+    String vehicle_vin,
+    String schedule_id,
+    String token,
+  ) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{r'Authorization': token};
@@ -337,32 +335,30 @@ class _ProfileApiClient implements ProfileApiClient {
       method: 'POST',
       headers: _headers,
       extra: _extra,
-      contentType: 'application/x-www-form-urlencoded',
     )
         .compose(
-      _dio.options,
-      '/schedule/complete',
-      queryParameters: queryParameters,
-      data: _data,
-    )
+          _dio.options,
+          '/schedule/complete',
+          queryParameters: queryParameters,
+          data: _data,
+        )
         .copyWith(
-        baseUrl: _combineBaseUrls(
+            baseUrl: _combineBaseUrls(
           _dio.options.baseUrl,
           baseUrl,
         )));
     final _result = await _dio.fetch<Map<String, dynamic>>(_options);
     late CompleteScheduleRespModel _value;
-    _value = CompleteScheduleRespModel.fromJson(_result.data!);
+      _value = CompleteScheduleRespModel.fromJson(_result.data!);
     return _value;
   }
 
-
   @override
   Future<GetScheduleNoticeRespModel> getSingleScheduleNotice(
-      String vehicle_vin,
-      String token,
-      String contentType,
-      ) async {
+    String vehicle_vin,
+    String token,
+    String contentType,
+  ) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{
@@ -370,37 +366,35 @@ class _ProfileApiClient implements ProfileApiClient {
       r'Accept': contentType,
     };
     _headers.removeWhere((k, v) => v == null);
-    Map<String, dynamic>? _data = {
-      'vehicle_vin': vehicle_vin,
-    };
-    final _options = _setStreamType<List<GetScheduleNoticeRespModel>>(Options(
+    final _data = {'vehicle_vin': vehicle_vin};
+    final _options = _setStreamType<GetScheduleNoticeRespModel>(Options(
       method: 'GET',
       headers: _headers,
       extra: _extra,
     )
         .compose(
-      _dio.options,
-      '/get/notice/single',
-      queryParameters: queryParameters,
-      data: _data,
-    )
+          _dio.options,
+          '/get/notice/single',
+          queryParameters: queryParameters,
+          data: _data,
+        )
         .copyWith(
-        baseUrl: _combineBaseUrls(
+            baseUrl: _combineBaseUrls(
           _dio.options.baseUrl,
           baseUrl,
         )));
     final _result = await _dio.fetch<Map<String, dynamic>>(_options);
     late GetScheduleNoticeRespModel _value;
-    _value = GetScheduleNoticeRespModel.fromJson(_result.data!);
+      _value = GetScheduleNoticeRespModel.fromJson(_result.data!);
     return _value;
   }
 
   @override
   Future<ExpensesRespModel> getExpenses(
-      String from,
-      String to,
-      String token,
-      ) async {
+    String from,
+    String to,
+    String token,
+  ) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{
       r'from': from,
@@ -415,19 +409,19 @@ class _ProfileApiClient implements ProfileApiClient {
       extra: _extra,
     )
         .compose(
-      _dio.options,
-      '/expenses',
-      queryParameters: queryParameters,
-      data: _data,
-    )
+          _dio.options,
+          '/expenses',
+          queryParameters: queryParameters,
+          data: _data,
+        )
         .copyWith(
-        baseUrl: _combineBaseUrls(
+            baseUrl: _combineBaseUrls(
           _dio.options.baseUrl,
           baseUrl,
         )));
     final _result = await _dio.fetch<Map<String, dynamic>>(_options);
     late ExpensesRespModel _value;
-    _value = ExpensesRespModel.fromJson(_result.data!);
+      _value = ExpensesRespModel.fromJson(_result.data!);
     return _value;
   }
 
@@ -460,5 +454,4 @@ class _ProfileApiClient implements ProfileApiClient {
 
     return Uri.parse(dioBaseUrl).resolveUri(url).toString();
   }
-
 }

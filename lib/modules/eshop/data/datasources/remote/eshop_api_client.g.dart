@@ -51,7 +51,7 @@ class _EshopApiClient implements EshopApiClient {
         )));
     final _result = await _dio.fetch<Map<String, dynamic>>(_options);
     late GetAllProductModel _value;
-      _value = GetAllProductModel.fromJson(_result.data!);
+    _value = GetAllProductModel.fromJson(_result.data!);
     return _value;
   }
 
@@ -80,7 +80,7 @@ class _EshopApiClient implements EshopApiClient {
         )));
     final _result = await _dio.fetch<Map<String, dynamic>>(_options);
     late GetCategoryModel _value;
-      _value = GetCategoryModel.fromJson(_result.data!);
+    _value = GetCategoryModel.fromJson(_result.data!);
     return _value;
   }
 
@@ -116,7 +116,7 @@ class _EshopApiClient implements EshopApiClient {
         )));
     final _result = await _dio.fetch<Map<String, dynamic>>(_options);
     late GetProductModel _value;
-      _value = GetProductModel.fromJson(_result.data!);
+    _value = GetProductModel.fromJson(_result.data!);
     return _value;
   }
 

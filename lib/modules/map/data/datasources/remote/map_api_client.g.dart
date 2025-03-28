@@ -13,7 +13,7 @@ class _MapApiClient implements MapApiClient {
     this._dio, {
     this.baseUrl,
   }) {
-    baseUrl ??= 'http://196.3.101.150:8080/api';//'http://196.3.101.150:8080/api';//'https://cti.maypaseducation.com/api';
+    baseUrl ??= 'https://cti.maypaseducation.com/api';
   }
 
   final Dio _dio;
@@ -134,7 +134,7 @@ class _MapApiClient implements MapApiClient {
         )));
     final _result = await _dio.fetch<Map<String, dynamic>>(_options);
     late RespModel _value;
-      _value = RespModel.fromJson(_result.data!);
+    _value = RespModel.fromJson(_result.data!);
     return _value;
   }
 

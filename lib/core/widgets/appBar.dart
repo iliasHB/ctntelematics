@@ -23,8 +23,8 @@ class AnimatedAppBar extends StatefulWidget implements PreferredSizeWidget {
       onShopNowSelected,
       onQuickLinkSelected;
 
-  AnimatedAppBar(
-      {required this.firstname,
+  const AnimatedAppBar(
+      {super.key, required this.firstname,
       this.onVehiclePerformanceSelected,
       this.onMileageSelected,
       this.onOdometerSelected,
@@ -114,19 +114,24 @@ class _AnimatedAppBarState extends State<AnimatedAppBar>
         'filePath': filePath,
         'uploadedAt': uploadedAt,
       });
-
-      print('Profile picture saved: $filePath');
+      
       // Update the state
       setState(() {
         _image = File(filePath); // Update the in-memory image file
       });
     } else {
+      // ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("No image selected."),
+          // duration: Duration(seconds: 2),
+          backgroundColor: Colors.green,
+        );
+      // );
       print('No image selected.');
     }
   }
 
   Future<void> pickAndUpdateProfilePicture(int userId) async {
-    print("userId:::::::::::: $userId");
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
 
@@ -134,8 +139,6 @@ class _AnimatedAppBarState extends State<AnimatedAppBar>
       final filePath = pickedFile.path;
       final uploadedAt =
           DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
-
-      print('UserId: $userId');
 
       // Save to the database
       final dbHelper = DatabaseHelper();
@@ -145,14 +148,16 @@ class _AnimatedAppBarState extends State<AnimatedAppBar>
         'filePath': filePath,
         'uploadedAt': uploadedAt,
       });
-
-      print('Profile picture updated: $filePath');
-
       // Update the UI
       setState(() {
         _image = File(filePath);
       });
     } else {
+      const SnackBar(
+        content: Text("No image selected."),
+        // duration: Duration(seconds: 2),
+        backgroundColor: Colors.green,
+      );
       print('No image selected.');
     }
   }
@@ -177,20 +182,15 @@ class _AnimatedAppBarState extends State<AnimatedAppBar>
       child: AppBar(
         elevation: 0,
         backgroundColor: Colors.white,
-        centerTitle: true,
+        // centerTitle: false,
+        title:  Center(child: Text(widget.pageRoute)),
         actions: [
-          // widget.pageRoute == 'map'
-          //     ? Container()
-          // IconButton(onPressed: () => Navigator.pop(context),
-          //     icon: const Icon(Icons.arrow_back, color: Colors.green,)
-          //     )
-          // :
-          widget.pageRoute == 'dashboard' || widget.pageRoute == 'vehicle'
+          widget.pageRoute == 'Dashboard' || widget.pageRoute == 'Vehicle'
               ? Padding(
                   padding: const EdgeInsets.only(left: 10.0),
                   child: InkWell(
                     onTap: () {
-                      widget.pageRoute == 'map'
+                      widget.pageRoute == 'Vehicle Tracking'
                           ? IconButton(
                               onPressed: () => Navigator.pop(context),
                               icon: const Icon(
@@ -199,100 +199,45 @@ class _AnimatedAppBarState extends State<AnimatedAppBar>
                               ))
                           : Navigator.pushNamed(context, '/map');
                     },
-                    child: Container(
-                        padding: const EdgeInsets.all(5.0),
-                        decoration: BoxDecoration(
-                          // color: Colors.grey.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(50.0),
-                        ),
-                        child: Image.asset(
-                          "assets/images/map_icon.png",
-                          height: 40,
-                          width: 40,
-                        )
-
-                        // Row(
-                        //   children: [
-                        //     isLoading
-                        //         ? const Center(
-                        //             child: CustomContainerLoadingButton())
-                        //         : FutureBuilder<String?>(
-                        //             future: fetchUserProfilePicture(
-                        //                 int.parse(userId ?? '0')),
-                        //             builder: (context, snapshot) {
-                        //               if (snapshot.connectionState ==
-                        //                   ConnectionState.waiting) {
-                        //                 return const CustomContainerLoadingButton(); // Loading indicator
-                        //               } else if (snapshot.hasError) {
-                        //                 return const Icon(Icons.error,
-                        //                     color: Colors.red); // Error state
-                        //               } else if (!snapshot.hasData ||
-                        //                   snapshot.data == null) {
-                        //                 return InkWell(
-                        //                   onTap: () {
-                        //                     pickAndSaveProfilePicture(
-                        //                         int.parse(userId!));
-                        //                     //pickAndUpdateProfilePicture(int.parse(userId!));
-                        //                   },
-                        //                   child: CircleAvatar(
-                        //                     radius: 20,
-                        //                     // backgroundImage: AssetImage("assets/images/avatar.jpeg"),
-                        //                     child: ClipOval(
-                        //                       child: Image.asset(
-                        //                         "assets/images/avatar.jpeg",
-                        //                         height: 40,
-                        //                         width: 40,
-                        //                       ),
-                        //                     ), // Default avatar
-                        //                   ),
-                        //                 );
-                        //               } else {
-                        //                 return InkWell(
-                        //                   onTap: () {
-                        //                     pickAndUpdateProfilePicture(
-                        //                         int.parse(userId!));
-                        //                   },
-                        //                   child: CircleAvatar(
-                        //                     radius: 20,
-                        //                     backgroundImage: FileImage(
-                        //                         File(snapshot.data!)), // Fetched image
-                        //                   ),
-                        //                 );
-                        //               }
-                        //             },
-                        //           ),
-                        //     // const SizedBox(width: 10),
-                        //     // Text(
-                        //     //   "Welcome, ${widget.firstname}",
-                        //     //   style: AppStyle.cardfooter,
-                        //     // )
-                        //   ],
-                        // ),
-                        ),
+                    child: Row(
+                      children: [
+                        Container(
+                            padding: const EdgeInsets.all(5.0),
+                            decoration: BoxDecoration(
+                              // color: Colors.grey.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(50.0),
+                            ),
+                            child: Image.asset(
+                              "assets/images/map_icon.png",
+                              height: 40,
+                              width: 40,
+                            )),
+                        const Center(child: Text("")),
+                      ],
+                    ),
                   ),
                 )
-              :  widget.pageRoute == 'map'
-              ? Padding(
-                padding: const EdgeInsets.only(left: 50.0),
-                child: Text('Vehicle tracking', style: AppStyle.cardSubtitle.copyWith(fontSize: 14),),
-              )
               : Container(),
+              // widget.pageRoute == 'map'
+              //         ? Padding(
+              //             padding: const EdgeInsets.only(left: 50.0),
+              //             child: Text(
+              //               'Vehicle tracking',
+              //               style: AppStyle.cardSubtitle.copyWith(fontSize: 14),
+              //             ),
+              //           )
+              //         :
+          ///
+              Padding(
+                  padding: const EdgeInsets.only(left: 10.0),
+                  child: Center(
+                    child: Text(
+                      widget.pageRoute,
+                      style: AppStyle.cardSubtitle.copyWith(fontSize: 16),
+                    ),
+                  ),
+                ),
           const Spacer(),
-          // Padding(
-          //   padding: const EdgeInsets.only(right: 8.0),
-          //   child: InkWell(
-          //     onTap: () {
-          //       Navigator.pushNamed(context, '/service');
-          //     },
-          //     child: CircleAvatar(
-          //       backgroundColor: Colors.green.shade100,
-          //       child: const Icon(
-          //         Icons.home_repair_service,
-          //         size: 20,
-          //       ),
-          //     ),
-          //   ),
-          // ),
           Padding(
             padding: const EdgeInsets.only(right: 10.0),
             child: InkWell(
@@ -309,7 +254,7 @@ class _AnimatedAppBarState extends State<AnimatedAppBar>
             ),
           ),
 
-          widget.pageRoute != 'dashboard'
+          widget.pageRoute != 'Dashboard'
               ? Container()
               : Align(
                   alignment: Alignment.topLeft,
@@ -377,14 +322,6 @@ class _AnimatedAppBarState extends State<AnimatedAppBar>
                                             });
                                       },
                                     )
-                                    // Checkbox(
-                                    //     value: shopNow,
-                                    //     onChanged: (value) {
-                                    //       setState(() {
-                                    //         shopNow = value!;
-                                    //         widget.onShopNowSelected!(value);
-                                    //       });
-                                    //     })
                                   ],
                                 );
                               }),
@@ -458,53 +395,12 @@ class _AnimatedAppBarState extends State<AnimatedAppBar>
                                         },
                                       )
 
-                                      // Checkbox(
-                                      //   value: vehiclePerformance,
-                                      //   onChanged: (value) {
-                                      //     setState(() {
-                                      //       vehiclePerformance = value!;
-                                      //       widget.onVehiclePerformanceSelected!(
-                                      //           vehiclePerformance);
-                                      //     });
-                                      //   },
-                                      // ),
                                     ],
                                   );
                                 },
                               ),
                             ),
-                            // PopupMenuItem(
-                            //   value: 4,
-                            //   onTap: () {
-                            //     // _setDateRange(3); // 3 days ago
-                            //   },
-                            //   child: StatefulBuilder(builder: (context, setState) {
-                            //     return Row(
-                            //       children: [
-                            //         const Icon(
-                            //           CupertinoIcons.link,
-                            //           size: 20,
-                            //           color: Colors.green,
-                            //         ),
-                            //         const SizedBox(
-                            //           width: 10,
-                            //         ),
-                            //         const Text("Quick Link"),
-                            //         const Spacer(),
-                            //         Consumer<QuickLinkProvider>(
-                            //             builder: (context, quickLinkProvider, child) {
-                            //           return Checkbox(
-                            //               activeColor: Colors.green,
-                            //               checkColor: Colors.white,
-                            //               value: quickLinkProvider.isQuickLink,
-                            //               onChanged: (value) {
-                            //                 quickLinkProvider.toggleQuickLink(value!);
-                            //               });
-                            //         })
-                            //       ],
-                            //     );
-                            //   }),
-                            // ),
+
                             PopupMenuItem(
                               value: 5,
                               onTap: () {
@@ -539,130 +435,8 @@ class _AnimatedAppBarState extends State<AnimatedAppBar>
                                 );
                               }),
                             ),
-
-                            // PopupMenuItem(
-                            //   value: 3,
-                            //   onTap: () {
-                            //     // _setDateRange(3); // 3 days ago
-                            //   },
-                            //   child: StatefulBuilder(
-                            //     builder: (BuildContext context, setState) {
-                            //       return Row(
-                            //         children: [
-                            //           const Icon(
-                            //             CupertinoIcons.checkmark_alt_circle,
-                            //             size: 30,
-                            //             color: Colors.green,
-                            //           ),
-                            //           const SizedBox(
-                            //             width: 10,
-                            //           ),
-                            //           const Text("Mileage"),
-                            //           const Spacer(),
-                            //           Checkbox(
-                            //               value: mileage,
-                            //               onChanged: (value) {
-                            //                 setState(() {
-                            //                   mileage = value!;
-                            //                   widget.onMileageSelected!(value);
-                            //                 });
-                            //               })
-                            //         ],
-                            //       );
-                            //     },
-                            //   ),
-                            // ),
-                            // PopupMenuItem(
-                            //   value: 4,
-                            //   onTap: () {
-                            //     // _setDateRange(3); // 3 days ago
-                            //   },
-                            //   child: StatefulBuilder(builder: (context, setState) {
-                            //     return Row(
-                            //       children: [
-                            //         const Icon(
-                            //           CupertinoIcons.checkmark_alt_circle,
-                            //           size: 30,
-                            //           color: Colors.green,
-                            //         ),
-                            //         const SizedBox(
-                            //           width: 10,
-                            //         ),
-                            //         const Text("Odometer"),
-                            //         const Spacer(),
-                            //         Checkbox(
-                            //             value: odometer,
-                            //             onChanged: (value) {
-                            //               setState(() {
-                            //                 odometer = value!;
-                            //                 widget.onOdometerSelected!(value);
-                            //               });
-                            //             })
-                            //       ],
-                            //     );
-                            //   }),
-                            // ),
-                            ///
-                            // PopupMenuItem(
-                            //   value: 6,
-                            //   onTap: () {
-                            //     // _setDateRange(3); // 3 days ago
-                            //   },
-                            //   child: StatefulBuilder(builder: (context, setState) {
-                            //     return Row(
-                            //       children: [
-                            //         const Icon(
-                            //           CupertinoIcons.checkmark_alt_circle,
-                            //           size: 30,
-                            //           color: Colors.green,
-                            //         ),
-                            //         const SizedBox(
-                            //           width: 10,
-                            //         ),
-                            //         const Text("Fault codes"),
-                            //         const Spacer(),
-                            //         Checkbox(
-                            //             value: faultCodes,
-                            //             onChanged: (value) {
-                            //               setState(() {
-                            //                 faultCodes = value!;
-                            //                 widget.onFaultCodesSelected!(value);
-                            //               });
-                            //             })
-                            //       ],
-                            //     );
-                            //   }),
-                            // ),
-                            ///
                           ]),
                 ),
-
-          ///-----
-          // Padding(
-          //   padding: const EdgeInsets.only(right: 8.0),
-          //   child: InkWell(
-          //     onTap: () {
-          //       showModalBottomSheet(
-          //         context: context,
-          //         isDismissible: false,
-          //         isScrollControlled: true,
-          //         shape: const RoundedRectangleBorder(
-          //           borderRadius: BorderRadius.only(
-          //             topLeft: Radius.circular(20),
-          //             topRight: Radius.circular(20),
-          //           ),
-          //         ),
-          //         builder: (BuildContext context) {
-          //           return const NotificationWidget();
-          //         },
-          //       );
-          //     },
-          //     child: CircleAvatar(
-          //       backgroundColor: Colors.green.shade100,
-          //       child: const Icon(CupertinoIcons.bell_fill),
-          //     ),
-          //   ),
-          // ),
         ],
       ),
     );

@@ -223,6 +223,7 @@ class _LoginPageState extends State<LoginPage> {
                 } else if (state is AuthFailure) {
                   ScaffoldMessenger.of(context)
                       .showSnackBar(SnackBar(content: Text(state.message)));
+                  return;
                 }
               },
               builder: (context, state) {
