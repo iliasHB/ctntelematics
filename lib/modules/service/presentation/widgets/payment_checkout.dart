@@ -1,8 +1,6 @@
 import 'package:ctntelematics/core/utils/app_export_util.dart';
 import 'package:ctntelematics/modules/service/domain/entitties/req_entities/request_service_req_entity.dart';
 import 'package:ctntelematics/modules/service/presentation/bloc/service_bloc.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -86,7 +84,7 @@ class _PaymentCheckoutWebViewState extends State<PaymentCheckoutWebView> {
           if (host.toString().contains(widget.callbackUrl) ||
               address.toString().contains(widget.callbackUrl)) {
             print("-----------------verify payment here--------------------");
-            // Navigator.of(context).pop();
+            Navigator.of(context).pop();
             RequestServiceReqEntity requestServiceReqEntity =
                 RequestServiceReqEntity(
                     service_id: widget.serviceId,
@@ -104,14 +102,11 @@ class _PaymentCheckoutWebViewState extends State<PaymentCheckoutWebView> {
                   if (state is ServiceLoading) {
                     return const CustomContainerLoadingButton();
                   } else if (state is GetServicesDone) {
-                    // if (state.resp == [] || state.resp.isEmpty) {
-                    //   return Center(
-                    //       child: Text("No Service found",
-                    //           style: AppStyle.cardfooter));
-                    // }
-                    // Navigator.of(context).pop();
-
-                    return const PaymentSuccess(pageRoute: "service", desc: "Your request is confirmed. You will receive a confirmation email shortly with your order details",);
+                    return const PaymentSuccess(
+                      pageRoute: "service",
+                      desc:
+                          "Your request is confirmed. You will receive a confirmation email shortly with your order details",
+                    );
                   }
                   return Center(
                       child:

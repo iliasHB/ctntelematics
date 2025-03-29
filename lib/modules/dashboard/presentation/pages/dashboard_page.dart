@@ -140,23 +140,16 @@ class _DashboardPageState extends State<DashboardPage> {
   // Helper function to compute counts
   Map<String, int> _computeVehicleSocketCounts(List<VehicleEntity> vehicles) {
     return {
-      // 'moving': vehicles
-      //     .where((v) => v.locationInfo.vehicleStatus.toLowerCase() == "moving")
-      //     .length,
-      'online': vehicles
+      'moving': vehicles
           .where((v) =>
               v.locationInfo.tracker!.status?.toLowerCase() == "online" &&
               v.locationInfo.vehicleStatus.toLowerCase() == "moving")
           .length,
-      // 'offline': vehicles
-      //     .where((v) => v.locationInfo.vehicleStatus.toLowerCase() == "offline")
-      //     .length,
-      // 'idling': vehicles
-      //     .where((v) => v.locationInfo.vehicleStatus.toLowerCase() == "idling")
-      //     .length,
-      // 'parked': vehicles
-      //     .where((v) => v.locationInfo.vehicleStatus.toLowerCase() == "parked")
-      //     .length,
+      'idling': vehicles
+          .where((v) =>
+      v.locationInfo.vehicleStatus.toLowerCase() == "idling" &&
+          v.locationInfo.tracker!.status!.toLowerCase() == "online")
+          .length,
     };
   }
 
@@ -342,13 +335,10 @@ class _DashboardPageState extends State<DashboardPage> {
                                             }
 
                                             final vehicleWebsocketCounts =
-                                                _computeVehicleSocketCounts(
-                                                    vehicles);
+                                                _computeVehicleSocketCounts(vehicles);
 
                                             return VehicleStatusPieChart(
-                                              onlineCount:
-                                                  vehicleWebsocketCounts[
-                                                          'online'] ?? 0,
+                                              onlineCount: vehicleWebsocketCounts['online'] ?? 0,
                                               offlineCount:
                                                   VehicleRealTimeStatus
                                                       .checkStatusChange(
@@ -358,9 +348,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                                           vehicleCounts[
                                                               'offline']),
                                               idlingCount:
-                                                  vehicleWebsocketCounts[
-                                                          'idling'] ??
-                                                      0,
+                                                  vehicleWebsocketCounts['idling'] ?? 0,
                                               parkedCount: VehicleRealTimeStatus
                                                   .checkStatusChange(
                                                       vehiclesData,
@@ -424,7 +412,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                                             _computeVehicleSocketCounts(
                                                                 vehicles);
                                                         return Text(
-                                                          "${vehicleWebsocketCounts['online'] ?? 0}",
+                                                          "${vehicleWebsocketCounts['moving'] ?? 0}",
                                                           style: AppStyle
                                                               .cardfooter
                                                               .copyWith(
@@ -578,9 +566,14 @@ class _DashboardPageState extends State<DashboardPage> {
                                                               .ellipsis,
                                                         );
                                                       }
+                                                      // return Text(
+                                                      //   '${VehicleRealTimeStatus.checkStatusChange(vehiclesData, vehicles, 'idling', vehicleCounts['idling'])}',
+                                                      final vehicleWebsocketCounts =
+                                                      _computeVehicleSocketCounts(
+                                                          vehicles);
                                                       return Text(
-                                                        '${VehicleRealTimeStatus.checkStatusChange(vehiclesData, vehicles, 'idling', vehicleCounts['idling'])}',
-                                                        style: AppStyle
+                                                        "${vehicleWebsocketCounts['idling'] ?? 0}",
+                                                          style: AppStyle
                                                             .cardfooter
                                                             .copyWith(
                                                                 fontWeight:

@@ -13,7 +13,7 @@ class _AuthApiClient implements AuthApiClient {
     this._dio, {
     this.baseUrl,
   }) {
-    baseUrl ??= 'https://cti.maypaseducation.com/api';
+    baseUrl ??= 'http://196.3.101.150:8080/api';//'https://cti.maypaseducation.com/api';
   }
 
   final Dio _dio;

@@ -86,11 +86,11 @@ class _VehiclePageState extends State<VehiclePage> {
   Map<String, int> _computeVehicleCounts(
       List<LastLocationRespEntity> vehicles) {
     return {
-      'online': vehicles
-          .where((v) =>
-              v.vehicle?.details?.last_location?.status!.toLowerCase() ==
-              "online")
-          .length,
+      // 'online': vehicles
+      //     .where((v) =>
+      //         v.vehicle?.details?.last_location?.status!.toLowerCase() ==
+      //         "online")
+      //     .length,
       'offline': vehicles
           .where((v) =>
               v.vehicle?.details?.last_location?.status!.toLowerCase() ==
@@ -109,7 +109,7 @@ class _VehiclePageState extends State<VehiclePage> {
       'moving': vehicles
           .where((v) =>
               v.vehicle?.details?.last_location?.status!.toLowerCase() ==
-              "moving")
+              "online")
           .length,
       'expired': vehicles
           .where((v) =>
@@ -231,7 +231,7 @@ class _VehiclePageState extends State<VehiclePage> {
                                 if (vehicles.isEmpty) {
                                   return Expanded(
                                     child: VehicleSubPage(
-                                        onlineCount: vehicleCounts['online'] ?? 0,
+                                        // onlineCount: vehicleCounts['online'] ?? 0,
                                         offlineCount: vehicleCounts['offline'] ?? 0,
                                         idlingCount: vehicleCounts['idling'] ?? 0,
                                         parkedCount: vehicleCounts['parked'] ?? 0,
@@ -246,8 +246,8 @@ class _VehiclePageState extends State<VehiclePage> {
 
                                 return Expanded(
                                   child: VehicleSubPage(
-                                      onlineCount:
-                                          vehicleWebsocketCounts['online'] ?? 0,
+                                      // onlineCount:
+                                      //     vehicleWebsocketCounts['online'] ?? 0,
                                       offlineCount:
                                           VehicleRealTimeStatus.checkStatusChange(
                                               vehiclesData,
@@ -320,12 +320,12 @@ class _VehiclePageState extends State<VehiclePage> {
 
 
 class VehicleSubPage extends StatefulWidget {
-  final int onlineCount, offlineCount, idlingCount, parkedCount, movingCount, expiredCount;
+  final int offlineCount, idlingCount, parkedCount, movingCount, expiredCount;
   final List<LastLocationRespEntity> vehiclesData;
   final String token;
   const VehicleSubPage(
       {super.key,
-      required this.onlineCount,
+      // required this.onlineCount,
       required this.offlineCount,
       required this.idlingCount,
       required this.parkedCount,

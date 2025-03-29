@@ -153,7 +153,7 @@ class _PaymentMethodState extends State<PaymentMethod> {
                           MaterialPageRoute(
                               builder: (_) => PaymentCheckoutWebView(
                                   auth_url: state.resp.authorization_url,
-                                  callbackUrl: '',
+                                  callbackUrl: 'https://www.goal.com/en-ng',
                                   token: widget.token,
                                   serviceId: widget.serviceId,
                                   phone: widget.phone,
